@@ -4,13 +4,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.github.PWR-Labs</groupId>
-    <artifactId>PWRJ</artifactId>
-    <version>1.0.0</version>
+    <groupId>com.github.pwrlabs</groupId>
+    <artifactId>pwrj</artifactId>
+    <version>1.0.2</version>
 
     <name>PWRJ</name>
     <description>PWRJ is a lightweight, simple, easy to use Java library for integrating with the PWR Chain and building wallets and virtual machines on it.</description>
-    <url>https://github.com/PWR-Labs/PWRJ</url>
+    <url>https://github.com/pwrlabs/pwrj</url>
 
     <licenses>
         <license>
@@ -40,9 +40,9 @@
     </dependencies>
 
     <scm>
-        <connection>scm:git:git://github.com/PWR-Labs/PWRJ.git</connection>
-        <developerConnection>scm:git:ssh://github.com:PWR-Labs/PWRJ.git</developerConnection>
-        <url>https://github.com/PWR-Labs/PWRJ</url>
+        <connection>scm:git:git://github.com/pwrlabs/pwrj.git</connection>
+        <developerConnection>scm:git:ssh://github.com:pwrlabs/pwrj.git</developerConnection>
+        <url>https://github.com/pwrlabs/pwrj</url>
     </scm>
 
 </project>
