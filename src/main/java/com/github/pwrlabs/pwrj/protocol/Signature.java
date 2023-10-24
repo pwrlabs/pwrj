@@ -1,4 +1,4 @@
-package protocol;
+package com.github.pwrlabs.pwrj.protocol;
 
 import org.bouncycastle.util.encoders.Hex;
 import org.web3j.crypto.ECKeyPair;

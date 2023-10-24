@@ -1,10 +1,10 @@
-package wallet;
+package com.github.pwrlabs.pwrj.wallet;
 
 import org.bouncycastle.util.encoders.Hex;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.ECKeyPair;
-import protocol.PWRJ;
-import protocol.Signature;
+import com.github.pwrlabs.pwrj.protocol.PWRJ;
+import com.github.pwrlabs.pwrj.protocol.Signature;
 
 import java.io.IOException;
 import java.math.BigInteger;
