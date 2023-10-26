@@ -98,6 +98,11 @@ String address = wallet.getAddress();
 long balance = wallet.getBalance();
 ```
 
+**Get private key:**
+```java
+BigInteger privateKey = wallet.getPrivateKey();
+```
+
 **Transfer PWR tokens:**
 ```java
 wallet.transferPWR("recipientAddress", 1000); 
@@ -156,6 +161,7 @@ int nonce = PWRJ.getNonceOfAddress("0x...");
 Broadcasts a signed transaction to the network.
 
 ```java
+byte[] signedTransaction = ...;
 PWRJ.broadcastTxn(signedTransaction);
 ```
 
