@@ -59,60 +59,51 @@ Step 2. Add the dependency
 
 ### Usage
 
-Import the library:
-
+**Import the library:**
 ```java 
 import com.github.pwrlabs.pwrj.*;
 ```
-Set your RPC node:
 
+**Set your RPC node:**
 ```java
 PWRJ.setRpcNodeUrl("https://rpc.pwrlabs.io/");
 ```
 
-Generate a new wallet:
-
+**Generate a new wallet:**
 ```java
 PWRWallet wallet = new PWRWallet(); 
 ```
 
 You also have the flexibility to import existing wallets using a variety of constructors
-
 ```java
 String privateKey = "private key"; //Replace with hex private key
 PWRWallet wallet = new PWRWallet(privateKey); 
 ```
-
 ```java
 byte[] privateKey = ...; 
 PWRWallet wallet = new PWRWallet(privateKey); 
 ```
-
 ```java
 ECKeyPair ecKeyPair = ...; //Generate or import ecKeyPair 
 PWRWallet wallet = new PWRWallet(ecKeyPair); 
 ```
 
-Get wallet address:
-
+**Get wallet address:**
 ```java
 String address = wallet.getAddress();
 ```
 
-Get wallet balance: 
-
+**Get wallet balance: **
 ```java
 long balance = wallet.getBalance();
 ```
 
-Transfer PWR tokens:
-
+**Transfer PWR tokens:**
 ```java
 wallet.transferPWR("recipientAddress", 1000); 
 ```
 
-Send data to a VM:
-
+**Send data to a VM:**
 ```java
 int vmId = 123;
 byte[] data = ...;
