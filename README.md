@@ -108,11 +108,30 @@ BigInteger privateKey = wallet.getPrivateKey();
 wallet.transferPWR("recipientAddress", 1000); 
 ```
 
+Sending a transcation to the PWR Chain returns a Response object, which specified if the transaction was a success, and returns relevant data.
+If the transaction was a success, you can retrieive the transaction hash, if it failed, you can fetch the error.
+
+```java
+Response r = wallet.transferPWR("recipientAddress", 1000); 
+
+if(r.isSuccess()) {
+   System.out.println("Transcation Hash: " + r.getMessage());
+} else {
+   System.out.println("Error: " + r.getError());
+}
+```
+
 **Send data to a VM:**
 ```java
 int vmId = 123;
 byte[] data = ...;
-wallet.sendVmDataTxn(vmId, data);
+Response r = wallet.sendVmDataTxn(vmId, data);
+
+if(r.isSuccess()) {
+   System.out.println("Transcation Hash: " + r.getMessage());
+} else {
+   System.out.println("Error: " + r.getError());
+}
 ```
 ### Other Static Calls
 
