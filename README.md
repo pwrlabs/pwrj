@@ -109,6 +109,55 @@ int vmId = 123;
 byte[] data = ...;
 wallet.sendVmDataTxn(vmId, data);
 ```
+### Other Static Calls
+
+**Update fee per byte:**
+
+Fetches latest fee-per-byte rate from the RPC node and updates the local fee rate.
+
+```java
+PWRJ.updateFeePerByte();
+``` 
+
+**Get RPC Node Url:**
+
+Returns currently set RPC node URL.
+
+```java
+String url = PWRJ.getRpcNodeUrl();
+```
+
+**Get Fee Per Byte: **
+
+Gets the latest fee-per-byte rate.
+
+```java
+long fee = PWRJ.getFeePerByte();
+```
+
+**Get Balance Of Address:**
+
+Gets the balance of a specific address.
+
+```java
+long balance = PWRJ.getBalanceOfAddress("0x...");
+```
+
+**Get Nonce Of Address:**
+
+Gets the nonce/transaction count of a specific address.
+
+```java
+int nonce = PWRJ.getNonceOfAddress("0x..."); 
+```
+
+**Broadcast Txn:**
+
+Broadcasts a signed transaction to the network.
+
+```java
+PWRJ.broadcastTxn(signedTransaction);
+```
 
 ## Contributing
 
