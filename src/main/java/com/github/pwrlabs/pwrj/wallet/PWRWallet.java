@@ -1,5 +1,7 @@
 package com.github.pwrlabs.pwrj.wallet;
 
+import com.github.pwrlabs.pwrj.Utils.Response;
+import jdk.javadoc.doclet.Reporter;
 import org.bouncycastle.util.encoders.Hex;
 import org.web3j.crypto.Credentials;
 import org.web3j.crypto.ECKeyPair;
@@ -117,12 +119,14 @@ public class PWRWallet {
      * @param to The recipient address.
      * @param amount The amount of PWR tokens to be transferred.
      * @param nonce The transaction count of the wallet address.
-     * @return A string representation of the transaction status or hash.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
      * @throws IOException If there's an issue with the network or stream handling.
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException For various transaction-related validation issues.
      */
-    public String transferPWR(String to, long amount, int nonce) throws IOException, InterruptedException {
+    public Response transferPWR(String to, long amount, int nonce) throws IOException, InterruptedException {
         if(to.trim().length() != 42) {
             throw new RuntimeException("Invalid address");
         }
@@ -159,11 +163,13 @@ public class PWRWallet {
      *
      * @param to The recipient address.
      * @param amount The amount of PWR tokens to be transferred.
-     * @return A string representation of the transaction status or hash.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
      * @throws IOException If there's an issue with the network or stream handling.
      * @throws InterruptedException If the request is interrupted.
      */
-    public String transferPWR(String to, long amount) throws IOException, InterruptedException {
+    public Response transferPWR(String to, long amount) throws IOException, InterruptedException {
         return transferPWR(to, amount, getNonce());
     }
 
@@ -173,12 +179,14 @@ public class PWRWallet {
      * @param vmId The ID of the VM.
      * @param data The data to be sent.
      * @param nonce The transaction count of the wallet address.
-     * @return A string representation of the transaction status or hash.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
      * @throws IOException If there's an issue with the network or stream handling.
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException For various transaction-related validation issues.
      */
-    public String sendVmDataTxn(long vmId, byte[] data, int nonce) throws IOException, InterruptedException {
+    public Response sendVmDataTxn(long vmId, byte[] data, int nonce) throws IOException, InterruptedException {
         if (nonce < 0) {
             throw new RuntimeException("Nonce cannot be negative");
         }
@@ -206,11 +214,13 @@ public class PWRWallet {
      *
      * @param vmId The ID of the VM.
      * @param data The data to be sent.
-     * @return A string representation of the transaction status or hash.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
      * @throws IOException If there's an issue with the network or stream handling.
      * @throws InterruptedException If the request is interrupted.
      */
-    public String sendVmDataTxn(long vmId, byte[] data) throws IOException, InterruptedException {
+    public Response sendVmDataTxn(long vmId, byte[] data) throws IOException, InterruptedException {
         return sendVmDataTxn(vmId, data, getNonce());
     }
 }

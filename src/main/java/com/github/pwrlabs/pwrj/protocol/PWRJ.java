@@ -1,5 +1,6 @@
 package com.github.pwrlabs.pwrj.protocol;
 
+import com.github.pwrlabs.pwrj.Utils.Response;
 import org.bouncycastle.util.encoders.Hex;
 import org.json.JSONObject;
 import org.web3j.crypto.Hash;
@@ -62,19 +63,20 @@ public class PWRJ {
     }
 
     /**
-     * Broadcasts a transaction to the network using the specified RPC node URL.
+     * Broadcasts a transaction to the network via a specified RPC node.
      *
-     * <p>This method sends the provided transaction to the RPC node for broadcasting.
-     * If the broadcast is successful, it returns the transaction's hash; otherwise,
-     * it throws a relevant exception.</p>
+     * <p>This method serializes the provided transaction as a hex string and sends
+     * it to the RPC node for broadcasting. Upon successful broadcast, the transaction
+     * hash is returned. In case of any issues during broadcasting, appropriate exceptions
+     * are thrown to indicate the error.</p>
      *
-     * @param txn The raw transaction bytes to be broadcasted.
-     * @return The hash of the successfully broadcasted transaction, prefixed with "0x".
-     * @throws IOException If there's an issue with the network or stream handling.
-     * @throws InterruptedException If the request is interrupted.
-     * @throws RuntimeException If the broadcast was unsuccessful or there was a non-200 HTTP response.
+     * @param txn The raw transaction bytes intended for broadcasting.
+
+     * @throws IOException If an I/O error occurs when sending or receiving.
+     * @throws InterruptedException If the send operation is interrupted.
+     * @throws RuntimeException If the server responds with a non-200 HTTP status code.
      */
-    public static String broadcastTxn(byte[] txn) throws IOException, InterruptedException {
+    public static Response broadcastTxn(byte[] txn) throws IOException, InterruptedException {
         JSONObject object = new JSONObject();
         object.put("txn", Hex.toHexString(txn));
 
@@ -87,10 +89,10 @@ public class PWRJ {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         if (response.statusCode() == 200) {
             JSONObject responseJson = new JSONObject(response.body());
-            if (!responseJson.getString("status").equalsIgnoreCase("success")) {
-                throw new RuntimeException("Failed with error message: " + responseJson.getString("message"));
+            if (responseJson.getString("status").equalsIgnoreCase("success")) {
+                return new Response(true, responseJson.getString("message"), null);
             } else {
-                return "0x" + Hash.sha3(txn);
+                return new Response(false, null, responseJson.getString("message"));
             }
         } else {
             throw new RuntimeException("Failed with HTTP error code : " + response.statusCode());
