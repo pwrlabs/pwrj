@@ -76,6 +76,23 @@ Generate a new wallet:
 PWRWallet wallet = new PWRWallet(); 
 ```
 
+You also have the flexibility to import existing wallets using a variety of constructors
+
+```java
+String privateKey = "private key"; //Replace with hex private key
+PWRWallet wallet = new PWRWallet(privateKey); 
+```
+
+```java
+byte[] privateKey = ...; 
+PWRWallet wallet = new PWRWallet(privateKey); 
+```
+
+```java
+ECKeyPair ecKeyPair = ...; //Generate or import ecKeyPair 
+PWRWallet wallet = new PWRWallet(ecKeyPair); 
+```
+
 Get wallet address:
 
 ```java
@@ -96,13 +113,11 @@ wallet.transferPWR("recipientAddress", 1000);
 
 Send data to a VM:
 
-```java 
-wallet.sendVmDataTxn(123, "Hello World!".getBytes());
+```java
+int vmId = 123;
+byte[] data = ...;
+wallet.sendVmDataTxn(vmId, data);
 ```
-
-## Documentation
-
-See the [JavaDocs](https://pwrlabs.github.io/pwrj/) for full documentation of classes and methods.
 
 ## Contributing
 
