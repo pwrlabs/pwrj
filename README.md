@@ -93,7 +93,7 @@ PWRWallet wallet = new PWRWallet(ecKeyPair);
 String address = wallet.getAddress();
 ```
 
-**Get wallet balance: **
+**Get wallet balance:**
 ```java
 long balance = wallet.getBalance();
 ```
