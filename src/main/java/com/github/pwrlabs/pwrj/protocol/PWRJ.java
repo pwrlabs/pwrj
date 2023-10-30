@@ -123,6 +123,54 @@ public class PWRJ {
     }
 
     /**
+     * Retrieves the total count of blocks from the RPC node.
+     *
+     * <p>This method sends a GET request to the RPC node to fetch the total number of blocks.
+     * If the RPC node returns a non-200 HTTP response or an unsuccessful status in the JSON response,
+     * appropriate exceptions will be thrown.</p>
+     *
+     * @return The total count of blocks as reported by the RPC node.
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
+     */
+    public static long getBlocksCount() throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(rpcNodeUrl + "/blocksCount/"))
+                .GET()
+                .header("Accept", "application/json")
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            JSONObject object = new JSONObject(response.body());
+            if(!object.getString("status").equalsIgnoreCase("success")) {
+                throw new RuntimeException("Failed with error message: " + object.getString("message"));
+            } else {
+                return object.getJSONObject("data").getLong("blocksCount");
+            }
+        } else {
+            throw new RuntimeException("Failed with HTTP error code : " + response.statusCode());
+        }
+    }
+
+    /**
+     * Retrieves the number of the latest block from the RPC node.
+     *
+     * <p>This method utilizes the {@link #getBlocksCount()} method to get the total count of blocks
+     * and then subtracts one to get the latest block number.</p>
+     *
+     * @return The number of the latest block.
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     * @throws RuntimeException If there are issues retrieving the total count of blocks.
+     */
+    public static long getLatestBlockNumber() throws IOException, InterruptedException {
+        return getBlocksCount() - 1;
+    }
+
+    /**
      * Queries the RPC node to obtain the balance of a specific address.
      *
      * <p>If the RPC node returns an unsuccessful status or if there is any network error,
