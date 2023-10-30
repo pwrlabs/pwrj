@@ -22,7 +22,7 @@ public class Block {
         blockSize = blockJson.getInt("blockSize");
         blockNumber = blockJson.getLong("blockNumber");
         blockReward = blockJson.getLong("blockReward");
-        timeStamp = blockJson.getLong("timeStamp");
+        timeStamp = blockJson.getLong("timestamp");
         blockHash = blockJson.getString("blockHash");
         blockSubmitter = blockJson.getString("blockSubmitter");
         success = blockJson.getBoolean("success");
