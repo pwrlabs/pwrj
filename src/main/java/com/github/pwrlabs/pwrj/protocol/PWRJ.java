@@ -263,7 +263,7 @@ public class PWRJ {
             if(!object.getString("status").equalsIgnoreCase("success")) {
                 throw new RuntimeException("Failed with error message: " + object.getString("message"));
             } else {
-                JSONObject blockJson = object.getJSONObject("data");
+                JSONObject blockJson = object.getJSONObject("data").getJSONObject("block");
                 return new Block(blockJson);
             }
         } else {
