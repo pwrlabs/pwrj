@@ -1,7 +1,12 @@
 package com.github.pwrlabs.pwrj.protocol;
 
+import com.github.pwrlabs.pwrj.Block.Block;
+import com.github.pwrlabs.pwrj.Transaction.Transaction;
+import com.github.pwrlabs.pwrj.Transaction.TransferTxn;
+import com.github.pwrlabs.pwrj.Transaction.VmDataTxn;
 import com.github.pwrlabs.pwrj.Utils.Response;
 import org.bouncycastle.util.encoders.Hex;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.web3j.crypto.Hash;
 
@@ -178,6 +183,40 @@ public class PWRJ {
                 throw new RuntimeException("Failed with error message: " + object.getString("message"));
             } else {
                 return object.getJSONObject("data").getInt("nonce");
+            }
+        } else {
+            throw new RuntimeException("Failed with HTTP error code : " + response.statusCode());
+        }
+    }
+
+    /**
+     * Queries the RPC node to retrieve block details for a specific block number.
+     *
+     * <p>If the RPC node returns an unsuccessful status or if there's any network error,
+     * appropriate exceptions will be thrown.</p>
+     *
+     * @param blockNumber The block number for which to fetch the block details.
+     * @return The Block object representing the block details.
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
+     */
+    public static Block getBlockByNumber(long blockNumber) throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(rpcNodeUrl + "/block/?blockNumber=" + blockNumber))
+                .GET()
+                .header("Accept", "application/json")
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            JSONObject object = new JSONObject(response.body());
+            if(!object.getString("status").equalsIgnoreCase("success")) {
+                throw new RuntimeException("Failed with error message: " + object.getString("message"));
+            } else {
+                JSONObject blockJson = object.getJSONObject("data");
+                return new Block(blockJson);
             }
         } else {
             throw new RuntimeException("Failed with HTTP error code : " + response.statusCode());
