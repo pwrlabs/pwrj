@@ -95,7 +95,7 @@ public class PWRJ {
         if (response.statusCode() == 200) {
             JSONObject responseJson = new JSONObject(response.body());
             if (responseJson.getString("status").equalsIgnoreCase("success")) {
-                return new Response(true, responseJson.getString("message"), null);
+                return new Response(true, "0x" + Hex.toHexString(Hash.sha3(txn)), null);
             } else {
                 return new Response(false, null, responseJson.getString("message"));
             }
