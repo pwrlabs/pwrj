@@ -6,7 +6,7 @@
 
     <groupId>com.github.pwrlabs</groupId>
     <artifactId>pwrj</artifactId>
-    <version>1.0.8</version>
+    <version>1.0.9</version>
 
     <name>PWRJ</name>
     <description>PWRJ is a lightweight, simple, easy to use Java library for integrating with the PWR Chain and building wallets and virtual machines on it.</description>
@@ -21,8 +21,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>16</maven.compiler.source>
-        <maven.compiler.target>16</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
     </properties>
 
     <dependencies>
