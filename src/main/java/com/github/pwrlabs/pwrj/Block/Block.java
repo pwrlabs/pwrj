@@ -36,11 +36,11 @@ public class Block {
             
             String txnType = txnObject.getString("type");
             if(txnType.equalsIgnoreCase("Transfer")) {
-                txn = new TransferTxn(txnObject.getInt("size"), txnObject.getInt("positionInBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("from"), txnObject.getString("to"), txnObject.getString("hash"), txnObject.getLong("value"));
+                txn = new TransferTxn(txnObject.getInt("size"), txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("from"), txnObject.getString("to"), txnObject.getString("hash"), txnObject.getLong("value"));
             } else if(txnType.equalsIgnoreCase("VM Data")) {
-                txn = new VmDataTxn(txnObject.getInt("size"), txnObject.getInt("positionInBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("from"), txnObject.getString("to"), txnObject.getString("hash"), txnObject.getLong("vmId"), txnObject.getString("data"));
+                txn = new VmDataTxn(txnObject.getInt("size"), txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("from"), txnObject.getString("to"), txnObject.getString("hash"), txnObject.getLong("vmId"), txnObject.getString("data"));
             } else {
-                txn = new Transaction(txnObject.getInt("size"), txnObject.getInt("positionInBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("from"), txnObject.getString("to"), txnObject.getString("hash"));
+                txn = new Transaction(txnObject.getInt("size"), txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("from"), txnObject.getString("to"), txnObject.getString("hash"));
             }
 
             transactions[i] = txn;
