@@ -7,44 +7,82 @@ public class Transaction {
     private final String type;
     private final String from;
     private final String to;
+    private final String nonceOrValidationHash;
     private final String hash;
 
-    public Transaction(int size, int positionInTheBlock, long fee, String type, String from, String to, String hash) {
+    public Transaction(int size, int positionInTheBlock, long fee, String type, String from, String to, String nonceOrValidationHash, String hash) {
         this.size = size;
         this.positionInTheBlock = positionInTheBlock;
         this.fee = fee;
         this.type = type;
         this.from = from;
         this.to = to;
+        this.nonceOrValidationHash = nonceOrValidationHash;
         this.hash = hash;
     }
 
     //Getters
 
+    //javadoc of the below function
+    /**
+     * @return the size of the transaction
+     */
     public int getSize() {
         return size;
     }
 
+    //javadoc of the below function
+    /**
+     * @return the position of the transaction in the block
+     */
     public int getPositionInTheBlock() {
         return positionInTheBlock;
     }
 
+    //javadoc of the below function
+    /**
+     * @return the fee of the transaction
+     */
     public long getFee() {
         return fee;
     }
 
+    //javadoc of the below function
+    /**
+     * @return the type of the transaction
+     */
     public String getType() {
         return type;
     }
 
+    //javadoc of the below function
+    /**
+     * @return the address of the sender of the transaction
+     */
     public String getFrom() {
         return from;
     }
 
+    //javadoc of the below function
+    /**
+     * @return the address of the receiver of the transaction
+     */
     public String getTo() {
         return to;
     }
 
+    //javadoc of the below function
+    /**
+     * @return the nonce of the transaction if it is a ECDSA transaction, or the validation hash if it is a MHBS transaction
+     */
+    public String getNonceOrValidationHash() {
+        return nonceOrValidationHash;
+    }
+
+    //javadoc of the below function
+    /**
+     * @return the hash of the transaction
+     */
     public String getHash() {
         return hash;
     }

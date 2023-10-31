@@ -8,23 +8,23 @@ import org.json.JSONObject;
 
 public class Block {
     private final int transactionCount;
-    private final int blockSize;
-    private final long blockNumber;
-    private final long blockReward;
-    private final long timeStamp;
-    private final String blockHash;
-    private final String blockSubmitter;
+    private final int size;
+    private final long number;
+    private final long reward;
+    private final long timestamp;
+    private final String hash;
+    private final String submitter;
     private final boolean success;
     private final Transaction[] transactions;
 
     public Block(JSONObject blockJson) {
         transactionCount = blockJson.getInt("transactionCount");
-        blockSize = blockJson.getInt("blockSize");
-        blockNumber = blockJson.getLong("blockNumber");
-        blockReward = blockJson.getLong("blockReward");
-        timeStamp = blockJson.getLong("timestamp");
-        blockHash = blockJson.getString("blockHash");
-        blockSubmitter = blockJson.getString("blockSubmitter");
+        size = blockJson.getInt("blockSize");
+        number = blockJson.getLong("blockNumber");
+        reward = blockJson.getLong("blockReward");
+        timestamp = blockJson.getLong("timestamp");
+        hash = blockJson.getString("blockHash");
+        submitter = blockJson.getString("blockSubmitter");
         success = blockJson.getBoolean("success");
 
         JSONArray txns = blockJson.getJSONArray("transactions");
@@ -36,11 +36,11 @@ public class Block {
             
             String txnType = txnObject.getString("type");
             if(txnType.equalsIgnoreCase("Transfer")) {
-                txn = new TransferTxn(txnObject.getInt("size"), txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("from"), txnObject.getString("to"), txnObject.getString("hash"), txnObject.getLong("value"));
+                txn = new TransferTxn(txnObject.getInt("size"), txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("from"), txnObject.getString("to"), txnObject.getString("nonceOrValidationHash"), txnObject.getString("hash"), txnObject.getLong("value"));
             } else if(txnType.equalsIgnoreCase("VM Data")) {
-                txn = new VmDataTxn(txnObject.getInt("size"), txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("from"), txnObject.getString("to"), txnObject.getString("hash"), txnObject.getLong("vmId"), txnObject.getString("data"));
+                txn = new VmDataTxn(txnObject.getInt("size"), txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("from"), txnObject.getString("to"), txnObject.getString("nonceOrValidationHash"), txnObject.getString("hash"), txnObject.getLong("vmId"), txnObject.getString("data"));
             } else {
-                txn = new Transaction(txnObject.getInt("size"), txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("from"), txnObject.getString("to"), txnObject.getString("hash"));
+                txn = new Transaction(txnObject.getInt("size"), txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("from"), txnObject.getString("to"), txnObject.getString("nonceOrValidationHash"), txnObject.getString("hash"));
             }
 
             transactions[i] = txn;
@@ -50,38 +50,74 @@ public class Block {
 
     //Getters
 
+    //javadoc of the below function
+    /**
+     * @return the number of transactions in the block
+     */
     public int getTransactionCount() {
         return transactionCount;
     }
 
-    public int getBlockSize() {
-        return blockSize;
+    //javadoc of the below function
+    /**
+     * @return the byte size of the block
+     */
+    public int getSize() {
+        return size;
     }
 
-    public long getBlockNumber() {
-        return blockNumber;
+    //javadoc of the below function
+    /**
+     * @return the number of the block
+     */
+    public long getNumber() {
+        return number;
     }
 
-    public long getBlockReward() {
-        return blockReward;
+    //javadoc of the below function
+    /**
+     * @return the reward of the block
+     */
+    public long getReward() {
+        return reward;
     }
 
-    public long getTimeStamp() {
-        return timeStamp;
+    //javadoc of the below function
+    /**
+     * @return the timestamp of the block
+     */
+    public long getTimestamp() {
+        return timestamp;
     }
 
-    public String getBlockHash() {
-        return blockHash;
+    //javadoc of the below function
+    /**
+     * @return the hash of the block
+     */
+    public String getHash() {
+        return hash;
     }
 
-    public String getBlockSubmitter() {
-        return blockSubmitter;
+    //javadoc of the below function
+    /**
+     * @return the address of the submitter of the block
+     */
+    public String getSubmitter() {
+        return submitter;
     }
 
+    //javadoc of the below function
+    /**
+     * @return whether the block was processed without issues
+     */
     public boolean isSuccess() {
         return success;
     }
 
+    //javadoc of the below function
+    /**
+     * @return the transactions in the block
+     */
     public Transaction[] getTransactions() {
         return transactions;
     }

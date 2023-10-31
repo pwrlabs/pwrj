@@ -1,10 +1,11 @@
 package com.github.pwrlabs.pwrj.wallet;
 
+import com.github.pwrlabs.pwrj.Utils.Hash;
 import com.github.pwrlabs.pwrj.Utils.Response;
 import jdk.javadoc.doclet.Reporter;
+import org.bouncycastle.jcajce.provider.digest.Keccak;
+import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.util.encoders.Hex;
-import org.web3j.crypto.Credentials;
-import org.web3j.crypto.ECKeyPair;
 import com.github.pwrlabs.pwrj.protocol.PWRJ;
 import com.github.pwrlabs.pwrj.protocol.Signature;
 
@@ -12,11 +13,25 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.http.HttpClient;
 import java.nio.ByteBuffer;
+import org.bouncycastle.crypto.digests.KeccakDigest;
+import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
+import org.bouncycastle.jce.spec.ECPrivateKeySpec;
+import org.bouncycastle.math.ec.ECPoint;
+
+import java.math.BigInteger;
+import java.security.*;
+import java.util.Arrays;
 
 public class PWRWallet {
     private static HttpClient client = HttpClient.newHttpClient();
 
-    private final Credentials credentials;
+    static {
+        Security.addProvider(new BouncyCastleProvider());
+    }
+
+    private final BigInteger privateKey;
 
     /**
      * Constructs a PWRWallet using a private key in string format.
@@ -27,20 +42,9 @@ public class PWRWallet {
      * @param privateKey The private key of the wallet in a string format.
      */
     public PWRWallet(String privateKey) {
-        credentials = Credentials.create(privateKey);
+        this.privateKey = new BigInteger(privateKey, 16);
     }
 
-    /**
-     * Constructs a PWRWallet using an existing {@code Credentials} object.
-     *
-     * <p>Use this constructor if you already have the credentials object and want to
-     * wrap it within the PWRWallet.</p>
-     *
-     * @param credentials The credentials object representing the wallet.
-     */
-    public PWRWallet(Credentials credentials) {
-        this.credentials = credentials;
-    }
 
     /**
      * Constructs a PWRWallet using a private key in byte array format.
@@ -51,29 +55,79 @@ public class PWRWallet {
      * @param privateKey The private key of the wallet in byte array format.
      */
     public PWRWallet(byte[] privateKey) {
-        credentials = Credentials.create(Hex.toHexString(privateKey));
+        this.privateKey = new BigInteger(1, privateKey);
     }
 
     /**
-     * Constructs a PWRWallet using an ECKeyPair object.
+     * Constructs a PWRWallet using a private key in {@code BigInteger} format.
      *
-     * <p>Use this constructor if you have an elliptic curve key pair and want to
-     * create a wallet from it.</p>
+     * <p>This constructor converts the {@code BigInteger} representation of the private key
+     * into its hexadecimal string format, and then into {@code Credentials}.</p>
      *
-     * @param ecKeyPair The elliptic curve key pair representing the wallet's keys.
+     * @param privateKey The private key of the wallet in {@code BigInteger} format.
      */
-    public PWRWallet(ECKeyPair ecKeyPair) {
-        credentials = Credentials.create(ecKeyPair);
+    public PWRWallet(BigInteger privateKey) {
+        this.privateKey = privateKey;
     }
 
+    /**
+     * Constructs a PWRWallet using a random private key.
+     *
+     * <p>This constructor generates a random private key of 256 bits, and then
+     * converts it into {@code Credentials}.</p>
+     */
+    public PWRWallet() {
+        //Generate random private key
+        this.privateKey = new BigInteger(256, new SecureRandom());
+    }
+
+    /**
+     * Retrieves the public key associated with the wallet's credentials.
+     *
+     * @return The public key of the wallet in {@code BigInteger} format.
+     */
+    public BigInteger getPublicKey() {
+        try {
+            ECNamedCurveParameterSpec spec = org.bouncycastle.jce.ECNamedCurveTable.getParameterSpec("secp256k1");
+            ECPrivateKeySpec privateKeySpec = new ECPrivateKeySpec(new BigInteger(1, privateKey.toByteArray()), spec);
+            KeyFactory kf = KeyFactory.getInstance("ECDSA", "BC");
+            PrivateKey privateKey = kf.generatePrivate(privateKeySpec);
+            ECPoint publicKey = spec.getG().multiply(((java.security.interfaces.ECPrivateKey) privateKey).getS());
+
+            // Skip the first byte of the public key (it's the uncompressed key prefix 0x04)
+            byte[] publicKeyBytes = publicKey.getEncoded(false);
+            byte[] publicKeyNoPrefix = Arrays.copyOfRange(publicKeyBytes, 1, publicKeyBytes.length);
+
+            // Take the Keccak-256 hash of the public key (no prefix)
+            byte[] hashedPublicKey = Hash.keccak256(publicKeyNoPrefix);
+
+            // Take the last 20 bytes of the hash to get the Ethereum address
+            return new BigInteger(1, publicKeyNoPrefix);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new BigInteger(1, new byte[0]);
+    }
 
     /**
      * Retrieves the address associated with the wallet's credentials.
      *
-     * @return The address in string format.
+     * @return The address of the wallet in {@code String} format.
      */
     public String getAddress() {
-        return credentials.getAddress();
+        try {
+            //Extract the public key as byte array and removet he first byte
+            byte[] publicKeyBytes = getPublicKey().toByteArray();
+            byte[] publicKeyNoPrefix = Arrays.copyOfRange(publicKeyBytes, 1, publicKeyBytes.length);
+            BigInteger publicKeyHash = new BigInteger(Hash.keccak256(publicKeyNoPrefix));
+
+            // Take the last 20 bytes of the hash to get the Ethereum address
+            byte[] addressBytes = Arrays.copyOfRange(publicKeyHash.toByteArray(), publicKeyHash.toByteArray().length - 20, publicKeyHash.toByteArray().length);
+            return "0x" + Hex.toHexString(addressBytes);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "0x0000000000000000000000000000000000000000";
     }
 
     /**
@@ -84,7 +138,7 @@ public class PWRWallet {
      * @throws InterruptedException If the request is interrupted.
      */
     public long getBalance() throws IOException, InterruptedException {
-        return PWRJ.getBalanceOfAddress(credentials.getAddress());
+        return PWRJ.getBalanceOfAddress(getAddress());
     }
 
     /**
@@ -95,7 +149,7 @@ public class PWRWallet {
      * @throws InterruptedException If the request is interrupted.
      */
     public int getNonce() throws IOException, InterruptedException {
-        return PWRJ.getNonceOfAddress(credentials.getAddress());
+        return PWRJ.getNonceOfAddress(getAddress());
     }
 
     /**
@@ -105,11 +159,9 @@ public class PWRWallet {
      * is used judiciously and data is kept secure.</p>
      *
      * @return The private key of the wallet in {@code BigInteger} format.
-     * @throws IOException If there's an issue with network or stream handling.
-     * @throws InterruptedException If the method execution is interrupted.
      */
-    public BigInteger getPrivateKey() throws IOException, InterruptedException {
-        return credentials.getEcKeyPair().getPrivateKey();
+    public BigInteger getPrivateKey() {
+        return privateKey;
     }
 
 
@@ -149,7 +201,7 @@ public class PWRWallet {
         buffer.putLong(amount);
         buffer.put(Hex.decode(to.substring(2)));
         byte[] txn = buffer.array();
-        byte[] signature = Signature.signMessage(txn, credentials.getEcKeyPair());
+        byte[] signature = Signature.signMessage(txn, privateKey);
 
         ByteBuffer finalTxn = ByteBuffer.allocate(98);
         finalTxn.put(txn);
@@ -200,7 +252,7 @@ public class PWRWallet {
         buffer.putLong(vmId);
         buffer.put(data);
         byte[] txn = buffer.array();
-        byte[] signature = Signature.signMessage(txn, credentials.getEcKeyPair());
+        byte[] signature = Signature.signMessage(txn, privateKey);
 
         ByteBuffer finalTxn = ByteBuffer.allocate(13 + 65 + data.length);
         finalTxn.put(txn);

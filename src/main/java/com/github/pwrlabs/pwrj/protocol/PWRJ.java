@@ -1,14 +1,11 @@
 package com.github.pwrlabs.pwrj.protocol;
 
 import com.github.pwrlabs.pwrj.Block.Block;
-import com.github.pwrlabs.pwrj.Transaction.Transaction;
-import com.github.pwrlabs.pwrj.Transaction.TransferTxn;
-import com.github.pwrlabs.pwrj.Transaction.VmDataTxn;
+import com.github.pwrlabs.pwrj.Utils.Hash;
 import com.github.pwrlabs.pwrj.Utils.Response;
 import org.bouncycastle.util.encoders.Hex;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.web3j.crypto.Hash;
 
 import java.io.IOException;
 import java.net.URI;
@@ -95,7 +92,7 @@ public class PWRJ {
         if (response.statusCode() == 200) {
             JSONObject responseJson = new JSONObject(response.body());
             if (responseJson.getString("status").equalsIgnoreCase("success")) {
-                return new Response(true, "0x" + Hex.toHexString(Hash.sha3(txn)), null);
+                return new Response(true, "0x" + Hex.toHexString(Hash.keccak256(txn)), null);
             } else {
                 return new Response(false, null, responseJson.getString("message"));
             }

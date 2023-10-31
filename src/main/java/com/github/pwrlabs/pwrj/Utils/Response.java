@@ -11,14 +11,23 @@ public class Response {
         this.error = error;
     }
 
+    /**
+     * @return true if the operation was successful, false otherwise
+     */
     public boolean isSuccess() {
         return success;
     }
 
+    /**
+     * @return message returned if the operation was successful
+     */
     public String getMessage() {
         return message;
     }
 
+    /**
+     * @return error returned if the operation was not successful
+     */
     public String getError() {
         return error;
     }

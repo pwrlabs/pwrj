@@ -27,9 +27,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.web3j</groupId>
-            <artifactId>core</artifactId>
-            <version>5.0.0</version>
+            <groupId>org.bouncycastle</groupId>
+            <artifactId>bcprov-jdk15on</artifactId>
+            <version>1.69</version>
         </dependency>
 
         <dependency>
