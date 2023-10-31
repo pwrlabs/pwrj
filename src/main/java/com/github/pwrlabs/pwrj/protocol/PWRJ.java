@@ -167,6 +167,27 @@ public class PWRJ {
         return getBlocksCount() - 1;
     }
 
+    public static int getValidatorsCount() throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(rpcNodeUrl + "/validatorsCount/"))
+                .GET()
+                .header("Accept", "application/json")
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            JSONObject object = new JSONObject(response.body());
+            if(!object.getString("status").equalsIgnoreCase("success")) {
+                throw new RuntimeException("Failed with error message: " + object.getString("message"));
+            } else {
+                return object.getJSONObject("data").getInt("validatorsCount");
+            }
+        } else {
+            throw new RuntimeException("Failed with HTTP error code : " + response.statusCode());
+        }
+    }
+
     /**
      * Queries the RPC node to obtain the balance of a specific address.
      *
