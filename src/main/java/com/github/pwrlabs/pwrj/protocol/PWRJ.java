@@ -167,6 +167,17 @@ public class PWRJ {
         return getBlocksCount() - 1;
     }
 
+    /**
+     * Retrieves the latest block from the RPC node.
+     *
+     * <p>This method utilizes the {@link #getLatestBlockNumber()} method to get the number of the latest block
+     * and then calls {@link #getBlockByNumber(long)} to fetch the block details.</p>
+     *
+     * @return The latest block.
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     * @throws RuntimeException If there are issues retrieving the latest block number or fetching the block details.
+     */
     public static int getValidatorsCount() throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(rpcNodeUrl + "/validatorsCount/"))

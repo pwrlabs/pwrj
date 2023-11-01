@@ -27,10 +27,6 @@ import java.util.Arrays;
 public class PWRWallet {
     private static HttpClient client = HttpClient.newHttpClient();
 
-    static {
-        Security.addProvider(new BouncyCastleProvider());
-    }
-
     private final BigInteger privateKey;
 
     /**

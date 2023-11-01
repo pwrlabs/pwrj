@@ -12,6 +12,8 @@ public class Hash {
      * @return the hash digest
      */
     public static byte[] keccak256(byte[] input) {
-        return keccak.digest(input);
+        Keccak.DigestKeccak kecc = new Keccak.Digest256();
+        kecc.update(input, 0, input.length);
+        return kecc.digest();
     }
 }

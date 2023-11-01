@@ -1,6 +1,7 @@
 package com.github.pwrlabs.pwrj.protocol;
 
 import com.github.pwrlabs.pwrj.Utils.Hash;
+import com.github.pwrlabs.pwrj.wallet.PWRWallet;
 import org.bouncycastle.crypto.params.ECDomainParameters;
 import org.bouncycastle.jcajce.provider.digest.Keccak;
 import org.bouncycastle.math.ec.ECCurve;
@@ -29,6 +30,7 @@ public class Signature {
 		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
 	}
 	private static final ECDomainParameters SECP256K1_CURVE;
+
 	static {
 		ECCurve curve = new ECCurve.Fp(
 				new BigInteger("fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f", 16), // q
