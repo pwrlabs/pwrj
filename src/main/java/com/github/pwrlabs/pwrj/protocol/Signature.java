@@ -11,6 +11,7 @@ import org.bouncycastle.util.encoders.Hex;
 
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.util.Arrays;
 
@@ -24,11 +25,15 @@ import java.security.Security;
 
 public class Signature {
 
-
 	//Do not touch, keep in this order
+	static {
+		Security.addProvider(new BouncyCastleProvider());
+	}
+
 	private static final ECDomainParameters SECP256K1_CURVE;
 
 	static {
+
 		ECCurve curve = new ECCurve.Fp(
 				new BigInteger("fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f", 16), // q
 				new BigInteger("0000000000000000000000000000000000000000000000000000000000000000", 16), // a
@@ -39,6 +44,7 @@ public class Signature {
 		BigInteger n = new BigInteger("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141", 16);
 		BigInteger h = BigInteger.ONE;
 		SECP256K1_CURVE = new ECDomainParameters(curve, G, n, h);
+
 	}
 
 	/**
@@ -72,6 +78,21 @@ public class Signature {
 		signature.put(v);
 
 		return signature.array();
+	}
+
+	//test
+	public static void main(String[] args) {
+		System.out.println("0x61bd8fc1e30526aaf1c4706ada595d6d236d9883".equalsIgnoreCase("0x61bd8fc1e30526aaf1c4706ada595d6d236d9883"));
+		//Security.addProvider(new BouncyCastleProvider());
+
+		PWRWallet wallet = new PWRWallet("03a5240936d67dc18dca348e793010a14c5eba86a73d0c9e45764681295a73df");
+
+		byte[] message = "Hello World".getBytes(StandardCharsets.UTF_8);
+
+		byte[] signature = signMessage(message, wallet.getPrivateKey());
+
+		System.out.println("address: " + wallet.getAddress());
+		System.out.println(Hex.toHexString(signature));
 	}
 
 }

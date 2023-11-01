@@ -17,10 +17,6 @@ import java.security.Security;
 
 public class PWRJ {
 
-    static {
-        Security.addProvider(new BouncyCastleProvider());
-    }
-
     private static HttpClient client = HttpClient.newHttpClient();
     private static String rpcNodeUrl;
     private static long feePerByte = 100;

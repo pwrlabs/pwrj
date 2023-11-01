@@ -19,15 +19,40 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.jce.spec.ECPrivateKeySpec;
 import org.bouncycastle.math.ec.ECPoint;
+import org.web3j.crypto.Credentials;
 
 import java.math.BigInteger;
 import java.security.*;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 
 public class PWRWallet {
-    private static HttpClient client = HttpClient.newHttpClient();
 
+    static {
+        Security.addProvider(new BouncyCastleProvider());
+    }
+
+    private static HttpClient client = HttpClient.newHttpClient();
     private final BigInteger privateKey;
+
+    public static String getEthereumAddress(BigInteger privateKeyValue) throws NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeySpecException, InvalidKeySpecException {
+        ECNamedCurveParameterSpec spec = org.bouncycastle.jce.ECNamedCurveTable.getParameterSpec("secp256k1");
+        ECPrivateKeySpec privateKeySpec = new ECPrivateKeySpec(privateKeyValue, spec);
+        KeyFactory kf = KeyFactory.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME);
+        PrivateKey privateKey = kf.generatePrivate(privateKeySpec);
+
+        ECPoint Q = spec.getG().multiply(privateKeyValue).normalize();
+
+        // Remove the prefix byte (0x04 in uncompressed form)
+        byte[] publicKeyBytes = Q.getEncoded(false);
+        byte[] pubKeyWithoutPrefix = Arrays.copyOfRange(publicKeyBytes, 1, publicKeyBytes.length);
+
+        // Keccak-256 hash
+        byte[] hashedPubKey = Hash.keccak256(pubKeyWithoutPrefix);
+
+        // Take the last 20 bytes of the hashed public key
+        return Hex.toHexString(Arrays.copyOfRange(hashedPubKey, hashedPubKey.length - 20, hashedPubKey.length));
+    }
 
     /**
      * Constructs a PWRWallet using a private key in string format.
@@ -78,52 +103,31 @@ public class PWRWallet {
     }
 
     /**
-     * Retrieves the public key associated with the wallet's credentials.
-     *
-     * @return The public key of the wallet in {@code BigInteger} format.
-     */
-    public BigInteger getPublicKey() {
-        try {
-            ECNamedCurveParameterSpec spec = org.bouncycastle.jce.ECNamedCurveTable.getParameterSpec("secp256k1");
-            ECPrivateKeySpec privateKeySpec = new ECPrivateKeySpec(new BigInteger(1, privateKey.toByteArray()), spec);
-            KeyFactory kf = KeyFactory.getInstance("ECDSA", "BC");
-            PrivateKey privateKey = kf.generatePrivate(privateKeySpec);
-            ECPoint publicKey = spec.getG().multiply(((java.security.interfaces.ECPrivateKey) privateKey).getS());
-
-            // Skip the first byte of the public key (it's the uncompressed key prefix 0x04)
-            byte[] publicKeyBytes = publicKey.getEncoded(false);
-            byte[] publicKeyNoPrefix = Arrays.copyOfRange(publicKeyBytes, 1, publicKeyBytes.length);
-
-            // Take the Keccak-256 hash of the public key (no prefix)
-            byte[] hashedPublicKey = Hash.keccak256(publicKeyNoPrefix);
-
-            // Take the last 20 bytes of the hash to get the Ethereum address
-            return new BigInteger(1, publicKeyNoPrefix);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return new BigInteger(1, new byte[0]);
-    }
-
-    /**
      * Retrieves the address associated with the wallet's credentials.
      *
      * @return The address of the wallet in {@code String} format.
      */
     public String getAddress() {
         try {
-            //Extract the public key as byte array and removet he first byte
-            byte[] publicKeyBytes = getPublicKey().toByteArray();
-            byte[] publicKeyNoPrefix = Arrays.copyOfRange(publicKeyBytes, 1, publicKeyBytes.length);
-            BigInteger publicKeyHash = new BigInteger(Hash.keccak256(publicKeyNoPrefix));
+            ECNamedCurveParameterSpec spec = org.bouncycastle.jce.ECNamedCurveTable.getParameterSpec("secp256k1");
+            ECPrivateKeySpec privateKeySpec = new ECPrivateKeySpec(privateKey, spec);
+            KeyFactory kf = KeyFactory.getInstance("ECDSA", BouncyCastleProvider.PROVIDER_NAME);
 
-            // Take the last 20 bytes of the hash to get the Ethereum address
-            byte[] addressBytes = Arrays.copyOfRange(publicKeyHash.toByteArray(), publicKeyHash.toByteArray().length - 20, publicKeyHash.toByteArray().length);
-            return "0x" + Hex.toHexString(addressBytes);
+            ECPoint Q = spec.getG().multiply(privateKey).normalize();
+
+            // Remove the prefix byte (0x04 in uncompressed form)
+            byte[] publicKeyBytes = Q.getEncoded(false);
+            byte[] pubKeyWithoutPrefix = Arrays.copyOfRange(publicKeyBytes, 1, publicKeyBytes.length);
+
+            // Keccak-256 hash
+            byte[] hashedPubKey = Hash.keccak256(pubKeyWithoutPrefix);
+
+            // Take the last 20 bytes of the hashed public key
+            return "0x" + Hex.toHexString(Arrays.copyOfRange(hashedPubKey, hashedPubKey.length - 20, hashedPubKey.length));
         } catch (Exception e) {
             e.printStackTrace();
+            return "0x0000000000000000000000000000000000000000";
         }
-        return "0x0000000000000000000000000000000000000000";
     }
 
     /**
