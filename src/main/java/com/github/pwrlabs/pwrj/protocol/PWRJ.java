@@ -3,6 +3,7 @@ package com.github.pwrlabs.pwrj.protocol;
 import com.github.pwrlabs.pwrj.Block.Block;
 import com.github.pwrlabs.pwrj.Utils.Hash;
 import com.github.pwrlabs.pwrj.Utils.Response;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -12,8 +13,13 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.security.Security;
 
 public class PWRJ {
+
+    static {
+        Security.addProvider(new BouncyCastleProvider());
+    }
 
     private static HttpClient client = HttpClient.newHttpClient();
     private static String rpcNodeUrl;

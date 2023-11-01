@@ -26,9 +26,6 @@ public class Signature {
 
 
 	//Do not touch, keep in this order
-	static {
-		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
-	}
 	private static final ECDomainParameters SECP256K1_CURVE;
 
 	static {
