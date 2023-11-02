@@ -22,77 +22,37 @@ import org.bouncycastle.util.encoders.Hex;
 
 import java.math.BigInteger;
 import java.security.Security;
+import org.bouncycastle.util.encoders.Hex;
+import org.web3j.crypto.Credentials;
+import org.web3j.crypto.ECKeyPair;
+import org.web3j.crypto.Keys;
+import org.web3j.crypto.Sign;
+import org.web3j.crypto.Sign.SignatureData;
+
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.SignatureException;
+import java.util.Arrays;
+
 
 public class Signature {
 
-	//Do not touch, keep in this order
-	static {
-		Security.addProvider(new BouncyCastleProvider());
+	public static byte[] signMessage(byte[] message, ECKeyPair eckeypair) {
+		Sign.SignatureData sig =Sign.signMessage(message, eckeypair);
+		byte[] output = new byte[65];
+
+		System.arraycopy(sig.getR(), 0, output, 0, 32);
+		System.arraycopy(sig.getS(), 0, output, 32, 32);
+		System.arraycopy(sig.getV(), 0, output, 64, 1);
+
+		return output;
 	}
 
-	private static final ECDomainParameters SECP256K1_CURVE;
-
-	static {
-
-		ECCurve curve = new ECCurve.Fp(
-				new BigInteger("fffffffffffffffffffffffffffffffffffffffffffffffffffffffefffffc2f", 16), // q
-				new BigInteger("0000000000000000000000000000000000000000000000000000000000000000", 16), // a
-				new BigInteger("0000000000000000000000000000000000000000000000000000000000000007", 16)); // b
-		ECPoint G = curve.createPoint(
-				new BigInteger("55066263022277343669578718895168534326250603453777594175500187360389116729240"),
-				new BigInteger("32670510020758816978083085130507043184471273380659243275938904335757337482424"));
-		BigInteger n = new BigInteger("fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141", 16);
-		BigInteger h = BigInteger.ONE;
-		SECP256K1_CURVE = new ECDomainParameters(curve, G, n, h);
-
-	}
-
-	/**
-	 * Signs a message using the ECDSA (Elliptic Curve Digital Signature Algorithm) with the given private key.
-	 *
-	 * @param message      The message to be signed as a byte array.
-	 * @param privateKey   The private key used for signing as a BigInteger.
-	 * @return             A byte array representing the signature of the message.
-	 */
 	public static byte[] signMessage(byte[] message, BigInteger privateKey) {
-		ECDSASigner signer = new ECDSASigner();
-		ECPrivateKeyParameters privateKeyParameters = new ECPrivateKeyParameters(privateKey, SECP256K1_CURVE);
-		signer.init(true, privateKeyParameters);
-
-		byte[] messageHash = Hash.keccak256(message);
-
-		// Sign the hash
-		BigInteger[] signatureComponents = signer.generateSignature(messageHash);
-		int recId = 0;
-		if (signatureComponents[0].toByteArray()[0] > 0x80 || signatureComponents[1].toByteArray()[0] > 0x80) {
-			recId = 1;
-		}
-
-		byte v = (byte) (recId + 27);
-		byte[] r = BigIntegers.asUnsignedByteArray(32, signatureComponents[0]);
-		byte[] s = BigIntegers.asUnsignedByteArray(32, signatureComponents[1]);
-
-		ByteBuffer signature = ByteBuffer.allocate(65);
-		signature.put(r);
-		signature.put(s);
-		signature.put(v);
-
-		return signature.array();
-	}
-
-	//test
-	public static void main(String[] args) {
-		System.out.println("0x61bd8fc1e30526aaf1c4706ada595d6d236d9883".equalsIgnoreCase("0x61bd8fc1e30526aaf1c4706ada595d6d236d9883"));
-		//Security.addProvider(new BouncyCastleProvider());
-
-		PWRWallet wallet = new PWRWallet("03a5240936d67dc18dca348e793010a14c5eba86a73d0c9e45764681295a73df");
-
-		byte[] message = "Hello World".getBytes(StandardCharsets.UTF_8);
-
-		byte[] signature = signMessage(message, wallet.getPrivateKey());
-
-		System.out.println("address: " + wallet.getAddress());
-		System.out.println(Hex.toHexString(signature));
+		return signMessage(message, ECKeyPair.create(privateKey));
 	}
 
 }

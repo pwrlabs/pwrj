@@ -6,7 +6,7 @@
 
     <groupId>com.github.pwrlabs</groupId>
     <artifactId>pwrj</artifactId>
-    <version>1.2.7</version>
+    <version>1.2.9</version>
 
     <name>PWRJ</name>
     <description>PWRJ is a lightweight, simple, easy to use Java library for integrating with the PWR Chain and building wallets and virtual machines on it.</description>
@@ -27,9 +27,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.bouncycastle</groupId>
-            <artifactId>bcprov-jdk15on</artifactId>
-            <version>1.69</version>
+            <groupId>org.web3j</groupId>
+            <artifactId>core</artifactId>
+            <version>5.0.0</version>
         </dependency>
 
         <dependency>
