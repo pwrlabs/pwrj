@@ -239,7 +239,7 @@ public class PWRWallet {
         }
 
         ByteBuffer buffer = ByteBuffer.allocate(13 + data.length);
-        buffer.put((byte) 1);
+        buffer.put((byte) 5);
         buffer.putInt(nonce);
         buffer.putLong(vmId);
         buffer.put(data);

@@ -33,12 +33,7 @@
             <version>1.68</version>
         </dependency>
 
-<!--        &lt;!&ndash; Bouncy Castle PKIX/CMS/EAC/PKCS/OCSP/TSP/OPENSSL &ndash;&gt;-->
-<!--        <dependency>-->
-<!--            <groupId>org.bouncycastle</groupId>-->
-<!--            <artifactId>bcpkix-jdk15on</artifactId>-->
-<!--            <version>1.68</version>-->
-<!--        </dependency>-->
+<!-- -->
 
         <dependency>
             <groupId>org.json</groupId>
