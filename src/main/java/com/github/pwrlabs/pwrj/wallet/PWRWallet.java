@@ -5,6 +5,7 @@ import com.github.pwrlabs.pwrj.Utils.Response;
 import jdk.javadoc.doclet.Reporter;
 import org.bouncycastle.jcajce.provider.digest.Keccak;
 import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.math.ec.FixedPointCombMultiplier;
 import org.bouncycastle.util.encoders.Hex;
 import com.github.pwrlabs.pwrj.protocol.PWRJ;
 import com.github.pwrlabs.pwrj.protocol.Signature;
@@ -19,7 +20,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.jce.spec.ECPrivateKeySpec;
 import org.bouncycastle.math.ec.ECPoint;
-import org.web3j.crypto.Credentials;
 
 import java.math.BigInteger;
 import java.security.*;
@@ -89,7 +89,37 @@ public class PWRWallet {
      * @return The address of the wallet in {@code String} format.
      */
     public String getAddress() {
-        return Credentials.create(privateKey.toString(16)).getAddress();
+        return publicKeyToAddress(publicKeyFromPrivate(privateKey));
+    }
+
+    static {
+        // Add BouncyCastle as a Security Provider if it's not already present
+        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+            Security.addProvider(new BouncyCastleProvider());
+        }
+    }
+
+    public static String publicKeyToAddress(BigInteger publicKey) {
+        // Convert public key to a byte array. This may vary depending on how the BigInteger represents the key.
+        byte[] publicKeyBytes = publicKey.toByteArray();
+
+        // If the first byte is 0x00 and the array is 65 bytes long, it is probably due to sign bit extension, and we can ignore it.
+        if (publicKeyBytes.length == 65 && publicKeyBytes[0] == 0) {
+            byte[] tmp = new byte[64];
+            System.arraycopy(publicKeyBytes, 1, tmp, 0, 64);
+            publicKeyBytes = tmp;
+        }
+
+        // Perform Keccak-256 hashing on the public key
+        Keccak.Digest256 keccak256 = new Keccak.Digest256();
+        byte[] addressBytes = keccak256.digest(publicKeyBytes);
+
+        // Take the last 20 bytes of the hashed public key
+        byte[] addr = new byte[20];
+        System.arraycopy(addressBytes, addressBytes.length - 20, addr, 0, 20);
+
+        // Convert to hex string and prepend "0x"
+        return "0x" + Hex.toHexString(addr);
     }
 
     /**
@@ -236,5 +266,19 @@ public class PWRWallet {
      */
     public Response sendVmDataTxn(long vmId, byte[] data) throws IOException, InterruptedException {
         return sendVmDataTxn(vmId, data, getNonce());
+    }
+
+    public static BigInteger publicKeyFromPrivate(BigInteger privKey) {
+        ECPoint point = publicPointFromPrivate(privKey);
+        byte[] encoded = point.getEncoded(false);
+        return new BigInteger(1, Arrays.copyOfRange(encoded, 1, encoded.length));
+    }
+
+    public static ECPoint publicPointFromPrivate(BigInteger privKey) {
+        if (privKey.bitLength() > Signature.CURVE.getN().bitLength()) {
+            privKey = privKey.mod(Signature.CURVE.getN());
+        }
+
+        return (new FixedPointCombMultiplier()).multiply(Signature.CURVE.getG(), privKey);
     }
 }
