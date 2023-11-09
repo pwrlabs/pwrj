@@ -22,6 +22,7 @@ import org.bouncycastle.jce.spec.ECPrivateKeySpec;
 import org.bouncycastle.math.ec.ECPoint;
 
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
@@ -29,7 +30,10 @@ import java.util.Arrays;
 public class PWRWallet {
 
     static {
-        Security.addProvider(new BouncyCastleProvider());
+        // Add BouncyCastle as a Security Provider if it's not already present
+        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+            Security.addProvider(new BouncyCastleProvider());
+        }
     }
 
     private static HttpClient client = HttpClient.newHttpClient();
@@ -90,13 +94,6 @@ public class PWRWallet {
      */
     public String getAddress() {
         return publicKeyToAddress(publicKeyFromPrivate(privateKey));
-    }
-
-    static {
-        // Add BouncyCastle as a Security Provider if it's not already present
-        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-            Security.addProvider(new BouncyCastleProvider());
-        }
     }
 
     public static String publicKeyToAddress(BigInteger publicKey) {
@@ -215,6 +212,176 @@ public class PWRWallet {
      */
     public Response transferPWR(String to, long amount) throws IOException, InterruptedException {
         return transferPWR(to, amount, getNonce());
+    }
+
+    /**
+     * Joins the PWR network as a standby validator.
+     *
+     * @param ip The IP address of the validator.
+     * @param nonce The transaction count of the wallet address.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     * @throws RuntimeException For various transaction-related validation issues.
+     */
+    public Response join(String ip, int nonce) {
+        ByteBuffer buffer = ByteBuffer.allocate(1 + 4 + ip.getBytes(StandardCharsets.UTF_8).length);
+
+        buffer.put((byte) 1);
+        buffer.putInt(nonce);
+        buffer.put(ip.getBytes(StandardCharsets.UTF_8));
+
+        byte[] txn = buffer.array();
+        byte[] signature = Signature.signMessage(txn, privateKey);
+
+        ByteBuffer finalTxn = ByteBuffer.allocate(txn.length + 65);
+        finalTxn.put(txn);
+        finalTxn.put(signature);
+
+        return PWRJ.broadcastTxn(finalTxn.array());
+    }
+    /**
+     * Joins the PWR network as a standby validator using the current nonce.
+     *
+     * @param ip The IP address of the validator.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     */
+    public Response join(String ip) throws IOException, InterruptedException {
+        return join(ip, getNonce());
+    }
+
+    /**
+     * Claims an active node spot on the PWR network.
+     *
+     * @param nonce The transaction count of the wallet address.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     * @throws RuntimeException For various transaction-related validation issues.
+     */
+    public Response claimActiveNodeSpot(int nonce) {
+        ByteBuffer buffer = ByteBuffer.allocate(5);
+
+        buffer.put((byte) 2);
+        buffer.putInt(nonce);
+
+        byte[] txn = buffer.array();
+        byte[] signature = Signature.signMessage(txn, privateKey);
+
+        ByteBuffer finalTxn = ByteBuffer.allocate(txn.length + 65);
+        finalTxn.put(txn);
+
+        return PWRJ.broadcastTxn(finalTxn.array());
+    }
+    /**
+     * Claims an active node spot on the PWR network using the current nonce.
+     *
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     */
+    public Response claimActiveNodeSpot() throws IOException, InterruptedException {
+        return claimActiveNodeSpot(getNonce());
+    }
+
+    /**
+     * Delegates PWR tokens to a specified validator.
+     *
+     * @param to The validator address.
+     * @param amount The amount of PWR tokens to be delegated.
+     * @param nonce The transaction count of the wallet address.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     * @throws RuntimeException For various transaction-related validation issues.
+     */
+    public Response delegate(String to, long amount, int nonce) {
+        ByteBuffer buffer = ByteBuffer.allocate(33);
+
+        buffer.put((byte) 3);
+        buffer.putInt(nonce);
+        buffer.putLong(amount);
+        buffer.put(Hex.decode(to.substring(2)));
+
+        byte[] txn = buffer.array();
+        byte[] signature = Signature.signMessage(txn, privateKey);
+
+        ByteBuffer finalTxn = ByteBuffer.allocate(txn.length + 65);
+        finalTxn.put(txn);
+        finalTxn.put(signature);
+
+        return PWRJ.broadcastTxn(finalTxn.array());
+    }
+    /**
+     * Delegates PWR tokens to a specified validator using the current nonce.
+     *
+     * @param to The validator address.
+     * @param amount The amount of PWR tokens to be delegated.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     */
+    public Response delegate(String to, long amount) throws IOException, InterruptedException {
+        return delegate(to, amount, getNonce());
+    }
+
+    /**
+     * Withdraws PWR tokens from a specified validator.
+     *
+     * @param from The validator address.
+     * @param sharesAmount The amount of shares to be withdrawn.
+     * @param nonce The transaction count of the wallet address.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     * @throws RuntimeException For various transaction-related validation issues.
+     */
+    public Response withdraw(String from, long sharesAmount, int nonce) {
+        ByteBuffer buffer = ByteBuffer.allocate(33);
+
+        buffer.put((byte) 4);
+        buffer.putInt(nonce);
+        buffer.putLong(sharesAmount);
+        buffer.put(Hex.decode(from.substring(2)));
+
+        byte[] txn = buffer.array();
+        byte[] signature = Signature.signMessage(txn, privateKey);
+
+        ByteBuffer finalTxn = ByteBuffer.allocate(txn.length + 65);
+        finalTxn.put(txn);
+        finalTxn.put(signature);
+
+        return PWRJ.broadcastTxn(finalTxn.array());
+    }
+    /**
+     * Withdraws PWR tokens from a specified validator using the current nonce.
+     *
+     * @param from The validator address.
+     * @param sharesAmount The amount of shares to be withdrawn.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     */
+    public Response withdraw(String from, long sharesAmount) throws IOException, InterruptedException {
+        return withdraw(from, sharesAmount, getNonce());
     }
 
     /**

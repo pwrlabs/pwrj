@@ -80,7 +80,7 @@ public class PWRJ {
      * @throws InterruptedException If the send operation is interrupted.
      * @throws RuntimeException If the server responds with a non-200 HTTP status code.
      */
-    public static Response broadcastTxn(byte[] txn) throws IOException, InterruptedException {
+    public static Response broadcastTxn(byte[] txn) {
         JSONObject object = new JSONObject();
         object.put("txn", Hex.toHexString(txn));
 
@@ -90,16 +90,20 @@ public class PWRJ {
                 .POST(HttpRequest.BodyPublishers.ofString(object.toString()))
                 .build();
 
-        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        if (response.statusCode() == 200) {
-            JSONObject responseJson = new JSONObject(response.body());
-            if (responseJson.getString("status").equalsIgnoreCase("success")) {
-                return new Response(true, "0x" + Hex.toHexString(Hash.sha3(txn)), null);
+        try {
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                JSONObject responseJson = new JSONObject(response.body());
+                if (responseJson.getString("status").equalsIgnoreCase("success")) {
+                    return new Response(true, "0x" + Hex.toHexString(Hash.sha3(txn)), null);
+                } else {
+                    return new Response(false, null, responseJson.getString("message"));
+                }
             } else {
-                return new Response(false, null, responseJson.getString("message"));
+                throw new RuntimeException("Failed with HTTP error code : " + response.statusCode());
             }
-        } else {
-            throw new RuntimeException("Failed with HTTP error code : " + response.statusCode());
+        } catch (Exception e) {
+            return new Response(false, null, e.getMessage());
         }
     }
 
