@@ -56,11 +56,10 @@ public class PWRJ {
 
         if (response.statusCode() == 200) {
             JSONObject object = new JSONObject(response.body());
-            if(!object.getString("status").equalsIgnoreCase("success")) {
-                throw new RuntimeException("Failed with error message: " + object.getString("message"));
-            } else {
-                feePerByte = object.getJSONObject("data").getLong("feePerByte");
-            }
+            feePerByte = object.getLong("feePerByte");
+        } else if (response.statusCode() == 400) {
+            JSONObject object = new JSONObject(response.body());
+            throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
         } else {
             throw new RuntimeException("Failed with HTTP error code : " + response.statusCode());
         }
@@ -94,11 +93,10 @@ public class PWRJ {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() == 200) {
                 JSONObject responseJson = new JSONObject(response.body());
-                if (responseJson.getString("status").equalsIgnoreCase("success")) {
-                    return new Response(true, "0x" + Hex.toHexString(Hash.sha3(txn)), null);
-                } else {
-                    return new Response(false, null, responseJson.getString("message"));
-                }
+                return new Response(true, "0x" + Hex.toHexString(Hash.sha3(txn)), null);
+            } else if (response.statusCode() == 400) {
+                JSONObject responseJson = new JSONObject(response.body());
+                return new Response(false, null, responseJson.getString("message"));
             } else {
                 throw new RuntimeException("Failed with HTTP error code : " + response.statusCode());
             }
@@ -146,13 +144,13 @@ public class PWRJ {
 
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
+
         if (response.statusCode() == 200) {
             JSONObject object = new JSONObject(response.body());
-            if(!object.getString("status").equalsIgnoreCase("success")) {
-                throw new RuntimeException("Failed with error message: " + object.getString("message"));
-            } else {
-                return object.getJSONObject("data").getLong("blocksCount");
-            }
+            return object.getLong("blocksCount");
+        } else if (response.statusCode() == 400) {
+            JSONObject object = new JSONObject(response.body());
+            throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
         } else {
             throw new RuntimeException("Failed with HTTP error code : " + response.statusCode());
         }
@@ -184,9 +182,9 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If there are issues retrieving the latest block number or fetching the block details.
      */
-    public static int getValidatorsCount() throws IOException, InterruptedException {
+    public static int getTotalValidatorsCount() throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(rpcNodeUrl + "/validatorsCount/"))
+                .uri(URI.create(rpcNodeUrl + "/totalValidatorsCount/"))
                 .GET()
                 .header("Accept", "application/json")
                 .build();
@@ -195,11 +193,30 @@ public class PWRJ {
 
         if (response.statusCode() == 200) {
             JSONObject object = new JSONObject(response.body());
-            if(!object.getString("status").equalsIgnoreCase("success")) {
-                throw new RuntimeException("Failed with error message: " + object.getString("message"));
-            } else {
-                return object.getJSONObject("data").getInt("validatorsCount");
-            }
+            return object.getInt("validatorsCount");
+        } else if (response.statusCode() == 400) {
+            JSONObject object = new JSONObject(response.body());
+            throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
+        } else {
+            throw new RuntimeException("Failed with HTTP error code : " + response.statusCode());
+        }
+    }
+
+    public static int getActiveValidatorsCount() throws IOException, InterruptedException {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(rpcNodeUrl + "/activeValidatorsCount/"))
+                .GET()
+                .header("Accept", "application/json")
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.statusCode() == 200) {
+            JSONObject object = new JSONObject(response.body());
+            return object.getInt("validatorsCount");
+        } else if (response.statusCode() == 400) {
+            JSONObject object = new JSONObject(response.body());
+            throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
         } else {
             throw new RuntimeException("Failed with HTTP error code : " + response.statusCode());
         }
@@ -228,11 +245,10 @@ public class PWRJ {
 
         if (response.statusCode() == 200) {
             JSONObject object = new JSONObject(response.body());
-            if(!object.getString("status").equalsIgnoreCase("success")) {
-                throw new RuntimeException("Failed with error message: " + object.getString("message"));
-            } else {
-                return object.getJSONObject("data").getLong("balance");
-            }
+            return object.getLong("balance");
+        } else if (response.statusCode() == 400) {
+            JSONObject object = new JSONObject(response.body());
+            throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
         } else {
             throw new RuntimeException("Failed with HTTP error code : " + response.statusCode());
         }
@@ -262,11 +278,10 @@ public class PWRJ {
 
         if (response.statusCode() == 200) {
             JSONObject object = new JSONObject(response.body());
-            if(!object.getString("status").equalsIgnoreCase("success")) {
-                throw new RuntimeException("Failed with error message: " + object.getString("message"));
-            } else {
-                return object.getJSONObject("data").getInt("nonce");
-            }
+            return object.getInt("nonce");
+        } else if (response.statusCode() == 400) {
+            JSONObject object = new JSONObject(response.body());
+            throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
         } else {
             throw new RuntimeException("Failed with HTTP error code : " + response.statusCode());
         }
