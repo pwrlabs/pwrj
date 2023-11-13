@@ -435,6 +435,44 @@ public class PWRWallet {
         return sendVmDataTxn(vmId, data, getNonce());
     }
 
+    /**
+     * Sends a transaction to claim a Virtual Machine ID on the PWR network, ensuring its owner 15% revenue of all transaction fees paid when transacting with this VM.
+     *
+     * @param vmId The ID of the VM.
+     * @param nonce The transaction count of the wallet address.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     */
+    public Response claimVmId(long vmId, int nonce) {
+        ByteBuffer buffer = ByteBuffer.allocate(13);
+        buffer.put((byte) 6);
+        buffer.putInt(nonce);
+        buffer.putLong(vmId);
+        byte[] txn = buffer.array();
+        byte[] signature = Signature.signMessage(txn, privateKey);
+
+        ByteBuffer finalTxn = ByteBuffer.allocate(txn.length + 65);
+        finalTxn.put(txn);
+        finalTxn.put(signature);
+
+        return PWRJ.broadcastTxn(finalTxn.array());
+    }
+
+    /**
+     * Sends a transaction with the current nonce to claim a Virtual Machine ID on the PWR network, ensuring its owner 15% revenue of all transaction fees paid when transacting with this VM.
+     *
+     * @param vmId The ID of the VM.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     */
+    public Response claimVmId(long vmId) throws IOException, InterruptedException {
+        return claimVmId(vmId, getNonce());
+    }
+
     public static BigInteger publicKeyFromPrivate(BigInteger privKey) {
         ECPoint point = publicPointFromPrivate(privKey);
         byte[] encoded = point.getEncoded(false);
