@@ -269,6 +269,7 @@ public class PWRJ {
      */
     public static int getNonceOfAddress(String address) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
+                //http://localhost:8085/nonceOfUser/?userAddress=0x2605c1ad496f428ab2b700edd257f0a378f83750
                 .uri(URI.create(rpcNodeUrl + "/nonceOfUser/?userAddress=" + address))
                 .GET()
                 .header("Accept", "application/json")
@@ -310,12 +311,8 @@ public class PWRJ {
 
         if (response.statusCode() == 200) {
             JSONObject object = new JSONObject(response.body());
-            if(!object.getString("status").equalsIgnoreCase("success")) {
-                throw new RuntimeException("Failed with error message: " + object.getString("message"));
-            } else {
-                JSONObject blockJson = object.getJSONObject("data").getJSONObject("block");
-                return new Block(blockJson);
-            }
+            JSONObject blockJson = object.getJSONObject("block");
+            return new Block(blockJson);
         } else {
             throw new RuntimeException("Failed with HTTP error code : " + response.statusCode());
         }
