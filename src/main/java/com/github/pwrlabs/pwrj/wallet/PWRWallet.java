@@ -278,6 +278,7 @@ public class PWRWallet {
 
         ByteBuffer finalTxn = ByteBuffer.allocate(txn.length + 65);
         finalTxn.put(txn);
+        finalTxn.put(signature);
 
         return PWRJ.broadcastTxn(finalTxn.array());
     }
