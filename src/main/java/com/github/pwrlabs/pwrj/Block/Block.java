@@ -34,7 +34,7 @@ public class Block {
             JSONObject txnObject = txns.getJSONObject(i);
             Transaction txn = null;
             
-            String txnType = txnObject.getString("type");
+            String txnType = txnObject.has("type") ? txnObject.getString("type") : "Unknown";
             if(txnType.equalsIgnoreCase("Transfer")) {
                 txn = new TransferTxn(txnObject.getInt("size"), txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("from"), txnObject.getString("to"), txnObject.getString("nonceOrValidationHash"), txnObject.getString("hash"), txnObject.getLong("value"));
             } else if(txnType.equalsIgnoreCase("VM Data")) {
