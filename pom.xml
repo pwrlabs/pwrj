@@ -6,7 +6,7 @@
 
     <groupId>com.github.pwrlabs</groupId>
     <artifactId>pwrj</artifactId>
-    <version>1.4.3</version>
+    <version>1.4.5</version>
 
     <name>PWRJ</name>
     <description>PWRJ is a lightweight, simple, easy to use Java library for integrating with the PWR Chain and building wallets and virtual machines on it.</description>
@@ -33,7 +33,12 @@
             <version>1.68</version>
         </dependency>
 
-<!-- -->
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.14</version> <!-- Use the latest version available -->
+        </dependency>
+
 
         <dependency>
             <groupId>org.json</groupId>
