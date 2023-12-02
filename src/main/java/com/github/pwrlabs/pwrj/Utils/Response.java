@@ -2,12 +2,12 @@ package com.github.pwrlabs.pwrj.Utils;
 
 public class Response {
     private final boolean success;
-    private final String message;
+    private final String txnHash;
     private final String error;
 
-    public Response(boolean success, String message, String error) {
+    public Response(boolean success, String txnHash, String error) {
         this.success = success;
-        this.message = message;
+        this.txnHash = txnHash;
         this.error = error;
     }
 
@@ -21,8 +21,8 @@ public class Response {
     /**
      * @return message returned if the operation was successful
      */
-    public String getMessage() {
-        return message;
+    public String getTxnHash() {
+        return txnHash;
     }
 
     /**

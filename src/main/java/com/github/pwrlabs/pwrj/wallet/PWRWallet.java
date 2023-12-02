@@ -487,4 +487,5 @@ public class PWRWallet {
 
         return (new FixedPointCombMultiplier()).multiply(Signature.CURVE.getG(), privKey);
     }
+
 }
