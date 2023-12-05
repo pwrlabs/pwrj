@@ -41,6 +41,8 @@ public class Block {
                 txn = new DelegateTxn(txnObject.getInt("size"), txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("from"), txnObject.getString("to"), txnObject.getString("nonceOrValidationHash"), txnObject.getString("hash"), txnObject.getLong("value"));
             } else if(txnType.equalsIgnoreCase("Withdraw")) {
                 txn = new WithdrawTxn(txnObject.getInt("size"), txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("from"), txnObject.getString("to"), txnObject.getString("nonceOrValidationHash"), txnObject.getString("hash"), txnObject.getLong("shares"));
+            } else if(txnType.equalsIgnoreCase("Validator Join")) {
+                txn = new JoinTxn(txnObject.getInt("size"), txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("from"), txnObject.getString("to"), txnObject.getString("nonceOrValidationHash"), txnObject.getString("hash"));
             } else {
                 txn = new Transaction(txnObject.getInt("size"), txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("from"), txnObject.getString("to"), txnObject.getString("nonceOrValidationHash"), txnObject.getString("hash"));
             }
