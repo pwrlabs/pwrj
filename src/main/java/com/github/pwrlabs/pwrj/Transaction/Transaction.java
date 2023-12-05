@@ -87,6 +87,10 @@ public class Transaction {
         return hash;
     }
 
+    //Abstract Methods
+    public long getValue() {
+        return 0;
+    }
 
 
 }

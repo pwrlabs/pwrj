@@ -15,6 +15,7 @@ public class TransferTxn extends Transaction {
     /**
      * @return the value of the transaction
      */
+    @Override
     public long getValue() {
         return value;
     }
