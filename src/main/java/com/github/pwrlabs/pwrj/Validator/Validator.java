@@ -22,14 +22,16 @@ public class Validator {
     private final long votingPower;
     private final long shares;
     private final int delegatorsCount;
+    private final String status;
 
-    public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
+    public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount, String status) {
         this.address = address;
         this.ip = ip;
         this.badActor = badActor;
         this.votingPower = votingPower;
         this.shares = shares;
         this.delegatorsCount = delegatorsCount;
+        this.status = status;
     }
 
     //Getters
@@ -74,6 +76,13 @@ public class Validator {
      */
     public int getDelegatorsCount() {
         return delegatorsCount;
+    }
+
+    /**
+     * @return the status of the validator
+     */
+    public String getStatus() {
+        return status;
     }
 
     public List<Delegator> getDelegators() {

@@ -465,7 +465,7 @@ public class PWRJ {
                 for(int i = 0; i < validators.length(); i++) {
                     JSONObject validatorObject = validators.getJSONObject(i);
                     //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
-                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), validatorObject.getBoolean("badActor"), validatorObject.getLong("votingPower"), validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"));
+                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), validatorObject.getBoolean("badActor"), validatorObject.getLong("votingPower"), validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"), validatorObject.getString("status"));
                     validatorsList.add(validator);
                 }
                 return validatorsList;
@@ -505,7 +505,7 @@ public class PWRJ {
                 for(int i = 0; i < validators.length(); i++) {
                     JSONObject validatorObject = validators.getJSONObject(i);
                     //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
-                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), validatorObject.getBoolean("badActor"), validatorObject.getLong("votingPower"), validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"));
+                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), validatorObject.getBoolean("badActor"), validatorObject.getLong("votingPower"), validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"), "standby");
                     validatorsList.add(validator);
                 }
                 return validatorsList;
@@ -545,7 +545,7 @@ public class PWRJ {
                 for(int i = 0; i < validators.length(); i++) {
                     JSONObject validatorObject = validators.getJSONObject(i);
                     //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
-                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), validatorObject.getBoolean("badActor"), validatorObject.getLong("votingPower"), validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"));
+                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), validatorObject.getBoolean("badActor"), validatorObject.getLong("votingPower"), validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"), "active");
                     validatorsList.add(validator);
                 }
                 return validatorsList;
@@ -561,6 +561,27 @@ public class PWRJ {
         }
     }
 
+    public static Validator getValidator(String validatorAddress) {
+        try {
+            HttpGet request = new HttpGet(rpcNodeUrl + "/validator/?validatorAddress=" + validatorAddress);
+            HttpResponse response = client.execute(request);
+
+            if (response.getStatusLine().getStatusCode() == 200) {
+                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
+                JSONObject validatorObject = object.getJSONObject("validator");
+                Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), validatorObject.getBoolean("badActor"), validatorObject.getLong("votingPower"), validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"), validatorObject.getString("status"));
+
+                return validator;
+            } else if (response.getStatusLine().getStatusCode() == 400) {
+                return null;
+            } else {
+                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
     public static long getDelegatedPWR(String delegatorAddress, String validatorAddress) {
         try {
             HttpGet request = new HttpGet(rpcNodeUrl + "validator/delegator/delegatedPWROfAddress/?userAddress=" + delegatorAddress + "&validatorAddress=" + validatorAddress);
@@ -620,6 +641,8 @@ public class PWRJ {
             return new JSONObject();
         }
     }
+
+
     /**
      * Queries the RPC node to get the owner of a specific VM.
      *
