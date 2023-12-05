@@ -584,7 +584,42 @@ public class PWRJ {
         }
     }
 
+    public static JSONObject getShareValue(List<String> validators, long blockNumber) {
+        try {
+            HttpPost postRequest = new HttpPost(rpcNodeUrl + "/getShareValue/");
 
+            JSONArray validatorsArray = new JSONArray();
+            for (String validator: validators) {
+                validatorsArray.put(validator);
+            }
+
+            JSONObject json = new JSONObject();
+            json.put("validators", validatorsArray);
+            json.put("blockNumber", blockNumber);
+
+            // Set up the header types needed to properly transfer JSON
+            postRequest.setHeader("Accept", "application/json");
+            postRequest.setHeader("Content-type", "application/json");
+            postRequest.setEntity(new StringEntity(json.toString(), StandardCharsets.UTF_8));
+            // Execute request
+            HttpResponse response = client.execute(postRequest);
+
+            if (response.getStatusLine().getStatusCode() == 200) {
+                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
+                JSONObject shareValues = object.getJSONObject("shareValues");
+                return shareValues;
+            } else if (response.getStatusLine().getStatusCode() == 400) {
+                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
+                System.out.printf(object.toString());
+                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
+            } else {
+                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new JSONObject();
+        }
+    }
     /**
      * Queries the RPC node to get the owner of a specific VM.
      *
