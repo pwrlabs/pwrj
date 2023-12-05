@@ -1,9 +1,6 @@
 package com.github.pwrlabs.pwrj.Block;
 
-import com.github.pwrlabs.pwrj.Transaction.DelegateTxn;
-import com.github.pwrlabs.pwrj.Transaction.Transaction;
-import com.github.pwrlabs.pwrj.Transaction.TransferTxn;
-import com.github.pwrlabs.pwrj.Transaction.VmDataTxn;
+import com.github.pwrlabs.pwrj.Transaction.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -42,6 +39,8 @@ public class Block {
                 txn = new VmDataTxn(txnObject.getInt("size"), txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("from"), txnObject.getString("to"), txnObject.getString("nonceOrValidationHash"), txnObject.getString("hash"), txnObject.getLong("vmId"), txnObject.getString("data"));
             } else if(txnType.equalsIgnoreCase("Delegate")) {
                 txn = new DelegateTxn(txnObject.getInt("size"), txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("from"), txnObject.getString("to"), txnObject.getString("nonceOrValidationHash"), txnObject.getString("hash"), txnObject.getLong("value"));
+            } else if(txnType.equalsIgnoreCase("Withdraw")) {
+                txn = new WithdrawTxn(txnObject.getInt("size"), txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("from"), txnObject.getString("to"), txnObject.getString("nonceOrValidationHash"), txnObject.getString("hash"), txnObject.getLong("shares"));
             } else {
                 txn = new Transaction(txnObject.getInt("size"), txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("from"), txnObject.getString("to"), txnObject.getString("nonceOrValidationHash"), txnObject.getString("hash"));
             }
