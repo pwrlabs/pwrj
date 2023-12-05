@@ -561,6 +561,28 @@ public class PWRJ {
         }
     }
 
+    public static long getDelegatedPWR(String delegatorAddress, String validatorAddress) {
+        try {
+            HttpGet request = new HttpGet(rpcNodeUrl + "validator/delegator/delegatedPWROfAddress/?userAddress=" + delegatorAddress + "&validatorAddress=" + validatorAddress);
+            HttpResponse response = client.execute(request);
+
+            if (response.getStatusLine().getStatusCode() == 200) {
+                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
+
+                return object.getLong("delegatedPWR");
+            } else if (response.getStatusLine().getStatusCode() == 400) {
+                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
+
+                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
+            } else {
+                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
 
 
     /**
