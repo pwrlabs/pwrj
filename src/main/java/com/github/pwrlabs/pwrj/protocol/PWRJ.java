@@ -257,6 +257,7 @@ public class PWRJ {
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
     public static Block getBlockByNumber(long blockNumber) throws IOException {
+        try {
             HttpGet request = new HttpGet(rpcNodeUrl + "/block/?blockNumber=" + blockNumber);
             HttpResponse response = client.execute(request);
 
@@ -270,6 +271,9 @@ public class PWRJ {
             } else {
                 throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
             }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
 
