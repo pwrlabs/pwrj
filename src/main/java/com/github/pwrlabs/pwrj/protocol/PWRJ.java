@@ -256,7 +256,7 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public static Block getBlockByNumber(long blockNumber) throws IOException, InterruptedException {
+    public static Block getBlockByNumber(long blockNumber) throws IOException {
         try {
             HttpGet request = new HttpGet(rpcNodeUrl + "/block/?blockNumber=" + blockNumber);
             HttpResponse response = client.execute(request);
@@ -272,8 +272,7 @@ public class PWRJ {
                 throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            throw e;
         }
 //
 //        HttpRequest request = HttpRequest.newBuilder()
