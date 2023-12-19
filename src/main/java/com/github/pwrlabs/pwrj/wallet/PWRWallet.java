@@ -474,6 +474,59 @@ public class PWRWallet {
         return claimVmId(vmId, getNonce());
     }
 
+    /**
+     * Sends a conduit wrapped transaction of a specified VM on the PWR network. Must be sent from a conduit node of that VM.
+     *
+     * @param vmId The ID of the VM.
+     * @param txn The transaction to be sent.
+     * @param txnHash The hash of the transaction to be sent.
+     * @param nonce The transaction count of the wallet address.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=errorMessage, error=null).
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     * @throws RuntimeException For various transaction-related validation issues.
+     */
+    public Response sendConduitTransaction(long vmId, byte[] txn, byte[] txnHash, int nonce) throws IOException, InterruptedException {
+        if (nonce < 0) {
+            throw new RuntimeException("Nonce cannot be negative");
+        }
+        if (nonce < getNonce()) {
+            throw new RuntimeException("Nonce is too low");
+        }
+
+        ByteBuffer buffer = ByteBuffer.allocate(13 + txn.length + txnHash.length);
+        buffer.put((byte) 7);
+        buffer.putInt(nonce);
+        buffer.putLong(vmId);
+        buffer.put(txn);
+        byte[] txnBytes = buffer.array();
+        byte[] signature = Signature.signMessage(txnBytes, privateKey);
+
+        ByteBuffer finalTxn = ByteBuffer.allocate(txnBytes.length + 65);
+        finalTxn.put(txnBytes);
+        finalTxn.put(signature);
+
+        return PWRJ.broadcastTxn(finalTxn.array());
+    }
+
+    /**
+     * Sends a conduit wrapped transaction of a specified VM on the PWR network using the current nonce. Must be sent from a conduit node of that VM.
+     *
+     * @param vmId The ID of the VM.
+     * @param txn The transaction to be sent.
+     * @param txnHash The hash of the transaction to be sent.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=errorMessage, error=null).
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     */
+    public Response sendConduitTransaction(long vmId, byte[] txn, byte[] txnHash) throws IOException, InterruptedException {
+        return sendConduitTransaction(vmId, txn, txnHash, getNonce());
+    }
+
     public static BigInteger publicKeyFromPrivate(BigInteger privKey) {
         ECPoint point = publicPointFromPrivate(privKey);
         byte[] encoded = point.getEncoded(false);
