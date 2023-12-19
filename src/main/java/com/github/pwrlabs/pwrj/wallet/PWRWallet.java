@@ -479,7 +479,6 @@ public class PWRWallet {
      *
      * @param vmId The ID of the VM.
      * @param txn The transaction to be sent.
-     * @param txnHash The hash of the transaction to be sent.
      * @param nonce The transaction count of the wallet address.
      * @return A Response object encapsulating the outcome of the transaction broadcast.
      *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
@@ -488,7 +487,7 @@ public class PWRWallet {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException For various transaction-related validation issues.
      */
-    public Response sendConduitTransaction(long vmId, byte[] txn, byte[] txnHash, int nonce) throws IOException, InterruptedException {
+    public Response sendConduitTransaction(long vmId, byte[] txn, int nonce) throws IOException, InterruptedException {
         if (nonce < 0) {
             throw new RuntimeException("Nonce cannot be negative");
         }
@@ -496,7 +495,7 @@ public class PWRWallet {
             throw new RuntimeException("Nonce is too low");
         }
 
-        ByteBuffer buffer = ByteBuffer.allocate(13 + txn.length + txnHash.length);
+        ByteBuffer buffer = ByteBuffer.allocate(13 + txn.length);
         buffer.put((byte) 7);
         buffer.putInt(nonce);
         buffer.putLong(vmId);
@@ -516,15 +515,14 @@ public class PWRWallet {
      *
      * @param vmId The ID of the VM.
      * @param txn The transaction to be sent.
-     * @param txnHash The hash of the transaction to be sent.
      * @return A Response object encapsulating the outcome of the transaction broadcast.
      *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
      *         On failure: Response(success=false, message=errorMessage, error=null).
      * @throws IOException If there's an issue with the network or stream handling.
      * @throws InterruptedException If the request is interrupted.
      */
-    public Response sendConduitTransaction(long vmId, byte[] txn, byte[] txnHash) throws IOException, InterruptedException {
-        return sendConduitTransaction(vmId, txn, txnHash, getNonce());
+    public Response sendConduitTransaction(long vmId, byte[] txn) throws IOException, InterruptedException {
+        return sendConduitTransaction(vmId, txn, getNonce());
     }
 
     public static BigInteger publicKeyFromPrivate(BigInteger privKey) {
