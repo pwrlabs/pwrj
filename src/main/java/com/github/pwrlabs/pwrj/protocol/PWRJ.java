@@ -14,6 +14,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.net.URI;
 //import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -623,6 +624,36 @@ public class PWRJ {
             e.printStackTrace();
             return new JSONObject();
         }
+    }
+    public static BigDecimal getShareValue(String validator) {
+        try {
+            HttpPost postRequest = new HttpPost(rpcNodeUrl + "/validator/shareValue/?validatorAddress=" + validator);
+
+            // Set up the header types needed to properly transfer JSON
+            postRequest.setHeader("Accept", "application/json");
+            postRequest.setHeader("Content-type", "application/json");
+            // Execute request
+            HttpResponse response = client.execute(postRequest);
+
+            if (response.getStatusLine().getStatusCode() == 200) {
+                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
+                return object.getBigDecimal("shareValue");
+            } else if (response.getStatusLine().getStatusCode() == 400) {
+                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
+                System.out.printf(object.toString());
+                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
+            } else {
+                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return BigDecimal.valueOf(0);
+        }
+    }
+
+    public static void main(String[] args) {
+        PWRJ.setRpcNodeUrl("https://pwrrpc.pwrlabs.io/");
+        System.out.println(getShareValue("0x32b3f8d2f336b3ecd2a111606fdcbad838534ef1"));
     }
 
 

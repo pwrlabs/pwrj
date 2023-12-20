@@ -11,6 +11,7 @@ import com.github.pwrlabs.pwrj.protocol.PWRJ;
 import com.github.pwrlabs.pwrj.protocol.Signature;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.http.HttpClient;
 import java.nio.ByteBuffer;
@@ -383,6 +384,54 @@ public class PWRWallet {
      */
     public Response withdraw(String from, long sharesAmount) throws IOException, InterruptedException {
         return withdraw(from, sharesAmount, getNonce());
+    }
+
+    /**
+     * Withdraws PWR tokens from a specified validator.
+     *
+     * @param from The validator address.
+     * @param pwrAmount The amount of PWR to be withdrawn.
+     * @param nonce The transaction count of the wallet address.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     * @throws RuntimeException For various transaction-related validation issues.
+     */
+    public Response withdrawPWR(String from, long pwrAmount, int nonce) {
+        BigDecimal shareValue = PWRJ.getShareValue(from);
+        long sharesAmount = BigDecimal.valueOf(pwrAmount).divide(shareValue, 18, BigDecimal.ROUND_DOWN).longValue();
+
+        ByteBuffer buffer = ByteBuffer.allocate(33);
+
+        buffer.put((byte) 4);
+        buffer.putInt(nonce);
+        buffer.putLong(sharesAmount);
+        buffer.put(Hex.decode(from.substring(2)));
+
+        byte[] txn = buffer.array();
+        byte[] signature = Signature.signMessage(txn, privateKey);
+
+        ByteBuffer finalTxn = ByteBuffer.allocate(txn.length + 65);
+        finalTxn.put(txn);
+        finalTxn.put(signature);
+
+        return PWRJ.broadcastTxn(finalTxn.array());
+    }
+    /**
+     * Withdraws PWR tokens from a specified validator using the current nonce.
+     *
+     * @param from The validator address.
+     * @param pwrAmount The amount of PWR to be withdrawn.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     */
+    public Response withdrawPWR(String from, long pwrAmount) throws IOException, InterruptedException {
+        return withdraw(from, pwrAmount, getNonce());
     }
 
     /**
