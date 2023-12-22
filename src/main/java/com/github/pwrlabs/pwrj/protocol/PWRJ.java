@@ -6,7 +6,8 @@ import com.github.pwrlabs.pwrj.Utils.Hash;
 import com.github.pwrlabs.pwrj.Utils.Response;
 import com.github.pwrlabs.pwrj.Validator.Validator;
 import com.github.pwrlabs.pwrj.wallet.PWRWallet;
-import org.apache.http.impl.client.HttpClients;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.*;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
 import org.json.JSONArray;
@@ -759,6 +760,16 @@ public class PWRJ {
      */
     public static Response broadcastTxn(byte[] txn) {
         try {
+            // Timeout configuration
+            int timeout = 3 * 1000; // 3 seconds in milliseconds
+            RequestConfig config = RequestConfig.custom()
+                    .setConnectTimeout(timeout)      // setting connection timeout
+                    .setConnectionRequestTimeout(timeout)
+                    .setSocketTimeout(timeout).build();
+
+            // Create HttpClient with the timeout
+            CloseableHttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(config).build();
+
             HttpPost postRequest = new HttpPost(rpcNodeUrl + "/broadcast/");
 
             JSONObject json = new JSONObject();
@@ -768,6 +779,7 @@ public class PWRJ {
             postRequest.setHeader("Accept", "application/json");
             postRequest.setHeader("Content-type", "application/json");
             postRequest.setEntity(new StringEntity(json.toString(), StandardCharsets.UTF_8));
+
             // Execute request
             HttpResponse response = client.execute(postRequest);
 
@@ -783,35 +795,6 @@ public class PWRJ {
         } catch (Exception e) {
             return new Response(false, null, e.getMessage());
         }
-//        // Convert response entity to string
-//        String responseBody = EntityUtils.toString(response.getEntity());
-//
-//        // Output the response
-//        System.out.println(responseBody);
-//
-//        JSONObject object = new JSONObject();
-//        object.put("txn", Hex.toHexString(txn));
-//
-//        HttpRequest request = HttpRequest.newBuilder()
-//                .uri(URI.create(rpcNodeUrl + "/broadcast/"))
-//                .header("Content-Type", "application/json")
-//                .POST(HttpRequest.BodyPublishers.ofString(object.toString()))
-//                .build();
-//
-//        try {
-//            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-//            if (response.statusCode() == 200) {
-//                JSONObject responseJson = new JSONObject(response.body());
-//                return new Response(true, "0x" + Hex.toHexString(Hash.sha3(txn)), null);
-//            } else if (response.statusCode() == 400) {
-//                JSONObject responseJson = new JSONObject(response.body());
-//                return new Response(false, null, responseJson.getString("message"));
-//            } else {
-//                throw new RuntimeException("Failed with HTTP error code : " + response.statusCode());
-//            }
-//        } catch (Exception e) {
-//            return new Response(false, null, e.getMessage());
-//        }
     }
 
 }
