@@ -1,5 +1,7 @@
 package com.github.pwrlabs.pwrj.Transaction;
 
+import org.json.JSONObject;
+
 public class VmDataTxn extends Transaction {
     private final long vmId;
     private final String data;
@@ -25,5 +27,13 @@ public class VmDataTxn extends Transaction {
      */
     public String getData() {
         return data;
+    }
+
+    @Override
+    public JSONObject toJSON() {
+        JSONObject txn = super.toJSON();
+        txn.put("vmId", vmId);
+        txn.put("data", data);
+        return txn;
     }
 }

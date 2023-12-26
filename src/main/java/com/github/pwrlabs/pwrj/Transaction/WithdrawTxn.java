@@ -1,5 +1,7 @@
 package com.github.pwrlabs.pwrj.Transaction;
 
+import org.json.JSONObject;
+
 public class WithdrawTxn extends Transaction {
     private final String validator;
     private final long shares;
@@ -25,6 +27,14 @@ public class WithdrawTxn extends Transaction {
      */
     public long getShares() {
         return shares;
+    }
+
+    @Override
+    public JSONObject toJSON() {
+        JSONObject txn = super.toJSON();
+        txn.put("validator", validator);
+        txn.put("shares", shares);
+        return txn;
     }
 
 }

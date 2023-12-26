@@ -1,5 +1,7 @@
 package com.github.pwrlabs.pwrj.Transaction;
 
+import org.json.JSONObject;
+
 public class Transaction {
     private final int size;
     private final int positionInTheBlock;
@@ -90,6 +92,19 @@ public class Transaction {
     //Abstract Methods
     public long getValue() {
         return 0;
+    }
+
+    public JSONObject toJSON() {
+        JSONObject json = new JSONObject();
+        json.put("size", size);
+        json.put("positionInTheBlock", positionInTheBlock);
+        json.put("fee", fee);
+        json.put("type", type);
+        json.put("from", from);
+        json.put("to", to);
+        json.put("nonceOrValidationHash", nonceOrValidationHash);
+        json.put("hash", hash);
+        return json;
     }
 
 

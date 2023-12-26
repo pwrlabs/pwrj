@@ -1,5 +1,7 @@
 package com.github.pwrlabs.pwrj.Transaction;
 
+import org.json.JSONObject;
+
 public class ClaimVmIdTxn extends Transaction {
     private final long vmId;
 
@@ -23,5 +25,12 @@ public class ClaimVmIdTxn extends Transaction {
      */
     public String getOwner() {
         return getFrom();
+    }
+
+    @Override
+    public JSONObject toJSON() {
+        JSONObject txn = super.toJSON();
+        txn.put("vmId", vmId);
+        return txn;
     }
 }

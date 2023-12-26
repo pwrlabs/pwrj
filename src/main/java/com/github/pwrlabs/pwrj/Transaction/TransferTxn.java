@@ -1,5 +1,7 @@
 package com.github.pwrlabs.pwrj.Transaction;
 
+import org.json.JSONObject;
+
 public class TransferTxn extends Transaction {
     private final long value;
 
@@ -18,6 +20,13 @@ public class TransferTxn extends Transaction {
     @Override
     public long getValue() {
         return value;
+    }
+
+    @Override
+    public JSONObject toJSON() {
+        JSONObject txn = super.toJSON();
+        txn.put("value", value);
+        return txn;
     }
 }
 

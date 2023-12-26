@@ -1,5 +1,7 @@
 package com.github.pwrlabs.pwrj.Transaction;
 
+import org.json.JSONObject;
+
 public class JoinTxn extends Transaction {
     private final String validator;
 
@@ -16,5 +18,12 @@ public class JoinTxn extends Transaction {
      */
     public String getValidator() {
         return validator;
+    }
+
+    @Override
+    public JSONObject toJSON() {
+        JSONObject txn = super.toJSON();
+        txn.put("validator", validator);
+        return txn;
     }
 }

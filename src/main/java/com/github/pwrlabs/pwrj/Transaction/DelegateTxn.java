@@ -1,5 +1,7 @@
 package com.github.pwrlabs.pwrj.Transaction;
 
+import org.json.JSONObject;
+
 public class DelegateTxn extends Transaction {
     private final String validator;
     private final long amount;
@@ -30,5 +32,13 @@ public class DelegateTxn extends Transaction {
     @Override
     public long getValue() {
         return amount;
+    }
+
+    @Override
+    public JSONObject toJSON() {
+        JSONObject txn = super.toJSON();
+        txn.put("validator", validator);
+        txn.put("amount", amount);
+        return txn;
     }
 }
