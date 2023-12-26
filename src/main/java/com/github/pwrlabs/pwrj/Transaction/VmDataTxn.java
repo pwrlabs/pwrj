@@ -6,8 +6,8 @@ public class VmDataTxn extends Transaction {
     private final long vmId;
     private final String data;
 
-    public VmDataTxn(int transactionSize, int positionInBlock, long transactionFee, String type, String from, String to, String nonceOrValidationHash, String hash, long vmId, String data) {
-        super(transactionSize, positionInBlock, transactionFee, type, from, to, nonceOrValidationHash, hash);
+    public VmDataTxn(int transactionSize, long blockNumber, int positionInBlock, long transactionFee, String type, String from, String to, String nonceOrValidationHash, String hash, long vmId, String data) {
+        super(transactionSize, blockNumber, positionInBlock, transactionFee, type, from, to, nonceOrValidationHash, hash);
 
         this.vmId = vmId;
         this.data = data;

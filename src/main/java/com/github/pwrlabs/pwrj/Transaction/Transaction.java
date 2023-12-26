@@ -4,6 +4,7 @@ import org.json.JSONObject;
 
 public class Transaction {
     private final int size;
+    private final long blockNumber;
     private final int positionInTheBlock;
     private final long fee;
     private final String type;
@@ -12,8 +13,9 @@ public class Transaction {
     private final String nonceOrValidationHash;
     private final String hash;
 
-    public Transaction(int size, int positionInTheBlock, long fee, String type, String from, String to, String nonceOrValidationHash, String hash) {
+    public Transaction(int size, long blockNumber, int positionInTheBlock, long fee, String type, String from, String to, String nonceOrValidationHash, String hash) {
         this.size = size;
+        this.blockNumber = blockNumber;
         this.positionInTheBlock = positionInTheBlock;
         this.fee = fee;
         this.type = type;
@@ -31,6 +33,13 @@ public class Transaction {
      */
     public int getSize() {
         return size;
+    }
+
+    /**
+     * @return the block number of the transaction
+     */
+    public long getBlockNumber() {
+        return blockNumber;
     }
 
     //javadoc of the below function

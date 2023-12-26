@@ -5,8 +5,8 @@ import org.json.JSONObject;
 public class ClaimVmIdTxn extends Transaction {
     private final long vmId;
 
-    public ClaimVmIdTxn(int transactionSize, int positionInBlock, long transactionFee, String type, String from, String to, String nonceOrValidationHash, String hash, long vmId) {
-        super(transactionSize, positionInBlock, transactionFee, type, from, to, nonceOrValidationHash, hash);
+    public ClaimVmIdTxn(int transactionSize, long blockNumber, int positionInBlock, long transactionFee, String type, String from, String to, String nonceOrValidationHash, String hash, long vmId) {
+        super(transactionSize, blockNumber, positionInBlock, transactionFee, type, from, to, nonceOrValidationHash, hash);
 
         this.vmId = vmId;
     }
