@@ -2,6 +2,7 @@ package com.github.pwrlabs.pwrj.protocol;
 
 import com.github.pwrlabs.pwrj.Block.Block;
 import com.github.pwrlabs.pwrj.Delegator.Delegator;
+import com.github.pwrlabs.pwrj.Transaction.VmDataTxn;
 import com.github.pwrlabs.pwrj.Utils.Hash;
 import com.github.pwrlabs.pwrj.Utils.Response;
 import com.github.pwrlabs.pwrj.Validator.Validator;
@@ -278,6 +279,34 @@ public class PWRJ {
         }
     }
 
+    public static VmDataTxn[] getVMDataTxns(long startingBlock, long endingBlock, long vmId) {
+        try {
+            HttpGet request = new HttpGet(rpcNodeUrl + "/getVmTransactions/?startingBlock=" + startingBlock + "&endingBlock=" + endingBlock + "&vmId=" + vmId);
+            HttpResponse response = client.execute(request);
+
+            if (response.getStatusLine().getStatusCode() == 200) {
+                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
+
+                JSONArray txns = object.getJSONArray("transactions");
+                VmDataTxn[] txnsArray = new VmDataTxn[txns.length()];
+
+                for(int i = 0; i < txns.length(); i++) {
+                    JSONObject txnObject = txns.getJSONObject(i);
+                    VmDataTxn txn = new VmDataTxn(txnObject.getInt("size"), txnObject.getLong("blockNumber"), txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnObject.getString("type"), txnObject.getString("from"), txnObject.getString("to"), txnObject.getString("nonceOrValidationHash"), txnObject.getString("hash"), txnObject.getLong("vmId"), txnObject.getString("data"));
+                    txnsArray[i] = txn;
+                }
+
+                return txnsArray;
+            } else if (response.getStatusLine().getStatusCode() == 400) {
+                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
+                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message") + " " + object.getString("error"));
+            } else {
+                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public static long getActiveVotingPower() {
         try {
