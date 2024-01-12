@@ -154,7 +154,40 @@ public class PWRWallet {
         return privateKey;
     }
 
+    public byte[] getSignedTxn(byte[] txn) {
+        if(txn == null) return null;
 
+        byte[] signature = Signature.signMessage(txn, privateKey);
+
+        ByteBuffer finalTxn = ByteBuffer.allocate(txn.length + 65);
+        finalTxn.put(txn);
+        finalTxn.put(signature);
+
+        return finalTxn.array();
+    }
+
+    public byte[] getTransferPWRTxn(byte[] to, long amount, int nonce) {
+        if(to.length != 20) {
+            throw new RuntimeException("Invalid address");
+        }
+        if (amount < 0) {
+            throw new RuntimeException("Amount cannot be negative");
+        }
+        if (nonce < 0) {
+            throw new RuntimeException("Nonce cannot be negative");
+        }
+
+        ByteBuffer buffer = ByteBuffer.allocate(33);
+        buffer.put((byte) 0);
+        buffer.putInt(nonce);
+        buffer.putLong(amount);
+        buffer.put(to);
+
+        return buffer.array();
+    }
+    public byte[] getSignedTransferPWRTxn(byte[] to, long amount, int nonce) {
+        return getSignedTxn(getTransferPWRTxn(to, amount, nonce));
+    }
     /**
      * Transfers PWR tokens to a specified address.
      *
@@ -169,37 +202,8 @@ public class PWRWallet {
      * @throws RuntimeException For various transaction-related validation issues.
      */
     public Response transferPWR(String to, long amount, int nonce) throws IOException, InterruptedException {
-        if(to.trim().length() != 42) {
-            throw new RuntimeException("Invalid address");
-        }
-        if (amount < 0) {
-            throw new RuntimeException("Amount cannot be negative");
-        }
-        if (nonce < 0) {
-            throw new RuntimeException("Nonce cannot be negative");
-        }
-        if(amount + (98 * PWRJ.getFeePerByte()) > getBalance()) {
-            throw new RuntimeException("Insufficient balance");
-        }
-        if (nonce < getNonce()) {
-            throw new RuntimeException("Nonce is too low");
-        }
-
-        ByteBuffer buffer = ByteBuffer.allocate(33);
-        buffer.put((byte) 0);
-        buffer.putInt(nonce);
-        buffer.putLong(amount);
-        buffer.put(Hex.decode(to.substring(2)));
-        byte[] txn = buffer.array();
-        byte[] signature = Signature.signMessage(txn, privateKey);
-
-        ByteBuffer finalTxn = ByteBuffer.allocate(98);
-        finalTxn.put(txn);
-        finalTxn.put(signature);
-
-        return PWRJ.broadcastTxn(finalTxn.array());
+        return PWRJ.broadcastTxn(getSignedTransferPWRTxn(Hex.decode(to.substring(2)), amount, nonce));
     }
-
     /**
      * Transfers PWR tokens to a specified address using the current nonce.
      *
@@ -572,6 +576,86 @@ public class PWRWallet {
      */
     public Response sendConduitTransaction(long vmId, byte[] txn) throws IOException, InterruptedException {
         return sendConduitTransaction(vmId, txn, getNonce());
+    }
+
+    public byte[] getSetGuardianTxn(byte[] guardianAddress, long expiryDate, int nonce) {
+        if(guardianAddress.length != 20) return null;
+
+        ByteBuffer buffer = ByteBuffer.allocate(33);
+        buffer.put((byte) 8);
+        buffer.putInt(nonce);
+        buffer.putLong(expiryDate);
+        buffer.put(guardianAddress);
+
+        return buffer.array();
+    }
+    public byte[] getSignedSetGuardianTxn(byte[] guardianAddress, long expiryDate, int nonce) {
+        byte[] txn = getSetGuardianTxn(guardianAddress, expiryDate, nonce);
+        if(txn == null) return null;
+
+        byte[] signature = Signature.signMessage(txn, privateKey);
+
+        ByteBuffer finalTxn = ByteBuffer.allocate(txn.length + 65);
+        finalTxn.put(txn);
+        finalTxn.put(signature);
+
+        return finalTxn.array();
+    }
+    public Response setGuardian(byte[] guardianAddress, long expiryDate, int nonce) {
+        return PWRJ.broadcastTxn(getSignedSetGuardianTxn(guardianAddress, expiryDate, nonce));
+    }
+    public Response setGuardian(byte[] guardianAddress, long expiryDate) throws IOException, InterruptedException {
+        return setGuardian(guardianAddress, expiryDate, getNonce());
+    }
+
+    public byte[] getRemoveGuardianTxn(int nonce) {
+        ByteBuffer buffer = ByteBuffer.allocate(5);
+        buffer.put((byte) 9);
+        buffer.putInt(nonce);
+        return buffer.array();
+    }
+    public byte[] getSignedRemoveGuardianTxn(int nonce) {
+        return getSignedTxn(getRemoveGuardianTxn(nonce));
+    }
+    public Response removeGuardian(int nonce) {
+        return PWRJ.broadcastTxn(getSignedRemoveGuardianTxn(nonce));
+    }
+    public Response removeGuardian() throws IOException, InterruptedException {
+        return removeGuardian(getNonce());
+    }
+
+    public Response sendGuardianWrappedTransaction(byte[] txn, int nonce) {
+        ByteBuffer buffer = ByteBuffer.allocate(5 + txn.length);
+        buffer.put((byte) 10);
+        buffer.putInt(nonce);
+        buffer.put(txn);
+        byte[] txnBytes = buffer.array();
+        byte[] signature = Signature.signMessage(txnBytes, privateKey);
+
+        ByteBuffer finalTxn = ByteBuffer.allocate(txnBytes.length + 65);
+        finalTxn.put(txnBytes);
+        finalTxn.put(signature);
+
+        return PWRJ.broadcastTxn(finalTxn.array());
+    }
+
+    public Response sendGuardianWrappedTransaction(byte[] txn) throws IOException, InterruptedException {
+        return sendGuardianWrappedTransaction(txn, getNonce());
+    }
+
+    public Response sendValidatorRemoveTxn(String validator) throws IOException, InterruptedException {
+        ByteBuffer buffer = ByteBuffer.allocate(25);
+        buffer.put((byte) 7);
+        buffer.putInt(getNonce());
+        buffer.put(Hex.decode(validator.substring(2)));
+        byte[] txnBytes = buffer.array();
+        byte[] signature = Signature.signMessage(txnBytes, privateKey);
+
+        ByteBuffer finalTxn = ByteBuffer.allocate(txnBytes.length + 65);
+        finalTxn.put(txnBytes);
+        finalTxn.put(signature);
+
+        return PWRJ.broadcastTxn(finalTxn.array());
     }
 
     public static BigInteger publicKeyFromPrivate(BigInteger privKey) {
