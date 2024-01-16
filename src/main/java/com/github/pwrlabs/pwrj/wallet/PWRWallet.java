@@ -789,16 +789,7 @@ public class PWRWallet {
      * @return a byte array with the outcome of this transaction
      */
     public byte[] getSignedSetGuardianTxn(byte[] guardianAddress, long expiryDate, int nonce) {
-        byte[] txn = getSetGuardianTxn(guardianAddress, expiryDate, nonce);
-        if(txn == null) return null;
-
-        byte[] signature = Signature.signMessage(txn, privateKey);
-
-        ByteBuffer finalTxn = ByteBuffer.allocate(txn.length + 65);
-        finalTxn.put(txn);
-        finalTxn.put(signature);
-
-        return finalTxn.array();
+        return getSignedTxn(getSetGuardianTxn(guardianAddress, expiryDate, nonce));
     }
     /**
      * Sets a guardian
