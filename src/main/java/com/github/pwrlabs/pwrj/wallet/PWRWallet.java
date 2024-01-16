@@ -165,7 +165,15 @@ public class PWRWallet {
 
         return finalTxn.array();
     }
-
+    /**
+     * Returns the transaction of transfer PWR tokens to a specified address.
+     *
+     * @param to The recipient address.
+     * @param amount The amount of PWR tokens to be transferred.
+     * @param nonce The transaction count of the wallet address.
+     * @return A byte array that represents the transaction of this method.
+     * @throws RuntimeException For various transaction-related validation issues.
+     */
     public byte[] getTransferPWRTxn(byte[] to, long amount, int nonce) {
         if(to.length != 20) {
             throw new RuntimeException("Invalid address");
@@ -185,6 +193,15 @@ public class PWRWallet {
 
         return buffer.array();
     }
+    /**
+     * Returns the signed transaction of Transfer PWR tokens to a specified address.
+     *
+     * @param to The recipient address.
+     * @param amount The amount of PWR tokens to be transferred.
+     * @param nonce The transaction count of the wallet address.
+     * @return A byte array which represents the signed transaction of this method
+     * @throws RuntimeException For various transaction-related validation issues.
+     */
     public byte[] getSignedTransferPWRTxn(byte[] to, long amount, int nonce) {
         return getSignedTxn(getTransferPWRTxn(to, amount, nonce));
     }
@@ -207,23 +224,8 @@ public class PWRWallet {
     /**
      * Transfers PWR tokens to a specified address using the current nonce.
      *
-     * @param to The recipient address.
+     * @param to The recipient address using the current nonce.
      * @param amount The amount of PWR tokens to be transferred.
-     * @return A Response object encapsulating the outcome of the transaction broadcast.
-     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
-     *         On failure: Response(success=false, message=null, error=errorMessage).
-     * @throws IOException If there's an issue with the network or stream handling.
-     * @throws InterruptedException If the request is interrupted.
-     */
-    public Response transferPWR(String to, long amount) throws IOException, InterruptedException {
-        return transferPWR(to, amount, getNonce());
-    }
-
-    /**
-     * Joins the PWR network as a standby validator.
-     *
-     * @param ip The IP address of the validator.
-     * @param nonce The transaction count of the wallet address.
      * @return A Response object encapsulating the outcome of the transaction broadcast.
      *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
      *         On failure: Response(success=false, message=null, error=errorMessage).
@@ -231,7 +233,18 @@ public class PWRWallet {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException For various transaction-related validation issues.
      */
-    public Response join(String ip, int nonce) {
+    public Response transferPWR(String to, long amount) throws IOException, InterruptedException {
+        return transferPWR(to, amount, getNonce());
+    }
+
+    /**
+     * returns the transaction of joining the PWR network as a standby validator.
+     *
+     * @param ip The IP address of the validator.
+     * @param nonce The transaction count of the wallet address.
+     * @return A byte array that represents the transaction of this method
+     */
+    public byte[] getJoinTxn(String ip, int nonce) {
         ByteBuffer buffer = ByteBuffer.allocate(1 + 4 + ip.getBytes(StandardCharsets.UTF_8).length);
 
         buffer.put((byte) 1);
@@ -245,7 +258,30 @@ public class PWRWallet {
         finalTxn.put(txn);
         finalTxn.put(signature);
 
-        return PWRJ.broadcastTxn(finalTxn.array());
+        return finalTxn.array();
+    }
+    /**
+     * Returns a signed transaction of joining the PWR network as a standby validator.
+     *
+     * @param ip The IP address of the validator.
+     * @param nonce The transaction count of the wallet address.
+     * @return A byte array that represents a signed transaction of this method
+     */
+    public byte[] getSignedJoinTxn(String ip, int nonce) {
+        return getSignedTxn(getJoinTxn(ip, nonce));
+    }
+
+    /**
+     * Joins the PWR network as a standby validator.
+     *
+     * @param ip The IP address of the validator.
+     * @param nonce The transaction count of the wallet address.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     */
+    public Response join(String ip, int nonce) {
+        return PWRJ.broadcastTxn(getSignedJoinTxn(ip, nonce));
     }
     /**
      * Joins the PWR network as a standby validator using the current nonce.
@@ -262,17 +298,12 @@ public class PWRWallet {
     }
 
     /**
-     * Claims an active node spot on the PWR network.
+     * Returns the transaction of claim an active node spot on the PWR network.
      *
      * @param nonce The transaction count of the wallet address.
-     * @return A Response object encapsulating the outcome of the transaction broadcast.
-     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
-     *         On failure: Response(success=false, message=null, error=errorMessage).
-     * @throws IOException If there's an issue with the network or stream handling.
-     * @throws InterruptedException If the request is interrupted.
-     * @throws RuntimeException For various transaction-related validation issues.
+     * @return A byte array that represents a signed transaction of the method
      */
-    public Response claimActiveNodeSpot(int nonce) {
+    public byte[] getClaimActiveNodeSpotTxn(int nonce) {
         ByteBuffer buffer = ByteBuffer.allocate(5);
 
         buffer.put((byte) 2);
@@ -285,7 +316,27 @@ public class PWRWallet {
         finalTxn.put(txn);
         finalTxn.put(signature);
 
-        return PWRJ.broadcastTxn(finalTxn.array());
+        return finalTxn.array();
+    }
+    /**
+     * Returns the signed transaction of Claim an active node spot on the PWR network.
+     *
+     * @param nonce The transaction count of the wallet address.
+     * @return A byte array that represents the signed transaction of this method
+     */
+    public byte[] getSignedClaimActiveNodeSpotTxn(int nonce) {
+        return getSignedTxn(getClaimActiveNodeSpotTxn(nonce));
+    }
+    /**
+     * Claims an active node spot on the PWR network.
+     *
+     * @param nonce The transaction count of the wallet address.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     */
+    public Response claimActiveNodeSpot(int nonce) {
+        return PWRJ.broadcastTxn(getSignedClaimActiveNodeSpotTxn(nonce));
     }
     /**
      * Claims an active node spot on the PWR network using the current nonce.
@@ -301,19 +352,14 @@ public class PWRWallet {
     }
 
     /**
-     * Delegates PWR tokens to a specified validator.
+     * Returns the transaction of delegate PWR tokens to a specified validator.
      *
      * @param to The validator address.
      * @param amount The amount of PWR tokens to be delegated.
      * @param nonce The transaction count of the wallet address.
-     * @return A Response object encapsulating the outcome of the transaction broadcast.
-     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
-     *         On failure: Response(success=false, message=null, error=errorMessage).
-     * @throws IOException If there's an issue with the network or stream handling.
-     * @throws InterruptedException If the request is interrupted.
-     * @throws RuntimeException For various transaction-related validation issues.
+     * @return A byte array that represents the transaction of the method
      */
-    public Response delegate(String to, long amount, int nonce) {
+    public byte[] getDelegateTxn(String to, long amount, int nonce) {
         ByteBuffer buffer = ByteBuffer.allocate(33);
 
         buffer.put((byte) 3);
@@ -328,7 +374,31 @@ public class PWRWallet {
         finalTxn.put(txn);
         finalTxn.put(signature);
 
-        return PWRJ.broadcastTxn(finalTxn.array());
+        return finalTxn.array();
+    }
+    /**
+     * Returns the signed transaction of delegate PWR tokens to a specified validator.
+     *
+     * @param to The validator address.
+     * @param amount The amount of PWR tokens to be delegated.
+     * @param nonce The transaction count of the wallet address.
+     * @return A byte array that represents a signed transaction of the method
+     */
+    public byte[] getSignedDelegateTxn(String to, long amount, int nonce) {
+        return getSignedTxn(getDelegateTxn(to, amount, nonce));
+    }
+    /**
+     * Delegates PWR tokens to a specified validator.
+     *
+     * @param to The validator address.
+     * @param amount The amount of PWR tokens to be delegated.
+     * @param nonce The transaction count of the wallet address.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     */
+    public Response delegate(String to, long amount, int nonce) {
+        return PWRJ.broadcastTxn(getSignedDelegateTxn(to, amount, nonce));
     }
     /**
      * Delegates PWR tokens to a specified validator using the current nonce.
@@ -346,19 +416,14 @@ public class PWRWallet {
     }
 
     /**
-     * Withdraws PWR tokens from a specified validator.
+     * Returns the transaction of withdraw PWR tokens from a specified validator.
      *
      * @param from The validator address.
      * @param sharesAmount The amount of shares to be withdrawn.
      * @param nonce The transaction count of the wallet address.
-     * @return A Response object encapsulating the outcome of the transaction broadcast.
-     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
-     *         On failure: Response(success=false, message=null, error=errorMessage).
-     * @throws IOException If there's an issue with the network or stream handling.
-     * @throws InterruptedException If the request is interrupted.
-     * @throws RuntimeException For various transaction-related validation issues.
+     * @return A byte array that represents the transaction of this method
      */
-    public Response withdraw(String from, long sharesAmount, int nonce) {
+    public byte[] getWithdrawTxn(String from, long sharesAmount, int nonce) {
         ByteBuffer buffer = ByteBuffer.allocate(33);
 
         buffer.put((byte) 4);
@@ -373,7 +438,31 @@ public class PWRWallet {
         finalTxn.put(txn);
         finalTxn.put(signature);
 
-        return PWRJ.broadcastTxn(finalTxn.array());
+        return finalTxn.array();
+    }
+    /**
+     * Returns the signed transaction of withdraw PWR tokens from a specified validator.
+     *
+     * @param from The validator address.
+     * @param sharesAmount The amount of shares to be withdrawn.
+     * @param nonce The transaction count of the wallet address.
+     * @return A byte array that represents the signed transaction of this method
+     */
+    public byte[] getSignedWithdrawTxn(String from, long sharesAmount, int nonce) {
+        return getSignedTxn(getWithdrawTxn(from, sharesAmount, nonce));
+    }
+    /**
+     * Withdraws PWR tokens from a specified validator.
+     *
+     * @param from The validator address.
+     * @param sharesAmount The amount of shares to be withdrawn.
+     * @param nonce The transaction count of the wallet address.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     */
+    public Response withdraw(String from, long sharesAmount, int nonce) {
+        return PWRJ.broadcastTxn(getSignedWithdrawTxn(from, sharesAmount, nonce));
     }
     /**
      * Withdraws PWR tokens from a specified validator using the current nonce.
@@ -391,19 +480,14 @@ public class PWRWallet {
     }
 
     /**
-     * Withdraws PWR tokens from a specified validator.
+     * Returns the transaction of withdraw PWR tokens from a specified validator.
      *
      * @param from The validator address.
      * @param pwrAmount The amount of PWR to be withdrawn.
      * @param nonce The transaction count of the wallet address.
-     * @return A Response object encapsulating the outcome of the transaction broadcast.
-     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
-     *         On failure: Response(success=false, message=null, error=errorMessage).
-     * @throws IOException If there's an issue with the network or stream handling.
-     * @throws InterruptedException If the request is interrupted.
-     * @throws RuntimeException For various transaction-related validation issues.
+     * @return A byte array that represents the transaction of this method
      */
-    public Response withdrawPWR(String from, long pwrAmount, int nonce) {
+    public byte[] getWithdrawPWRTxn(String from, long pwrAmount, int nonce) {
         BigDecimal shareValue = PWRJ.getShareValue(from);
         long sharesAmount = BigDecimal.valueOf(pwrAmount).divide(shareValue, 18, BigDecimal.ROUND_DOWN).longValue();
 
@@ -421,7 +505,31 @@ public class PWRWallet {
         finalTxn.put(txn);
         finalTxn.put(signature);
 
-        return PWRJ.broadcastTxn(finalTxn.array());
+        return finalTxn.array();
+    }
+    /**
+     * Returns the signed transaction of withdraw PWR tokens from a specified validator.
+     *
+     * @param from The validator address.
+     * @param pwrAmount The amount of PWR to be withdrawn.
+     * @param nonce The transaction count of the wallet address.
+     * @return A byte array that represents the signed transaction of this method
+     */
+    public byte[] getSignedWithdrawPWRTxn(String from, long pwrAmount, int nonce) {
+        return getSignedTxn(getWithdrawPWRTxn(from, pwrAmount, nonce));
+    }
+    /**
+     * Withdraws PWR tokens from a specified validator.
+     *
+     * @param from The validator address.
+     * @param pwrAmount The amount of PWR to be withdrawn.
+     * @param nonce The transaction count of the wallet address.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     */
+    public Response withdrawPWR(String from, long pwrAmount, int nonce) {
+        return PWRJ.broadcastTxn(getSignedWithdrawPWRTxn(from, pwrAmount, nonce));
     }
     /**
      * Withdraws PWR tokens from a specified validator using the current nonce.
@@ -439,19 +547,17 @@ public class PWRWallet {
     }
 
     /**
-     * Sends data to a specified VM on the PWR network.
+     * Returns the transaction of send data to a specified VM on the PWR network.
      *
      * @param vmId The ID of the VM.
      * @param data The data to be sent.
      * @param nonce The transaction count of the wallet address.
-     * @return A Response object encapsulating the outcome of the transaction broadcast.
-     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
-     *         On failure: Response(success=false, message=null, error=errorMessage).
+     * @return A byte array that represents the transaction of this method
      * @throws IOException If there's an issue with the network or stream handling.
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException For various transaction-related validation issues.
      */
-    public Response sendVmDataTxn(long vmId, byte[] data, int nonce) throws IOException, InterruptedException {
+    public byte[] getSendVmDataTxn(long vmId, byte[] data, int nonce) throws IOException, InterruptedException{
         if (nonce < 0) {
             throw new RuntimeException("Nonce cannot be negative");
         }
@@ -471,7 +577,37 @@ public class PWRWallet {
         finalTxn.put(txn);
         finalTxn.put(signature);
 
-        return PWRJ.broadcastTxn(finalTxn.array());
+        return finalTxn.array();
+    }
+    /**
+     * Returns the signed transaction of send data to a specified VM on the PWR network.
+     *
+     * @param vmId The ID of the VM.
+     * @param data The data to be sent.
+     * @param nonce The transaction count of the wallet address.
+     * @return A byte array that represents a signed transaction of this method
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     * @throws RuntimeException For various transaction-related validation issues.
+     */
+    public byte[] getSignedSendVmDataTxn(long vmId, byte[] data, int nonce) throws IOException, InterruptedException {
+        return getSignedTxn(getSendVmDataTxn(vmId, data, nonce));
+    }
+    /**
+     * Sends data to a specified VM on the PWR network.
+     *
+     * @param vmId The ID of the VM.
+     * @param data The data to be sent.
+     * @param nonce The transaction count of the wallet address.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     * @throws RuntimeException For various transaction-related validation issues.
+     */
+    public Response sendVmDataTxn(long vmId, byte[] data, int nonce) throws IOException, InterruptedException {
+        return PWRJ.broadcastTxn(getSignedSendVmDataTxn(vmId, data, nonce));
     }
 
     /**
@@ -490,15 +626,13 @@ public class PWRWallet {
     }
 
     /**
-     * Sends a transaction to claim a Virtual Machine ID on the PWR network, ensuring its owner 15% revenue of all transaction fees paid when transacting with this VM.
+     * Returns the transaction of sending a transaction to claim a Virtual Machine ID on the PWR network, ensuring its owner 15% revenue of all transaction fees paid when transacting with this VM.
      *
      * @param vmId The ID of the VM.
      * @param nonce The transaction count of the wallet address.
-     * @return A Response object encapsulating the outcome of the transaction broadcast.
-     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
-     *         On failure: Response(success=false, message=null, error=errorMessage).
+     * @return A byte array that represents the transaction of this method
      */
-    public Response claimVmId(long vmId, int nonce) {
+    public byte[] getClaimVmIdTxn(long vmId, int nonce) {
         ByteBuffer buffer = ByteBuffer.allocate(13);
         buffer.put((byte) 6);
         buffer.putInt(nonce);
@@ -510,7 +644,29 @@ public class PWRWallet {
         finalTxn.put(txn);
         finalTxn.put(signature);
 
-        return PWRJ.broadcastTxn(finalTxn.array());
+        return finalTxn.array();
+    }
+    /**
+     * Returns a signed transaction of sending a transaction to claim a Virtual Machine ID on the PWR network, ensuring its owner 15% revenue of all transaction fees paid when transacting with this VM.
+     *
+     * @param vmId The ID of the VM.
+     * @param nonce The transaction count of the wallet address.
+     * @return A byte array that represents a signed transaction of this method
+     */
+    public byte[] getSignedClaimVmIdTxn(long vmId, int nonce) {
+        return getSignedTxn(getClaimVmIdTxn(vmId, nonce));
+    }
+    /**
+     * Sends a transaction to claim a Virtual Machine ID on the PWR network, ensuring its owner 15% revenue of all transaction fees paid when transacting with this VM.
+     *
+     * @param vmId The ID of the VM.
+     * @param nonce The transaction count of the wallet address.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     */
+    public Response claimVmId(long vmId, int nonce) {
+        return PWRJ.broadcastTxn(getSignedClaimVmIdTxn(vmId, nonce));
     }
 
     /**
@@ -528,19 +684,17 @@ public class PWRWallet {
     }
 
     /**
-     * Sends a conduit wrapped transaction of a specified VM on the PWR network. Must be sent from a conduit node of that VM.
+     * Returns a transaction of sending a conduit wrapped transaction of a specified VM on the PWR network. Must be sent from a conduit node of that VM.
      *
      * @param vmId The ID of the VM.
      * @param txn The transaction to be sent.
      * @param nonce The transaction count of the wallet address.
-     * @return A Response object encapsulating the outcome of the transaction broadcast.
-     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
-     *         On failure: Response(success=false, message=errorMessage, error=null).
+     * @return A byte array that represents the transaction of this method
      * @throws IOException If there's an issue with the network or stream handling.
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException For various transaction-related validation issues.
      */
-    public Response sendConduitTransaction(long vmId, byte[] txn, int nonce) throws IOException, InterruptedException {
+    public byte[] getSendConduitTransactionTxn(long vmId, byte[] txn, int nonce) throws  IOException, InterruptedException{
         if (nonce < 0) {
             throw new RuntimeException("Nonce cannot be negative");
         }
@@ -559,8 +713,37 @@ public class PWRWallet {
         ByteBuffer finalTxn = ByteBuffer.allocate(txnBytes.length + 65);
         finalTxn.put(txnBytes);
         finalTxn.put(signature);
-
-        return PWRJ.broadcastTxn(finalTxn.array());
+        return finalTxn.array();
+    }
+    /**
+     * Returns a transaction of sending a conduit wrapped transaction of a specified VM on the PWR network. Must be sent from a conduit node of that VM.
+     *
+     * @param vmId The ID of the VM.
+     * @param txn The transaction to be sent.
+     * @param nonce The transaction count of the wallet address.
+     * @return A byte array that represents the signed transaction of this method
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     * @throws RuntimeException For various transaction-related validation issues.
+     */
+    public byte[] getSignedSendConduitTransactionTxn(long vmId, byte[] txn, int nonce) throws IOException, InterruptedException{
+        return getSignedTxn(getSendConduitTransactionTxn(vmId, txn, nonce));
+    }
+    /**
+     * Sends a conduit wrapped transaction of a specified VM on the PWR network. Must be sent from a conduit node of that VM.
+     *
+     * @param vmId The ID of the VM.
+     * @param txn The transaction to be sent.
+     * @param nonce The transaction count of the wallet address.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=errorMessage, error=null).
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     * @throws RuntimeException For various transaction-related validation issues.
+     */
+    public Response sendConduitTransaction(long vmId, byte[] txn, int nonce) throws IOException, InterruptedException {
+        return PWRJ.broadcastTxn(getSignedSendConduitTransactionTxn(vmId, txn, nonce));
     }
 
     /**
@@ -578,6 +761,14 @@ public class PWRWallet {
         return sendConduitTransaction(vmId, txn, getNonce());
     }
 
+    /**
+     * Returns a transaction of setting a guardian
+     *
+     * @param guardianAddress the wallet address of the chosen guardian
+     * @param expiryDate the expiry date after which the guardian will have revoked privileges
+     * @param nonce the transaction count of the wallet address
+     * @return a byte array with the outcome of this transaction
+     */
     public byte[] getSetGuardianTxn(byte[] guardianAddress, long expiryDate, int nonce) {
         if(guardianAddress.length != 20) return null;
 
@@ -589,6 +780,14 @@ public class PWRWallet {
 
         return buffer.array();
     }
+    /**
+     * Returns a signed transaction of setting a guardian
+     *
+     * @param guardianAddress the wallet address of the chosen guardian
+     * @param expiryDate the expiry date after which the guardian will have revoked privileges
+     * @param nonce the transaction count of the wallet address
+     * @return a byte array with the outcome of this transaction
+     */
     public byte[] getSignedSetGuardianTxn(byte[] guardianAddress, long expiryDate, int nonce) {
         byte[] txn = getSetGuardianTxn(guardianAddress, expiryDate, nonce);
         if(txn == null) return null;
@@ -601,30 +800,88 @@ public class PWRWallet {
 
         return finalTxn.array();
     }
+    /**
+     * Sets a guardian
+     *
+     * @param guardianAddress the wallet address of the chosen guardian
+     * @param expiryDate the expiry date after which the guardian will have revoked privileges
+     * @param nonce the transaction count of the wallet address
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=errorMessage, error=null).
+     */
     public Response setGuardian(byte[] guardianAddress, long expiryDate, int nonce) {
         return PWRJ.broadcastTxn(getSignedSetGuardianTxn(guardianAddress, expiryDate, nonce));
     }
+    /**
+     * Sets a guardian
+     *
+     * @param guardianAddress the wallet address of the chosen guardian
+     * @param expiryDate the expiry date after which the guardian will have revoked privileges
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=errorMessage, error=null).
+     * @throws IOException if there's an issue with the network or stream handling
+     * @throws InterruptedException if the request is interrupted
+     */
     public Response setGuardian(byte[] guardianAddress, long expiryDate) throws IOException, InterruptedException {
         return setGuardian(guardianAddress, expiryDate, getNonce());
     }
 
+    /**
+     * Returns the transaction of removing/revoking a guardian wallet
+     *
+     * @param nonce the transaction count of the wallet address
+     * @return a byte array with the outcome of the transaction
+     */
     public byte[] getRemoveGuardianTxn(int nonce) {
         ByteBuffer buffer = ByteBuffer.allocate(5);
         buffer.put((byte) 9);
         buffer.putInt(nonce);
         return buffer.array();
     }
+    /**
+     * Returns the signed transaction of removing/revoking a guardian wallet
+     *
+     * @param nonce the transaction count of the wallet address
+     * @return a byte array with the outcome of the transaction
+     */
     public byte[] getSignedRemoveGuardianTxn(int nonce) {
         return getSignedTxn(getRemoveGuardianTxn(nonce));
     }
+    /**
+     * Removes/Revokes a guardian wallet
+     *
+     * @param nonce the transaction count of the wallet address
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     */
     public Response removeGuardian(int nonce) {
         return PWRJ.broadcastTxn(getSignedRemoveGuardianTxn(nonce));
     }
+    /**
+     * Removes/Revokes a guardian wallet
+     *
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     * @throws  IOException If there's an issue with the network of stream handling
+     * @throws InterruptedException If hte request is interrupted
+     */
     public Response removeGuardian() throws IOException, InterruptedException {
         return removeGuardian(getNonce());
     }
 
-    public Response sendGuardianWrappedTransaction(byte[] txn, int nonce) {
+    /**
+     * Returns the transaction for sending the guardian wallet a wrapped transaction
+     *
+     * @param txn The transaction to be wrapped and sent to the guardian wallet
+     * @param nonce The transaction count of the wallet address
+     * @return A byte array representing the transaction of this method (not to be confused with the transaction
+     *         to be sent to the guardian wallet)
+     */
+    public byte[] getSendGuardianWrappedTransactionTxn(byte[] txn, int nonce) {
         ByteBuffer buffer = ByteBuffer.allocate(5 + txn.length);
         buffer.put((byte) 10);
         buffer.putInt(nonce);
@@ -636,14 +893,54 @@ public class PWRWallet {
         finalTxn.put(txnBytes);
         finalTxn.put(signature);
 
-        return PWRJ.broadcastTxn(finalTxn.array());
+        return finalTxn.array();
     }
-
+    /**
+     * Returns the signed transaction for sending the guardian wallet a wrapped transaction
+     *
+     * @param txn The transaction to be wrapped and sent to the guardian wallet
+     * @param nonce The transaction count of the wallet address
+     * @return A byte array representing the transaction of this method (not to be confused with the transaction
+     *         to be sent to the guardian wallet)
+     */
+    public byte[] getSignedSendGuardianWrappedTransactionTxn(byte[] txn, int nonce) {
+        return getSignedTxn(getSendGuardianWrappedTransactionTxn(txn, nonce));
+    }
+    /**
+     * Sends the guardian wallet a wrapped transaction
+     *
+     * @param txn The transaction to be wrapped and sent to the guardian wallet
+     * @param nonce The transaction count of the wallet address
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     */
+    public Response sendGuardianWrappedTransaction(byte[] txn, int nonce) {
+        return PWRJ.broadcastTxn(getSignedSendGuardianWrappedTransactionTxn(txn, nonce));
+    }
+    /**
+     * Sends the guardian wallet a wrapped transaction using current nonce
+     *
+     * @param txn The transaction to be wrapped and sent to the guardian wallet
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     * @throws IOException If there's an issue wih the network of stream handling
+     * @throws InterruptedException If the request is interrupted
+     */
     public Response sendGuardianWrappedTransaction(byte[] txn) throws IOException, InterruptedException {
         return sendGuardianWrappedTransaction(txn, getNonce());
     }
 
-    public Response sendValidatorRemoveTxn(String validator) throws IOException, InterruptedException {
+    /**
+     * Returns the transaction of sending the transaction to remove validator
+     *
+     * @param validator
+     * @return a byte array representing the transaction of this method
+     * @throws IOException If there's an issue with the network or stream handling
+     * @throws InterruptedException If the request is interrupted
+     */
+    public byte[] getSendValidatorRemoveTxn(String validator) throws IOException, InterruptedException {
         ByteBuffer buffer = ByteBuffer.allocate(25);
         buffer.put((byte) 7);
         buffer.putInt(getNonce());
@@ -655,15 +952,51 @@ public class PWRWallet {
         finalTxn.put(txnBytes);
         finalTxn.put(signature);
 
-        return PWRJ.broadcastTxn(finalTxn.array());
+        return finalTxn.array();
+    }
+    /**
+     * Returns the signed transaction of sending the transaction to remove validator
+     *
+     * @param validator
+     * @return a byte array representing the transaction of this method
+     * @throws IOException If there's an issue with the network or stream handling
+     * @throws InterruptedException If the request is interrupted
+     */
+    public byte[] getSignedSendValidatorRemoveTxn(String validator) throws IOException, InterruptedException {
+        return getSignedTxn(getSendValidatorRemoveTxn(validator));
+    }
+    /**
+     * Sends the transaction to remove validator
+     *
+     * @param validator
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     * @throws IOException If there's an issue with the network or stream handling
+     * @throws InterruptedException If the request is interrupted
+     */
+    public Response sendValidatorRemoveTxn(String validator) throws IOException, InterruptedException {
+        return PWRJ.broadcastTxn(getSignedSendValidatorRemoveTxn(validator));
     }
 
+    /**
+     * Returns the public key of the wallet of this private key
+     *
+     * @param privKey the private key of this wallet
+     * @return a BigInteger which represents the public key of the provided private key
+     */
     public static BigInteger publicKeyFromPrivate(BigInteger privKey) {
         ECPoint point = publicPointFromPrivate(privKey);
         byte[] encoded = point.getEncoded(false);
         return new BigInteger(1, Arrays.copyOfRange(encoded, 1, encoded.length));
     }
 
+    /**
+     * Returns the public ECPoint related to the provided private key
+     *
+     * @param privKey The private key related to the requested public ECPoint
+     * @return An ECPoint object witch represents the Public point of the provided private key
+     */
     public static ECPoint publicPointFromPrivate(BigInteger privKey) {
         if (privKey.bitLength() > Signature.CURVE.getN().bitLength()) {
             privKey = privKey.mod(Signature.CURVE.getN());
