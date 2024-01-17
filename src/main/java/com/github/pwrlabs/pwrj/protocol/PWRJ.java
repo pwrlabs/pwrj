@@ -314,7 +314,7 @@ public class PWRJ {
 
                 for(int i = 0; i < txns.length(); i++) {
                     JSONObject txnObject = txns.getJSONObject(i);
-                    VmDataTxn txn = new VmDataTxn(txnObject.getInt("size"), txnObject.getLong("blockNumber"), txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnObject.getString("type"), txnObject.getString("from"), txnObject.getString("to"), txnObject.getString("nonceOrValidationHash"), txnObject.getString("hash"), txnObject.getLong("vmId"), txnObject.getString("data"));
+                    VmDataTxn txn = new VmDataTxn(txnObject);
                     txnsArray[i] = txn;
                 }
 

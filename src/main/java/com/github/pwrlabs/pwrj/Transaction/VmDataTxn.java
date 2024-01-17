@@ -13,6 +13,13 @@ public class VmDataTxn extends Transaction {
         this.data = data;
     }
 
+    public VmDataTxn(JSONObject txnObject) {
+        super(txnObject.getInt("size"), txnObject.getLong("blockNumber"), txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnObject.getString("type"), txnObject.getString("from"), txnObject.getString("to"), txnObject.getString("nonceOrValidationHash"), txnObject.getString("hash"));
+
+        this.vmId = txnObject.getLong("vmId");
+        this.data = txnObject.getString("data");
+    }
+
     //Getters
 
     /**
@@ -34,6 +41,15 @@ public class VmDataTxn extends Transaction {
         JSONObject txn = super.toJSON();
         txn.put("vmId", vmId);
         txn.put("data", data);
+        txn.put("type", "VM Data");
+        txn.put("size", getSize());
+        txn.put("blockNumber", getBlockNumber());
+        txn.put("positionInTheBlock", getPositionInTheBlock());
+        txn.put("fee", getFee());
+        txn.put("from", getFrom());
+        txn.put("to", getTo());
+        txn.put("nonceOrValidationHash", getNonceOrValidationHash());
+        txn.put("hash", getHash());
         return txn;
     }
 }
