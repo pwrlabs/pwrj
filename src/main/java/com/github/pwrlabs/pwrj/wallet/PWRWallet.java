@@ -251,14 +251,7 @@ public class PWRWallet {
         buffer.putInt(nonce);
         buffer.put(ip.getBytes(StandardCharsets.UTF_8));
 
-        byte[] txn = buffer.array();
-        byte[] signature = Signature.signMessage(txn, privateKey);
-
-        ByteBuffer finalTxn = ByteBuffer.allocate(txn.length + 65);
-        finalTxn.put(txn);
-        finalTxn.put(signature);
-
-        return finalTxn.array();
+        return buffer.array();
     }
     /**
      * Returns a signed transaction of joining the PWR network as a standby validator.
@@ -309,14 +302,7 @@ public class PWRWallet {
         buffer.put((byte) 2);
         buffer.putInt(nonce);
 
-        byte[] txn = buffer.array();
-        byte[] signature = Signature.signMessage(txn, privateKey);
-
-        ByteBuffer finalTxn = ByteBuffer.allocate(txn.length + 65);
-        finalTxn.put(txn);
-        finalTxn.put(signature);
-
-        return finalTxn.array();
+        return buffer.array();
     }
     /**
      * Returns the signed transaction of Claim an active node spot on the PWR network.
@@ -367,14 +353,7 @@ public class PWRWallet {
         buffer.putLong(amount);
         buffer.put(Hex.decode(to.substring(2)));
 
-        byte[] txn = buffer.array();
-        byte[] signature = Signature.signMessage(txn, privateKey);
-
-        ByteBuffer finalTxn = ByteBuffer.allocate(txn.length + 65);
-        finalTxn.put(txn);
-        finalTxn.put(signature);
-
-        return finalTxn.array();
+        return buffer.array();
     }
     /**
      * Returns the signed transaction of delegate PWR tokens to a specified validator.
@@ -431,14 +410,7 @@ public class PWRWallet {
         buffer.putLong(sharesAmount);
         buffer.put(Hex.decode(from.substring(2)));
 
-        byte[] txn = buffer.array();
-        byte[] signature = Signature.signMessage(txn, privateKey);
-
-        ByteBuffer finalTxn = ByteBuffer.allocate(txn.length + 65);
-        finalTxn.put(txn);
-        finalTxn.put(signature);
-
-        return finalTxn.array();
+        return buffer.array();
     }
     /**
      * Returns the signed transaction of withdraw PWR tokens from a specified validator.
@@ -498,14 +470,7 @@ public class PWRWallet {
         buffer.putLong(sharesAmount);
         buffer.put(Hex.decode(from.substring(2)));
 
-        byte[] txn = buffer.array();
-        byte[] signature = Signature.signMessage(txn, privateKey);
-
-        ByteBuffer finalTxn = ByteBuffer.allocate(txn.length + 65);
-        finalTxn.put(txn);
-        finalTxn.put(signature);
-
-        return finalTxn.array();
+        return buffer.array();
     }
     /**
      * Returns the signed transaction of withdraw PWR tokens from a specified validator.
@@ -570,14 +535,8 @@ public class PWRWallet {
         buffer.putInt(nonce);
         buffer.putLong(vmId);
         buffer.put(data);
-        byte[] txn = buffer.array();
-        byte[] signature = Signature.signMessage(txn, privateKey);
 
-        ByteBuffer finalTxn = ByteBuffer.allocate(13 + 65 + data.length);
-        finalTxn.put(txn);
-        finalTxn.put(signature);
-
-        return finalTxn.array();
+        return buffer.array();
     }
     /**
      * Returns the signed transaction of send data to a specified VM on the PWR network.
@@ -637,14 +596,8 @@ public class PWRWallet {
         buffer.put((byte) 6);
         buffer.putInt(nonce);
         buffer.putLong(vmId);
-        byte[] txn = buffer.array();
-        byte[] signature = Signature.signMessage(txn, privateKey);
 
-        ByteBuffer finalTxn = ByteBuffer.allocate(txn.length + 65);
-        finalTxn.put(txn);
-        finalTxn.put(signature);
-
-        return finalTxn.array();
+        return buffer.array();
     }
     /**
      * Returns a signed transaction of sending a transaction to claim a Virtual Machine ID on the PWR network, ensuring its owner 15% revenue of all transaction fees paid when transacting with this VM.
@@ -707,13 +660,8 @@ public class PWRWallet {
         buffer.putInt(nonce);
         buffer.putLong(vmId);
         buffer.put(txn);
-        byte[] txnBytes = buffer.array();
-        byte[] signature = Signature.signMessage(txnBytes, privateKey);
 
-        ByteBuffer finalTxn = ByteBuffer.allocate(txnBytes.length + 65);
-        finalTxn.put(txnBytes);
-        finalTxn.put(signature);
-        return finalTxn.array();
+        return buffer.array();
     }
     /**
      * Returns a transaction of sending a conduit wrapped transaction of a specified VM on the PWR network. Must be sent from a conduit node of that VM.
@@ -877,14 +825,8 @@ public class PWRWallet {
         buffer.put((byte) 10);
         buffer.putInt(nonce);
         buffer.put(txn);
-        byte[] txnBytes = buffer.array();
-        byte[] signature = Signature.signMessage(txnBytes, privateKey);
 
-        ByteBuffer finalTxn = ByteBuffer.allocate(txnBytes.length + 65);
-        finalTxn.put(txnBytes);
-        finalTxn.put(signature);
-
-        return finalTxn.array();
+        return buffer.array();
     }
     /**
      * Returns the signed transaction for sending the guardian wallet a wrapped transaction
@@ -936,14 +878,8 @@ public class PWRWallet {
         buffer.put((byte) 7);
         buffer.putInt(getNonce());
         buffer.put(Hex.decode(validator.substring(2)));
-        byte[] txnBytes = buffer.array();
-        byte[] signature = Signature.signMessage(txnBytes, privateKey);
 
-        ByteBuffer finalTxn = ByteBuffer.allocate(txnBytes.length + 65);
-        finalTxn.put(txnBytes);
-        finalTxn.put(signature);
-
-        return finalTxn.array();
+        return buffer.array();
     }
     /**
      * Returns the signed transaction of sending the transaction to remove validator
