@@ -12,8 +12,9 @@ public class Transaction {
     private final String to;
     private final String nonceOrValidationHash;
     private final String hash;
+    private final long timestamp;
 
-    public Transaction(int size, long blockNumber, int positionInTheBlock, long fee, String type, String from, String to, String nonceOrValidationHash, String hash) {
+    public Transaction(int size, long blockNumber, int positionInTheBlock, long fee, String type, String from, String to, String nonceOrValidationHash, String hash, long timestamp) {
         this.size = size;
         this.blockNumber = blockNumber;
         this.positionInTheBlock = positionInTheBlock;
@@ -23,6 +24,7 @@ public class Transaction {
         this.to = to;
         this.nonceOrValidationHash = nonceOrValidationHash;
         this.hash = hash;
+        this.timestamp = timestamp;
     }
 
     //Getters
@@ -96,6 +98,14 @@ public class Transaction {
      */
     public String getHash() {
         return hash;
+    }
+
+    //javadoc of the below function
+    /**
+     * @return the timestamp of the transaction
+     */
+    public long getTimestamp() {
+        return timestamp;
     }
 
     //Abstract Methods

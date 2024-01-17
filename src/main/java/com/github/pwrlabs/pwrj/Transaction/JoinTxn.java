@@ -5,8 +5,8 @@ import org.json.JSONObject;
 public class JoinTxn extends Transaction {
     private final String validator;
 
-    public JoinTxn(int transactionSize, long blockNumber, int positionInBlock, long transactionFee, String type, String from, String to, String nonceOrValidationHash, String hash) {
-        super(transactionSize, blockNumber, positionInBlock, transactionFee, type, from, to, nonceOrValidationHash, hash);
+    public JoinTxn(int transactionSize, long blockNumber, int positionInBlock, long transactionFee, String type, String from, String to, String nonceOrValidationHash, String hash, long timestamp) {
+        super(transactionSize, blockNumber, positionInBlock, transactionFee, type, from, to, nonceOrValidationHash, hash, timestamp);
 
         this.validator = from;
     }
