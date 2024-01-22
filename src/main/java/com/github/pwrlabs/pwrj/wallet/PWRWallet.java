@@ -873,10 +873,10 @@ public class PWRWallet {
      * @throws IOException If there's an issue with the network or stream handling
      * @throws InterruptedException If the request is interrupted
      */
-    public byte[] getSendValidatorRemoveTxn(String validator) throws IOException, InterruptedException {
+    public byte[] getSendValidatorRemoveTxn(String validator, int nonce) throws IOException, InterruptedException {
         ByteBuffer buffer = ByteBuffer.allocate(25);
         buffer.put((byte) 7);
-        buffer.putInt(getNonce());
+        buffer.putInt(nonce);
         buffer.put(Hex.decode(validator.substring(2)));
 
         return buffer.array();
@@ -889,8 +889,21 @@ public class PWRWallet {
      * @throws IOException If there's an issue with the network or stream handling
      * @throws InterruptedException If the request is interrupted
      */
-    public byte[] getSignedSendValidatorRemoveTxn(String validator) throws IOException, InterruptedException {
-        return getSignedTxn(getSendValidatorRemoveTxn(validator));
+    public byte[] getSignedSendValidatorRemoveTxn(String validator, int nonce) throws IOException, InterruptedException {
+        return getSignedTxn(getSendValidatorRemoveTxn(validator, nonce));
+    }
+    /**
+     * Sends the transaction to remove validator
+     *
+     * @param validator
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     * @throws IOException If there's an issue with the network or stream handling
+     * @throws InterruptedException If the request is interrupted
+     */
+    public Response sendValidatorRemoveTxn(String validator, int nonce) throws IOException, InterruptedException {
+        return PWRJ.broadcastTxn(getSignedSendValidatorRemoveTxn(validator, nonce));
     }
     /**
      * Sends the transaction to remove validator
@@ -903,7 +916,7 @@ public class PWRWallet {
      * @throws InterruptedException If the request is interrupted
      */
     public Response sendValidatorRemoveTxn(String validator) throws IOException, InterruptedException {
-        return PWRJ.broadcastTxn(getSignedSendValidatorRemoveTxn(validator));
+        return PWRJ.broadcastTxn(getSignedSendValidatorRemoveTxn(validator, getNonce()));
     }
 
     /**

@@ -115,6 +115,7 @@ public class Transaction {
 
     public JSONObject toJSON() {
         JSONObject json = new JSONObject();
+
         json.put("size", size);
         json.put("positionInTheBlock", positionInTheBlock);
         json.put("fee", fee);
@@ -123,6 +124,10 @@ public class Transaction {
         json.put("to", to);
         json.put("nonceOrValidationHash", nonceOrValidationHash);
         json.put("hash", hash);
+        json.put("blockNumber", getBlockNumber());
+        json.put("nonceOrValidationHash", getNonceOrValidationHash());
+        json.put("timestamp", getTimestamp());
+
         return json;
     }
 

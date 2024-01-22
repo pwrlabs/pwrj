@@ -330,6 +330,35 @@ public class PWRJ {
         }
     }
 
+    public static VmDataTxn[] getVMDataTxnsFilterByBytePrefix(long startingBlock, long endingBlock, long vmId, byte[] prefix) {
+        try {
+            HttpGet request = new HttpGet(rpcNodeUrl + "/getVmTransactionsSortByBytePrefix/?startingBlock=" + startingBlock + "&endingBlock=" + endingBlock + "&vmId=" + vmId + "&bytePrefix=" + Hex.toHexString(prefix));
+            HttpResponse response = client.execute(request);
+
+            if (response.getStatusLine().getStatusCode() == 200) {
+                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
+
+                JSONArray txns = object.getJSONArray("transactions");
+                VmDataTxn[] txnsArray = new VmDataTxn[txns.length()];
+
+                for(int i = 0; i < txns.length(); i++) {
+                    JSONObject txnObject = txns.getJSONObject(i);
+                    VmDataTxn txn = new VmDataTxn(txnObject);
+                    txnsArray[i] = txn;
+                }
+
+                return txnsArray;
+            } else if (response.getStatusLine().getStatusCode() == 400) {
+                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
+                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message") + " " + object.getString("error"));
+            } else {
+                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static long getActiveVotingPower() {
         try {
             HttpGet request = new HttpGet(rpcNodeUrl + "/activeVotingPower/");
@@ -757,11 +786,6 @@ public class PWRJ {
             e.printStackTrace();
             return BigDecimal.valueOf(0);
         }
-    }
-
-    public static void main(String[] args) {
-        PWRJ.setRpcNodeUrl("https://pwrrpc.pwrlabs.io/");
-        System.out.println(getShareValue("0x32b3f8d2f336b3ecd2a111606fdcbad838534ef1"));
     }
 
 
