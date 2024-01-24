@@ -346,12 +346,16 @@ public class PWRWallet {
      * @return A byte array that represents the transaction of the method
      */
     public byte[] getDelegateTxn(String to, long amount, int nonce) {
+        if(to.charAt(0) != '0' || to.charAt(1) != 'x') {
+            to.substring(2);
+        }
+
         ByteBuffer buffer = ByteBuffer.allocate(33);
 
         buffer.put((byte) 3);
         buffer.putInt(nonce);
         buffer.putLong(amount);
-        buffer.put(Hex.decode(to.substring(2)));
+        buffer.put(Hex.decode(to));
 
         return buffer.array();
     }
@@ -621,7 +625,6 @@ public class PWRWallet {
     public Response claimVmId(long vmId, int nonce) {
         return PWRJ.broadcastTxn(getSignedClaimVmIdTxn(vmId, nonce));
     }
-
     /**
      * Sends a transaction with the current nonce to claim a Virtual Machine ID on the PWR network, ensuring its owner 15% revenue of all transaction fees paid when transacting with this VM.
      *

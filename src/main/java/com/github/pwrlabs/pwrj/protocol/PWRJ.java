@@ -202,6 +202,32 @@ public class PWRJ {
 //        }
     }
 
+    public static String getGuardianOfAddress(String address) {
+        try {
+            HttpGet request = new HttpGet(rpcNodeUrl + "/guardianOf/?userAddress=" + address);
+            HttpResponse response = client.execute(request);
+
+            if (response.getStatusLine().getStatusCode() == 200) {
+                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
+
+                if(object.getBoolean("hasGuardian")) {
+                    return object.getString("guardian");
+                } else {
+                    return null;
+                }
+            } else if (response.getStatusLine().getStatusCode() == 400) {
+                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
+
+                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
+            } else {
+                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
 
 
     /**
@@ -726,42 +752,6 @@ public class PWRJ {
         }
     }
 
-    public static JSONObject getShareValue(List<String> validators, long blockNumber) {
-        try {
-            HttpPost postRequest = new HttpPost(rpcNodeUrl + "/getShareValue/");
-
-            JSONArray validatorsArray = new JSONArray();
-            for (String validator: validators) {
-                validatorsArray.put(validator);
-            }
-
-            JSONObject json = new JSONObject();
-            json.put("validators", validatorsArray);
-            json.put("blockNumber", blockNumber);
-
-            // Set up the header types needed to properly transfer JSON
-            postRequest.setHeader("Accept", "application/json");
-            postRequest.setHeader("Content-type", "application/json");
-            postRequest.setEntity(new StringEntity(json.toString(), StandardCharsets.UTF_8));
-            // Execute request
-            HttpResponse response = client.execute(postRequest);
-
-            if (response.getStatusLine().getStatusCode() == 200) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                JSONObject shareValues = object.getJSONObject("shareValues");
-                return shareValues;
-            } else if (response.getStatusLine().getStatusCode() == 400) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                System.out.printf(object.toString());
-                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
-            } else {
-                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new JSONObject();
-        }
-    }
     public static BigDecimal getShareValue(String validator) {
         try {
             HttpPost postRequest = new HttpPost(rpcNodeUrl + "/validator/shareValue/?validatorAddress=" + validator);
