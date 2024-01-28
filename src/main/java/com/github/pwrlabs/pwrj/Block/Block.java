@@ -1,6 +1,7 @@
 package com.github.pwrlabs.pwrj.Block;
 
 import com.github.pwrlabs.pwrj.Transaction.*;
+import com.github.pwrlabs.pwrj.protocol.PWRJ;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -16,16 +17,25 @@ public class Block {
     private final Transaction[] transactions;
 
     public Block(JSONObject blockJson) {
-        transactionCount = blockJson.getInt("transactionCount");
-        size = blockJson.getInt("blockSize");
-        number = blockJson.getLong("blockNumber");
-        reward = blockJson.getLong("blockReward");
-        timestamp = blockJson.getLong("timestamp");
-        hash = blockJson.getString("blockHash");
-        submitter = blockJson.getString("blockSubmitter");
-        success = blockJson.getBoolean("success");
+//        transactionCount = blockJson.getInt("transactionCount");
+//        size = blockJson.getInt("blockSize");
+//        number = blockJson.getLong("blockNumber");
+//        reward = blockJson.getLong("blockReward");
+//        timestamp = blockJson.getLong("timestamp");
+//        hash = blockJson.getString("blockHash");
+//        submitter = blockJson.getString("blockSubmitter");
+//        success = blockJson.getBoolean("success");
 
-        JSONArray txns = blockJson.getJSONArray("transactions");
+        transactionCount = (Integer) PWRJ.getOrDefault(blockJson, "transactionCount", 0);
+        size = (Integer) PWRJ.getOrDefault(blockJson, "blockSize", 0);
+        number = (Long) PWRJ.getOrDefault(blockJson, "blockNumber", 0L);
+        reward = (Long) PWRJ.getOrDefault(blockJson, "blockReward", 0L);
+        timestamp = (Long) PWRJ.getOrDefault(blockJson, "timestamp", 0L);
+        hash = (String) PWRJ.getOrDefault(blockJson, "blockHash", "");
+        submitter = (String) PWRJ.getOrDefault(blockJson, "blockSubmitter", "");
+        success = (Boolean) PWRJ.getOrDefault(blockJson, "success", false);
+
+        JSONArray txns = (JSONArray) PWRJ.getOrDefault(blockJson, "transactions", new JSONArray());
         transactions = new Transaction[txns.length()];
 
         for(int i = 0; i < txns.length(); i++) {

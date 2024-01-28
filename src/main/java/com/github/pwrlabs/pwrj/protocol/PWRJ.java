@@ -1,46 +1,31 @@
 package com.github.pwrlabs.pwrj.protocol;
 
 import com.github.pwrlabs.pwrj.Block.Block;
-import com.github.pwrlabs.pwrj.Delegator.Delegator;
 import com.github.pwrlabs.pwrj.Transaction.VmDataTxn;
 import com.github.pwrlabs.pwrj.Utils.Hash;
 import com.github.pwrlabs.pwrj.Utils.Response;
 import com.github.pwrlabs.pwrj.Validator.Validator;
-import com.github.pwrlabs.pwrj.wallet.PWRWallet;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.*;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.util.encoders.Hex;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.net.URI;
 //import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
 //import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.security.Security;
+
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.HttpResponse;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.NameValuePair;
-import org.apache.http.util.EntityUtils;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class PWRJ {
 
@@ -228,6 +213,36 @@ public class PWRJ {
             return "";
         }
     }
+
+//    public static Map<String/*User*/, String/*Guardian*/> getGuardiansOf(List<String> address) {
+//        try {
+//            HttpPost request = new HttpPost(rpcNodeUrl + "/guardiansOf/");
+//            JSONObject object = new JSONObject();
+//            JSONArray users = new JSONArray(address);
+//            object.put("users", users);
+//            request.setEntity(new StringEntity(object.toString(), StandardCharsets.UTF_8));
+//
+//            HttpResponse response = client.execute(request);
+//
+//            if (response.getStatusLine().getStatusCode() == 200) {
+//                object = new JSONObject(EntityUtils.toString(response.getEntity()));
+//                JSONObject guardianOfUser = object.getJSONObject("guardianOfUser");
+//
+//                Map<String,Object>
+//                return guardianOfUser.toMap();
+//            } else if (response.getStatusLine().getStatusCode() == 400) {
+//                object = new JSONObject(EntityUtils.toString(response.getEntity()));
+//
+//                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
+//            } else {
+//                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
+//            }
+//
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return new HashMap<>();
+//        }
+//    }
 
 
     /**
@@ -664,7 +679,7 @@ public class PWRJ {
                 for(int i = 0; i < validators.length(); i++) {
                     JSONObject validatorObject = validators.getJSONObject(i);
                     //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
-                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), validatorObject.getBoolean("badActor"), validatorObject.getLong("votingPower"), validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"), "active");
+                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), (Boolean) getOrDefault(validatorObject, "badActor", false), validatorObject.getLong("votingPower"), validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"), "active");
                     validatorsList.add(validator);
                 }
                 return validatorsList;
@@ -918,4 +933,8 @@ public class PWRJ {
         }
     }
 
+
+    public static Object getOrDefault(JSONObject jsonObject, String key, Object defaultValue) {
+        return jsonObject.has(key) ? jsonObject.get(key) : defaultValue;
+    }
 }
