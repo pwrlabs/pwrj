@@ -599,7 +599,7 @@ public class PWRJ {
                 for(int i = 0; i < validators.length(); i++) {
                     JSONObject validatorObject = validators.getJSONObject(i);
                     //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
-                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), validatorObject.getBoolean("badActor"), validatorObject.getLong("votingPower"), validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"), validatorObject.getString("status"));
+                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), (Boolean) getOrDefault(validatorObject, "badActor", false), validatorObject.getLong("votingPower"), validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"), validatorObject.getString("status"));
                     validatorsList.add(validator);
                 }
                 return validatorsList;
@@ -639,7 +639,7 @@ public class PWRJ {
                 for(int i = 0; i < validators.length(); i++) {
                     JSONObject validatorObject = validators.getJSONObject(i);
                     //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
-                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), validatorObject.getBoolean("badActor"), validatorObject.getLong("votingPower"), validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"), "standby");
+                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), (Boolean) getOrDefault(validatorObject, "badActor", false), validatorObject.getLong("votingPower"), validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"), "standby");
                     validatorsList.add(validator);
                 }
                 return validatorsList;
