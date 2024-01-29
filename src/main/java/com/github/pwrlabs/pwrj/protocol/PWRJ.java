@@ -257,8 +257,23 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public static long getBlocksCount() throws IOException, InterruptedException {
+    public static long getBlocksCount() {
         try {
+            // Set timeouts
+            int connectionTimeout = 5 * 1000; // 5 seconds
+            int socketTimeout = 5 * 1000; // 5 seconds
+
+            // Create custom request configuration
+            RequestConfig requestConfig = RequestConfig.custom()
+                    .setConnectTimeout(connectionTimeout)
+                    .setSocketTimeout(socketTimeout)
+                    .build();
+
+            // Use custom configuration
+            CloseableHttpClient client = HttpClients.custom()
+                    .setDefaultRequestConfig(requestConfig)
+                    .build();
+
             HttpGet request = new HttpGet(rpcNodeUrl + "/blocksCount/");
             HttpResponse response = client.execute(request);
 
@@ -275,24 +290,6 @@ public class PWRJ {
             e.printStackTrace();
             return 0;
         }
-//        HttpRequest request = HttpRequest.newBuilder()
-//                .uri(URI.create(rpcNodeUrl + "/blocksCount/"))
-//                .GET()
-//                .header("Accept", "application/json")
-//                .build();
-//
-//        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-//
-//
-//        if (response.statusCode() == 200) {
-//            JSONObject object = new JSONObject(response.body());
-//            return object.getLong("blocksCount");
-//        } else if (response.statusCode() == 400) {
-//            JSONObject object = new JSONObject(response.body());
-//            throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
-//        } else {
-//            throw new RuntimeException("Failed with HTTP error code : " + response.statusCode());
-//        }
     }
 
     /**
@@ -599,7 +596,13 @@ public class PWRJ {
                 for(int i = 0; i < validators.length(); i++) {
                     JSONObject validatorObject = validators.getJSONObject(i);
                     //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
-                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), (Boolean) getOrDefault(validatorObject, "badActor", false), validatorObject.getLong("votingPower"), validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"), validatorObject.getString("status"));
+                    long votingPower;
+                    if(validatorObject.has("votingPower")) {
+                        votingPower = validatorObject.getLong("votingPower");
+                    } else {
+                        votingPower = 0L;
+                    }
+                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), (Boolean) getOrDefault(validatorObject, "badActor", false), votingPower, validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"), validatorObject.getString("status"));
                     validatorsList.add(validator);
                 }
                 return validatorsList;
@@ -639,7 +642,13 @@ public class PWRJ {
                 for(int i = 0; i < validators.length(); i++) {
                     JSONObject validatorObject = validators.getJSONObject(i);
                     //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
-                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), (Boolean) getOrDefault(validatorObject, "badActor", false), validatorObject.getLong("votingPower"), validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"), "standby");
+                    long votingPower;
+                    if(validatorObject.has("votingPower")) {
+                        votingPower = validatorObject.getLong("votingPower");
+                    } else {
+                        votingPower = 0L;
+                    }
+                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), (Boolean) getOrDefault(validatorObject, "badActor", false), votingPower, validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"), "standby");
                     validatorsList.add(validator);
                 }
                 return validatorsList;
@@ -679,7 +688,13 @@ public class PWRJ {
                 for(int i = 0; i < validators.length(); i++) {
                     JSONObject validatorObject = validators.getJSONObject(i);
                     //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
-                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), (Boolean) getOrDefault(validatorObject, "badActor", false), validatorObject.getLong("votingPower"), validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"), "active");
+                    long votingPower;
+                    if(validatorObject.has("votingPower")) {
+                        votingPower = validatorObject.getLong("votingPower");
+                    } else {
+                        votingPower = 0L;
+                    }
+                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), (Boolean) getOrDefault(validatorObject, "badActor", false), votingPower, validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"), "active");
                     validatorsList.add(validator);
                 }
                 return validatorsList;
