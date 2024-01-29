@@ -596,14 +596,27 @@ public class PWRJ {
                 for(int i = 0; i < validators.length(); i++) {
                     JSONObject validatorObject = validators.getJSONObject(i);
                     //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
-                    long votingPower;
+                    long votingPower, totalShares;
                     if(validatorObject.has("votingPower")) {
                         votingPower = validatorObject.getLong("votingPower");
                     } else {
                         votingPower = 0L;
                     }
-                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), (Boolean) getOrDefault(validatorObject, "badActor", false), votingPower, validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"), validatorObject.getString("status"));
-                    validatorsList.add(validator);
+
+                    if(validatorObject.has("totalShares")) {
+                        totalShares = validatorObject.getLong("totalShares");
+                    } else {
+                        totalShares = 0L;
+                    }
+
+                    int delegatorsCount;
+                    if(validatorObject.has("delegatorsCount")) {
+                        delegatorsCount = validatorObject.getInt("delegatorsCount");
+                    } else {
+                        delegatorsCount = 0;
+                    }
+
+                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), (Boolean) getOrDefault(validatorObject, "badActor", false), votingPower, totalShares, delegatorsCount, "active");validatorsList.add(validator);
                 }
                 return validatorsList;
             } else if (response.getStatusLine().getStatusCode() == 400) {
@@ -642,14 +655,27 @@ public class PWRJ {
                 for(int i = 0; i < validators.length(); i++) {
                     JSONObject validatorObject = validators.getJSONObject(i);
                     //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
-                    long votingPower;
+                    long votingPower, totalShares;
                     if(validatorObject.has("votingPower")) {
                         votingPower = validatorObject.getLong("votingPower");
                     } else {
                         votingPower = 0L;
                     }
-                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), (Boolean) getOrDefault(validatorObject, "badActor", false), votingPower, validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"), "standby");
-                    validatorsList.add(validator);
+
+                    if(validatorObject.has("totalShares")) {
+                        totalShares = validatorObject.getLong("totalShares");
+                    } else {
+                        totalShares = 0L;
+                    }
+
+                    int delegatorsCount;
+                    if(validatorObject.has("delegatorsCount")) {
+                        delegatorsCount = validatorObject.getInt("delegatorsCount");
+                    } else {
+                        delegatorsCount = 0;
+                    }
+
+                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), (Boolean) getOrDefault(validatorObject, "badActor", false), votingPower, totalShares, delegatorsCount, "active");validatorsList.add(validator);
                 }
                 return validatorsList;
             } else if (response.getStatusLine().getStatusCode() == 400) {
@@ -688,13 +714,27 @@ public class PWRJ {
                 for(int i = 0; i < validators.length(); i++) {
                     JSONObject validatorObject = validators.getJSONObject(i);
                     //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
-                    long votingPower;
+                    long votingPower, totalShares;
                     if(validatorObject.has("votingPower")) {
                         votingPower = validatorObject.getLong("votingPower");
                     } else {
                         votingPower = 0L;
                     }
-                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), (Boolean) getOrDefault(validatorObject, "badActor", false), votingPower, validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"), "active");
+
+                    if(validatorObject.has("totalShares")) {
+                        totalShares = validatorObject.getLong("totalShares");
+                    } else {
+                        totalShares = 0L;
+                    }
+
+                    int delegatorsCount;
+                    if(validatorObject.has("delegatorsCount")) {
+                        delegatorsCount = validatorObject.getInt("delegatorsCount");
+                    } else {
+                        delegatorsCount = 0;
+                    }
+
+                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), (Boolean) getOrDefault(validatorObject, "badActor", false), votingPower, totalShares, delegatorsCount, "active");
                     validatorsList.add(validator);
                 }
                 return validatorsList;

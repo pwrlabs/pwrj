@@ -6,7 +6,7 @@
 
     <groupId>com.github.pwrlabs</groupId>
     <artifactId>pwrj</artifactId>
-    <version>2.6.3</version>
+    <version>2.6.4</version>
 
     <name>PWRJ</name>
     <description>PWRJ is a lightweight, simple, easy to use Java library for integrating with the PWR Chain and building wallets and virtual machines on it.</description>
