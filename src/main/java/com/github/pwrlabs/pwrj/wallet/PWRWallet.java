@@ -569,8 +569,12 @@ public class PWRWallet {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException For various transaction-related validation issues.
      */
-    public Response sendVmDataTxn(long vmId, byte[] data, int nonce) throws IOException, InterruptedException {
-        return PWRJ.broadcastTxn(getSignedSendVmDataTxn(vmId, data, nonce));
+    public Response sendVmDataTxn(long vmId, byte[] data, int nonce) {
+        try {
+            return PWRJ.broadcastTxn(getSignedSendVmDataTxn(vmId, data, nonce));
+        } catch (IOException | InterruptedException e) {
+            return new Response(false, null, e.getMessage());
+        }
     }
 
     /**
