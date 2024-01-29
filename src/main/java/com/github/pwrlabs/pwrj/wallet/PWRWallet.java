@@ -572,7 +572,7 @@ public class PWRWallet {
     public Response sendVmDataTxn(long vmId, byte[] data, int nonce) {
         try {
             return PWRJ.broadcastTxn(getSignedSendVmDataTxn(vmId, data, nonce));
-        } catch (IOException | InterruptedException e) {
+        } catch (Exception e) {
             return new Response(false, null, e.getMessage());
         }
     }
