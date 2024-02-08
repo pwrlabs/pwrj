@@ -165,6 +165,15 @@ public class PWRWallet {
 
         return finalTxn.array();
     }
+
+    public byte[] getTxnBase(byte identifier, int nonce) {
+        ByteBuffer buffer = ByteBuffer.allocate(6);
+        buffer.put(identifier);
+        buffer.put(PWRJ.getChainId());
+        buffer.putInt(nonce);
+        return buffer.array();
+    }
+
     /**
      * Returns the transaction of transfer PWR tokens to a specified address.
      *
@@ -185,9 +194,9 @@ public class PWRWallet {
             throw new RuntimeException("Nonce cannot be negative");
         }
 
-        ByteBuffer buffer = ByteBuffer.allocate(33);
-        buffer.put((byte) 0);
-        buffer.putInt(nonce);
+        byte[] txnBase = getTxnBase((byte) 0, nonce);
+        ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 8 + (to.length/2));
+        buffer.put(txnBase);
         buffer.putLong(amount);
         buffer.put(to);
 
@@ -219,7 +228,10 @@ public class PWRWallet {
      * @throws RuntimeException For various transaction-related validation issues.
      */
     public Response transferPWR(String to, long amount, int nonce) throws IOException, InterruptedException {
-        return PWRJ.broadcastTxn(getSignedTransferPWRTxn(Hex.decode(to.substring(2)), amount, nonce));
+        if(to.charAt(0) == '0' || to.charAt(1) == 'x') {
+            to = to.substring(2);
+        }
+        return PWRJ.broadcastTxn(getSignedTransferPWRTxn(Hex.decode(to), amount, nonce));
     }
     /**
      * Transfers PWR tokens to a specified address using the current nonce.
@@ -245,10 +257,11 @@ public class PWRWallet {
      * @return A byte array that represents the transaction of this method
      */
     public byte[] getJoinTxn(String ip, int nonce) {
-        ByteBuffer buffer = ByteBuffer.allocate(1 + 4 + ip.getBytes(StandardCharsets.UTF_8).length);
+        byte[] txnBase = getTxnBase((byte) 1, nonce);
+        byte[] ipBytes = ip.getBytes(StandardCharsets.UTF_8);
 
-        buffer.put((byte) 1);
-        buffer.putInt(nonce);
+        ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + ipBytes.length);
+        buffer.put(txnBase);
         buffer.put(ip.getBytes(StandardCharsets.UTF_8));
 
         return buffer.array();
@@ -263,7 +276,6 @@ public class PWRWallet {
     public byte[] getSignedJoinTxn(String ip, int nonce) {
         return getSignedTxn(getJoinTxn(ip, nonce));
     }
-
     /**
      * Joins the PWR network as a standby validator.
      *
@@ -297,12 +309,9 @@ public class PWRWallet {
      * @return A byte array that represents a signed transaction of the method
      */
     public byte[] getClaimActiveNodeSpotTxn(int nonce) {
-        ByteBuffer buffer = ByteBuffer.allocate(5);
+        byte[] txnBase = getTxnBase((byte) 2, nonce);
 
-        buffer.put((byte) 2);
-        buffer.putInt(nonce);
-
-        return buffer.array();
+        return txnBase;
     }
     /**
      * Returns the signed transaction of Claim an active node spot on the PWR network.
@@ -346,14 +355,13 @@ public class PWRWallet {
      * @return A byte array that represents the transaction of the method
      */
     public byte[] getDelegateTxn(String to, long amount, int nonce) {
-        if(to.charAt(0) != '0' || to.charAt(1) != 'x') {
-            to.substring(2);
+        if(to.charAt(0) == '0' || to.charAt(1) == 'x') {
+            to = to.substring(2);
         }
 
-        ByteBuffer buffer = ByteBuffer.allocate(33);
-
-        buffer.put((byte) 3);
-        buffer.putInt(nonce);
+        byte[] txnBase = getTxnBase((byte) 3, nonce);
+        ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 8 + (to.length()/2));
+        buffer.put(txnBase);
         buffer.putLong(amount);
         buffer.put(Hex.decode(to));
 
@@ -407,10 +415,13 @@ public class PWRWallet {
      * @return A byte array that represents the transaction of this method
      */
     public byte[] getWithdrawTxn(String from, long sharesAmount, int nonce) {
-        ByteBuffer buffer = ByteBuffer.allocate(33);
+        if(from.charAt(0) == '0' && from.charAt(1) == 'x') {
+            from = from.substring(2);
+        }
 
-        buffer.put((byte) 4);
-        buffer.putInt(nonce);
+        byte[] txnBase = getTxnBase((byte) 4, nonce);
+        ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 8 + (from.length()/2));
+        buffer.put(txnBase);
         buffer.putLong(sharesAmount);
         buffer.put(Hex.decode(from.substring(2)));
 
@@ -467,10 +478,13 @@ public class PWRWallet {
         BigDecimal shareValue = PWRJ.getShareValue(from);
         long sharesAmount = BigDecimal.valueOf(pwrAmount).divide(shareValue, 18, BigDecimal.ROUND_DOWN).longValue();
 
-        ByteBuffer buffer = ByteBuffer.allocate(33);
+        if(from.charAt(0) == '0' && from.charAt(1) == 'x') {
+            from = from.substring(2);
+        }
 
-        buffer.put((byte) 4);
-        buffer.putInt(nonce);
+        byte[] txnBase = getTxnBase((byte) 4, nonce);
+        ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 8 + (from.length()/2));
+        buffer.put(txnBase);
         buffer.putLong(sharesAmount);
         buffer.put(Hex.decode(from.substring(2)));
 
@@ -534,9 +548,9 @@ public class PWRWallet {
             throw new RuntimeException("Nonce is too low");
         }
 
-        ByteBuffer buffer = ByteBuffer.allocate(13 + data.length);
-        buffer.put((byte) 5);
-        buffer.putInt(nonce);
+        byte[] txnBase = getTxnBase((byte) 5, nonce);
+        ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 8 + data.length);
+        buffer.put(txnBase);
         buffer.putLong(vmId);
         buffer.put(data);
 
@@ -600,9 +614,9 @@ public class PWRWallet {
      * @return A byte array that represents the transaction of this method
      */
     public byte[] getClaimVmIdTxn(long vmId, int nonce) {
-        ByteBuffer buffer = ByteBuffer.allocate(13);
-        buffer.put((byte) 6);
-        buffer.putInt(nonce);
+        byte[] txnBase = getTxnBase((byte) 6, nonce);
+        ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 8);
+        buffer.put(txnBase);
         buffer.putLong(vmId);
 
         return buffer.array();
@@ -662,9 +676,9 @@ public class PWRWallet {
             throw new RuntimeException("Nonce is too low");
         }
 
-        ByteBuffer buffer = ByteBuffer.allocate(13 + txn.length);
-        buffer.put((byte) 7);
-        buffer.putInt(nonce);
+        byte[] txnBase = getTxnBase((byte) 7, nonce);
+        ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 8 + txn.length);
+        buffer.put(txnBase);
         buffer.putLong(vmId);
         buffer.put(txn);
 
@@ -727,9 +741,9 @@ public class PWRWallet {
     public byte[] getSetGuardianTxn(byte[] guardianAddress, long expiryDate, int nonce) {
         if(guardianAddress.length != 20) return null;
 
-        ByteBuffer buffer = ByteBuffer.allocate(33);
-        buffer.put((byte) 8);
-        buffer.putInt(nonce);
+        byte[] txnBase = getTxnBase((byte) 8, nonce);
+        ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 20 + 8);
+        buffer.put(txnBase);
         buffer.putLong(expiryDate);
         buffer.put(guardianAddress);
 
@@ -781,10 +795,9 @@ public class PWRWallet {
      * @return a byte array with the outcome of the transaction
      */
     public byte[] getRemoveGuardianTxn(int nonce) {
-        ByteBuffer buffer = ByteBuffer.allocate(5);
-        buffer.put((byte) 9);
-        buffer.putInt(nonce);
-        return buffer.array();
+        byte[] txnBase = getTxnBase((byte) 9, nonce);
+
+        return txnBase;
     }
     /**
      * Returns the signed transaction of removing/revoking a guardian wallet
@@ -828,9 +841,9 @@ public class PWRWallet {
      *         to be sent to the guardian wallet)
      */
     public byte[] getSendGuardianWrappedTransactionTxn(byte[] txn, int nonce) {
-        ByteBuffer buffer = ByteBuffer.allocate(5 + txn.length);
-        buffer.put((byte) 10);
-        buffer.putInt(nonce);
+        byte[] txnBase = getTxnBase((byte) 10, nonce);
+        ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + txn.length);
+        buffer.put(txnBase);
         buffer.put(txn);
 
         return buffer.array();
@@ -880,10 +893,14 @@ public class PWRWallet {
      * @throws IOException If there's an issue with the network or stream handling
      * @throws InterruptedException If the request is interrupted
      */
-    public byte[] getSendValidatorRemoveTxn(String validator, int nonce) throws IOException, InterruptedException {
-        ByteBuffer buffer = ByteBuffer.allocate(25);
-        buffer.put((byte) 7);
-        buffer.putInt(nonce);
+    public byte[] getSendValidatorRemoveTxn(String validator, int nonce) {
+        if(validator.charAt(0) == '0' || validator.charAt(1) == 'x') {
+            validator = validator.substring(2);
+        }
+
+        byte[] txnBase = getTxnBase((byte) 11, nonce);
+        ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 20);
+        buffer.put(txnBase);
         buffer.put(Hex.decode(validator.substring(2)));
 
         return buffer.array();

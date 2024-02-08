@@ -31,6 +31,7 @@ public class PWRJ {
 
     private static HttpClient client = HttpClients.createDefault();
     private static String rpcNodeUrl;
+    private static byte chainId = (byte) 1;
     private static long feePerByte = 100;
 
     /**
@@ -42,6 +43,10 @@ public class PWRJ {
         rpcNodeUrl = url;
     }
 
+    public static void setChainId(byte id) {
+        chainId = id;
+    }
+
     /**
      * Retrieves the current RPC node URL being used.
      *
@@ -49,6 +54,10 @@ public class PWRJ {
      */
     public static String getRpcNodeUrl() {
         return rpcNodeUrl;
+    }
+
+    public static byte getChainId() {
+        return chainId;
     }
 
     /**
