@@ -195,7 +195,7 @@ public class PWRWallet {
         }
 
         byte[] txnBase = getTxnBase((byte) 0, nonce);
-        ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 8 + (to.length/2));
+        ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 8 + to.length);
         buffer.put(txnBase);
         buffer.putLong(amount);
         buffer.put(to);
