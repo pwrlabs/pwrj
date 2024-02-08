@@ -31,7 +31,7 @@ public class PWRJ {
 
     private static HttpClient client = HttpClients.createDefault();
     private static String rpcNodeUrl;
-    private static byte chainId = (byte) 1;
+    private static byte chainId = (byte) 0;
     private static long feePerByte = 100;
 
     /**
