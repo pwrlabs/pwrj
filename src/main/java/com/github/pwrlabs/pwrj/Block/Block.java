@@ -56,7 +56,7 @@ public class Block {
             } else if(txnType.equalsIgnoreCase("Claim VM ID")) {
                 txn = new ClaimVmIdTxn(txnObject.getInt("size"), number, txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("sender"), txnObject.getLong("vmId") + "", txnObject.getInt("nonce"), txnObject.getString("hash"), timestamp, txnObject.getLong("vmId"));
             } else {
-                txn = new Transaction((int)PWRJ.getOrDefault(txnObject, "size", 0), number, (int)PWRJ.getOrDefault(txnObject, "positionInTheBlock", 0), (long)PWRJ.getOrDefault(txnObject, "fee", 0L), txnType, (String)PWRJ.getOrDefault(txnObject, "sender", "0x"), (String)PWRJ.getOrDefault(txnObject, "to", "0x"), (int)PWRJ.getOrDefault(txnObject, "nonce", "0"), (String)PWRJ.getOrDefault(txnObject, "hash", "0x"), timestamp);
+                txn = new Transaction((int)PWRJ.getOrDefault(txnObject, "size", 0), number, (int)PWRJ.getOrDefault(txnObject, "positionInTheBlock", 0), ((Number)PWRJ.getOrDefault(txnObject, "fee", 0L)).longValue(), txnType, (String)PWRJ.getOrDefault(txnObject, "sender", "0x"), (String)PWRJ.getOrDefault(txnObject, "to", "0x"), (int)PWRJ.getOrDefault(txnObject, "nonce", "0"), (String)PWRJ.getOrDefault(txnObject, "hash", "0x"), timestamp);
             }
 
             transactions[i] = txn;
@@ -136,5 +136,12 @@ public class Block {
      */
     public Transaction[] getTransactions() {
         return transactions;
+    }
+
+    public static void main(String[] args) throws Exception {
+        PWRJ.setRpcNodeUrl("http://localhost:8085/");
+        for(int t=1; t < 1000; ++t) {
+            PWRJ.getBlockByNumber(t);
+        }
     }
 }
