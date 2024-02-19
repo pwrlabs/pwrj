@@ -10,11 +10,11 @@ public class Transaction {
     private final String type;
     private final String from;
     private final String to;
-    private final String nonceOrValidationHash;
+    private final int nonce;
     private final String hash;
     private final long timestamp;
 
-    public Transaction(int size, long blockNumber, int positionInTheBlock, long fee, String type, String from, String to, String nonceOrValidationHash, String hash, long timestamp) {
+    public Transaction(int size, long blockNumber, int positionInTheBlock, long fee, String type, String from, String to, int nonce, String hash, long timestamp) {
         this.size = size;
         this.blockNumber = blockNumber;
         this.positionInTheBlock = positionInTheBlock;
@@ -22,7 +22,7 @@ public class Transaction {
         this.type = type;
         this.from = from;
         this.to = to;
-        this.nonceOrValidationHash = nonceOrValidationHash;
+        this.nonce = nonce;
         this.hash = hash;
         this.timestamp = timestamp;
     }
@@ -122,7 +122,7 @@ public class Transaction {
         json.put("type", type);
         json.put("from", from);
         json.put("to", to);
-        json.put("nonceOrValidationHash", nonceOrValidationHash);
+        json.put("nonce", nonce);
         json.put("hash", hash);
         json.put("blockNumber", getBlockNumber());
         json.put("nonceOrValidationHash", getNonceOrValidationHash());
