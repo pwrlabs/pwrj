@@ -44,17 +44,17 @@ public class Block {
             
             String txnType = txnObject.has("type") ? txnObject.getString("type") : "Unknown";
             if(txnType.equalsIgnoreCase("Transfer")) {
-                txn = new TransferTxn(txnObject.getInt("size"), number, txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("sender"), txnObject.getString("receiver"), txnObject.getString("nonce"), txnObject.getString("hash"), timestamp, txnObject.getLong("value"));
+                txn = new TransferTxn(txnObject.getInt("size"), number, txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("sender"), txnObject.getString("receiver"), txnObject.getInt("nonce"), txnObject.getString("hash"), timestamp, txnObject.getLong("value"));
             } else if(txnType.equalsIgnoreCase("VM Data")) {
-                txn = new VmDataTxn(txnObject.getInt("size"), number, txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("sender"), txnObject.getLong("vmId") + "", txnObject.getString("nonce"), txnObject.getString("hash"), timestamp, txnObject.getLong("vmId"), txnObject.getString("data"));
+                txn = new VmDataTxn(txnObject.getInt("size"), number, txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("sender"), txnObject.getLong("vmId") + "", txnObject.getInt("nonce"), txnObject.getString("hash"), timestamp, txnObject.getLong("vmId"), txnObject.getString("data"));
             } else if(txnType.equalsIgnoreCase("Delegate")) {
-                txn = new DelegateTxn(txnObject.getInt("size"), number, txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("sender"), txnObject.getString("validator"), txnObject.getString("nonce"), txnObject.getString("hash"), timestamp, txnObject.getLong("value"));
+                txn = new DelegateTxn(txnObject.getInt("size"), number, txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("sender"), txnObject.getString("validator"), txnObject.getInt("nonce"), txnObject.getString("hash"), timestamp, txnObject.getLong("value"));
             } else if(txnType.equalsIgnoreCase("Withdraw")) {
-                txn = new WithdrawTxn(txnObject.getInt("size"), number, txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("sender"), txnObject.getString("validator"), txnObject.getString("nonce"), txnObject.getString("hash"), timestamp, txnObject.getLong("sharesAmount"));
+                txn = new WithdrawTxn(txnObject.getInt("size"), number, txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("sender"), txnObject.getString("validator"), txnObject.getInt("nonce"), txnObject.getString("hash"), timestamp, txnObject.getLong("sharesAmount"));
             } else if(txnType.equalsIgnoreCase("Validator Join")) {
-                txn = new JoinTxn(txnObject.getInt("size"), number, txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("sender"), "PWR Chain", txnObject.getString("nonce"), txnObject.getString("hash"), timestamp);
+                txn = new JoinTxn(txnObject.getInt("size"), number, txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("sender"), "PWR Chain", txnObject.getInt("nonce"), txnObject.getString("hash"), timestamp);
             } else if(txnType.equalsIgnoreCase("Claim VM ID")) {
-                txn = new ClaimVmIdTxn(txnObject.getInt("size"), number, txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("sender"), txnObject.getLong("vmId") + "", txnObject.getString("nonce"), txnObject.getString("hash"), timestamp, txnObject.getLong("vmId"));
+                txn = new ClaimVmIdTxn(txnObject.getInt("size"), number, txnObject.getInt("positionInTheBlock"), txnObject.getLong("fee"), txnType, txnObject.getString("sender"), txnObject.getLong("vmId") + "", txnObject.getInt("nonce"), txnObject.getString("hash"), timestamp, txnObject.getLong("vmId"));
             } else {
                 txn = new Transaction((int)PWRJ.getOrDefault(txnObject, "size", 0), number, (int)PWRJ.getOrDefault(txnObject, "positionInTheBlock", 0), (long)PWRJ.getOrDefault(txnObject, "fee", 0), txnType, (String)PWRJ.getOrDefault(txnObject, "sender", "0x"), (String)PWRJ.getOrDefault(txnObject, "to", "0x"), (int)PWRJ.getOrDefault(txnObject, "nonce", "0"), (String)PWRJ.getOrDefault(txnObject, "hash", "0x"), timestamp);
             }

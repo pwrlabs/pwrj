@@ -5,8 +5,8 @@ import org.json.JSONObject;
 public class TransferTxn extends Transaction {
     private final long value;
 
-    public TransferTxn(int transactionSize, long blockNumber, int positionInBlock, long transactionFee, String type, String from, String to, String nonceOrValidationHash, String hash, long timestamp, long value) {
-        super(transactionSize, blockNumber, positionInBlock, transactionFee, type, from, to, nonceOrValidationHash, hash, timestamp);
+    public TransferTxn(int transactionSize, long blockNumber, int positionInBlock, long transactionFee, String type, String sender, String to, int nonce, String hash, long timestamp, long value) {
+        super(transactionSize, blockNumber, positionInBlock, transactionFee, type, sender, to, nonce, hash, timestamp);
 
         this.value = value;
     }

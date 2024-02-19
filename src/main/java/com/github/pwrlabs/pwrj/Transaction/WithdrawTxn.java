@@ -6,8 +6,8 @@ public class WithdrawTxn extends Transaction {
     private final String validator;
     private final long shares;
 
-    public WithdrawTxn(int transactionSize, long blockNumber, int positionInBlock, long transactionFee, String type, String from, String to, String nonceOrValidationHash, String hash, long timestamp, long shares) {
-        super(transactionSize, blockNumber, positionInBlock, transactionFee, type, from, to, nonceOrValidationHash, hash, timestamp);
+    public WithdrawTxn(int transactionSize, long blockNumber, int positionInBlock, long transactionFee, String type, String from, String to, int nonce, String hash, long timestamp, long shares) {
+        super(transactionSize, blockNumber, positionInBlock, transactionFee, type, from, to, nonce, hash, timestamp);
 
         this.validator = to;
         this.shares = shares;

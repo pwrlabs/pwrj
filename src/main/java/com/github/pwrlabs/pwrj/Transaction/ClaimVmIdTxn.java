@@ -5,8 +5,8 @@ import org.json.JSONObject;
 public class ClaimVmIdTxn extends Transaction {
     private final long vmId;
 
-    public ClaimVmIdTxn(int transactionSize, long blockNumber, int positionInBlock, long transactionFee, String type, String from, String to, String nonceOrValidationHash, String hash, long timestamp, long vmId) {
-        super(transactionSize, blockNumber, positionInBlock, transactionFee, type, from, to, nonceOrValidationHash, hash, timestamp);
+    public ClaimVmIdTxn(int transactionSize, long blockNumber, int positionInBlock, long transactionFee, String type, String sender, String to, int nonce, String hash, long timestamp, long vmId) {
+        super(transactionSize, blockNumber, positionInBlock, transactionFee, type, sender, to, nonce, hash, timestamp);
 
         this.vmId = vmId;
     }
@@ -24,7 +24,7 @@ public class ClaimVmIdTxn extends Transaction {
      * @return the owner of the vmId
      */
     public String getOwner() {
-        return getFrom();
+        return getSender();
     }
 
     @Override

@@ -8,19 +8,19 @@ public class Transaction {
     private final int positionInTheBlock;
     private final long fee;
     private final String type;
-    private final String from;
+    private final String sender;
     private final String to;
     private final int nonce;
     private final String hash;
     private final long timestamp;
 
-    public Transaction(int size, long blockNumber, int positionInTheBlock, long fee, String type, String from, String to, int nonce, String hash, long timestamp) {
+    public Transaction(int size, long blockNumber, int positionInTheBlock, long fee, String type, String sender, String to, int nonce, String hash, long timestamp) {
         this.size = size;
         this.blockNumber = blockNumber;
         this.positionInTheBlock = positionInTheBlock;
         this.fee = fee;
         this.type = type;
-        this.from = from;
+        this.sender = sender;
         this.to = to;
         this.nonce = nonce;
         this.hash = hash;
@@ -72,8 +72,8 @@ public class Transaction {
     /**
      * @return the address of the sender of the transaction
      */
-    public String getFrom() {
-        return from;
+    public String getSender() {
+        return sender;
     }
 
     //javadoc of the below function
@@ -86,10 +86,10 @@ public class Transaction {
 
     //javadoc of the below function
     /**
-     * @return the nonce of the transaction if it is a ECDSA transaction, or the validation hash if it is a MHBS transaction
+     * @return the nonce of the transaction
      */
-    public String getNonceOrValidationHash() {
-        return nonceOrValidationHash;
+    public int getNonce() {
+        return nonce;
     }
 
     //javadoc of the below function
@@ -120,12 +120,12 @@ public class Transaction {
         json.put("positionInTheBlock", positionInTheBlock);
         json.put("fee", fee);
         json.put("type", type);
-        json.put("from", from);
+        json.put("sender", sender);
         json.put("to", to);
         json.put("nonce", nonce);
         json.put("hash", hash);
         json.put("blockNumber", getBlockNumber());
-        json.put("nonceOrValidationHash", getNonceOrValidationHash());
+        json.put("nonce", getNonce());
         json.put("timestamp", getTimestamp());
 
         return json;
