@@ -29,10 +29,41 @@ import java.util.*;
 
 public class PWRJ {
 
-    private static HttpClient client = HttpClients.createDefault();
     private static String rpcNodeUrl;
-    private static byte chainId = (byte) 0;
-    private static long feePerByte = 100;
+    private static byte chainId = (byte) -1;
+    private static long feePerByte = 0;
+
+    public static JSONObject httpGet(String url) throws IOException {
+        // Set timeouts
+        int connectionTimeout = 5 * 1000; // 5 seconds
+        int socketTimeout = 5 * 1000; // 5 seconds
+
+        // Create custom request configuration
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(connectionTimeout)
+                .setSocketTimeout(socketTimeout)
+                .build();
+
+        // Use custom configuration
+        CloseableHttpClient client = HttpClients.custom()
+                .setDefaultRequestConfig(requestConfig)
+                .build();
+
+        HttpGet request = new HttpGet(url);
+        HttpResponse response = client.execute(request);
+
+        if (response.getStatusLine().getStatusCode() == 200) {
+            JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
+            System.out.println("Reply object: " + object);
+            return object;
+        } else if (response.getStatusLine().getStatusCode() == 400) {
+            JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
+
+            throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
+        } else {
+            throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
+        }
+    }
 
     /**
      * Sets the RPC node URL. This URL will be used for all RPC calls in the PWRJ library
@@ -41,10 +72,6 @@ public class PWRJ {
      */
     public static void setRpcNodeUrl(String url) {
         rpcNodeUrl = url;
-    }
-
-    public static void setChainId(byte id) {
-        chainId = id;
     }
 
     /**
@@ -56,7 +83,12 @@ public class PWRJ {
         return rpcNodeUrl;
     }
 
-    public static byte getChainId() {
+    public static byte getChainId() throws IOException {
+        if(chainId == -1) {
+            JSONObject object = httpGet(rpcNodeUrl + "/chainId/");
+            chainId = (byte) object.getInt("chainId");
+        }
+
         return chainId;
     }
 
@@ -65,30 +97,17 @@ public class PWRJ {
      *
      * @return The fee-per-byte rate.
      */
-    public static long getFeePerByte() {
+    public static long getFeePerByte() throws IOException {
+        if(feePerByte == 0) {
+            JSONObject object = httpGet(rpcNodeUrl + "/feePerByte/");
+            feePerByte = object.getLong("feePerByte");
+        }
+
         return feePerByte;
     }
-    public static short getBlockchainVersion() {
-        try {
-            HttpGet request = new HttpGet(rpcNodeUrl + "/blockchainVersion/");
-            HttpResponse response = client.execute(request);
 
-            if (response.getStatusLine().getStatusCode() == 200) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-
-                return (short) object.getInt("blockchainVersion");
-            } else if (response.getStatusLine().getStatusCode() == 400) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-
-                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
-            } else {
-                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
-        }
+    public static short getBlockchainVersion() throws IOException {
+        return (short) httpGet(rpcNodeUrl + "/blockchainVersion/").getInt("blockchainVersion");
     }
 
 
@@ -106,45 +125,8 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public static int getNonceOfAddress(String address) throws IOException, InterruptedException {
-        try {
-            HttpGet request = new HttpGet(rpcNodeUrl + "/nonceOfUser/?userAddress=" + address);
-            HttpResponse response = client.execute(request);
-
-            //System.out.printf(EntityUtils.toString(response.getEntity()));
-
-            if (response.getStatusLine().getStatusCode() == 200) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                return object.getInt("nonce");
-            } else if (response.getStatusLine().getStatusCode() == 400) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
-            } else {
-                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
-        }
-
-//        HttpRequest request = HttpRequest.newBuilder()
-//                //http://localhost:8085/nonceOfUser/?userAddress=0x2605c1ad496f428ab2b700edd257f0a378f83750
-//                .uri(URI.create(rpcNodeUrl + "/nonceOfUser/?userAddress=" + address))
-//                .GET()
-//                .header("Accept", "application/json")
-//                .build();
-//
-//        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-//
-//        if (response.statusCode() == 200) {
-//            JSONObject object = new JSONObject(response.body());
-//            return object.getInt("nonce");
-//        } else if (response.statusCode() == 400) {
-//            JSONObject object = new JSONObject(response.body());
-//            throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
-//        } else {
-//            throw new RuntimeException("Failed with HTTP error code : " + response.statusCode());
-//        }
+    public static int getNonceOfAddress(String address) throws IOException {
+        return httpGet(rpcNodeUrl + "/nonceOfUser/?userAddress=" + address).getInt("nonce");
     }
 
     /**
@@ -159,100 +141,19 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public static long getBalanceOfAddress(String address) throws IOException, InterruptedException {
-        try {
-            HttpGet request = new HttpGet(rpcNodeUrl + "/balanceOf/?userAddress=" + address);
-            HttpResponse response = client.execute(request);
-
-            if (response.getStatusLine().getStatusCode() == 200) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                return object.getLong("balance");
-            } else if (response.getStatusLine().getStatusCode() == 400) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
-            } else {
-                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
-        }
-//        HttpRequest request = HttpRequest.newBuilder()
-//                .uri(URI.create(rpcNodeUrl + "/balanceOf/?userAddress=" + address))
-//                .GET()
-//                .header("Accept", "application/json")
-//                .build();
-//
-//        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-//
-//        if (response.statusCode() == 200) {
-//            JSONObject object = new JSONObject(response.body());
-//            return object.getLong("balance");
-//        } else if (response.statusCode() == 400) {
-//            JSONObject object = new JSONObject(response.body());
-//            throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
-//        } else {
-//            throw new RuntimeException("Failed with HTTP error code : " + response.statusCode());
-//        }
+    public static long getBalanceOfAddress(String address) throws IOException {
+        return httpGet(rpcNodeUrl + "/balanceOf/?userAddress=" + address).getLong("balance");
     }
 
-    public static String getGuardianOfAddress(String address) {
-        try {
-            HttpGet request = new HttpGet(rpcNodeUrl + "/guardianOf/?userAddress=" + address);
-            HttpResponse response = client.execute(request);
+    public static String getGuardianOfAddress(String address) throws IOException {
+        JSONObject object = httpGet(rpcNodeUrl + "/guardianOf/?userAddress=" + address);
 
-            if (response.getStatusLine().getStatusCode() == 200) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-
-                if(object.getBoolean("hasGuardian")) {
-                    return object.getString("guardian");
-                } else {
-                    return null;
-                }
-            } else if (response.getStatusLine().getStatusCode() == 400) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-
-                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
-            } else {
-                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "";
+        if(object.getBoolean("isGuarded")) {
+            return object.getString("guardian");
+        } else {
+            return null;
         }
     }
-
-//    public static Map<String/*User*/, String/*Guardian*/> getGuardiansOf(List<String> address) {
-//        try {
-//            HttpPost request = new HttpPost(rpcNodeUrl + "/guardiansOf/");
-//            JSONObject object = new JSONObject();
-//            JSONArray users = new JSONArray(address);
-//            object.put("users", users);
-//            request.setEntity(new StringEntity(object.toString(), StandardCharsets.UTF_8));
-//
-//            HttpResponse response = client.execute(request);
-//
-//            if (response.getStatusLine().getStatusCode() == 200) {
-//                object = new JSONObject(EntityUtils.toString(response.getEntity()));
-//                JSONObject guardianOfUser = object.getJSONObject("guardianOfUser");
-//
-//                Map<String,Object>
-//                return guardianOfUser.toMap();
-//            } else if (response.getStatusLine().getStatusCode() == 400) {
-//                object = new JSONObject(EntityUtils.toString(response.getEntity()));
-//
-//                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
-//            } else {
-//                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
-//            }
-//
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return new HashMap<>();
-//        }
-//    }
-
 
     /**
      * Retrieves the total count of blocks from the RPC node.
@@ -266,39 +167,8 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public static long getBlocksCount() {
-        try {
-            // Set timeouts
-            int connectionTimeout = 5 * 1000; // 5 seconds
-            int socketTimeout = 5 * 1000; // 5 seconds
-
-            // Create custom request configuration
-            RequestConfig requestConfig = RequestConfig.custom()
-                    .setConnectTimeout(connectionTimeout)
-                    .setSocketTimeout(socketTimeout)
-                    .build();
-
-            // Use custom configuration
-            CloseableHttpClient client = HttpClients.custom()
-                    .setDefaultRequestConfig(requestConfig)
-                    .build();
-
-            HttpGet request = new HttpGet(rpcNodeUrl + "/blocksCount/");
-            HttpResponse response = client.execute(request);
-
-            if (response.getStatusLine().getStatusCode() == 200) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                return object.getLong("blocksCount");
-            } else if (response.getStatusLine().getStatusCode() == 400) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
-            } else {
-                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
-        }
+    public static long getBlocksCount() throws IOException {
+        return httpGet(rpcNodeUrl + "/blocksCount/").getLong("blocksCount");
     }
 
     /**
@@ -312,7 +182,7 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If there are issues retrieving the total count of blocks.
      */
-    public static long getLatestBlockNumber() throws IOException, InterruptedException {
+    public static long getLatestBlockNumber() throws IOException {
         return getBlocksCount() - 1;
     }
 
@@ -329,101 +199,41 @@ public class PWRJ {
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
     public static Block getBlockByNumber(long blockNumber) throws IOException {
-        try {
-            HttpGet request = new HttpGet(rpcNodeUrl + "/block/?blockNumber=" + blockNumber);
-            HttpResponse response = client.execute(request);
-
-            if (response.getStatusLine().getStatusCode() == 200) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                JSONObject blockJson = object.getJSONObject("block");
-                return new Block(blockJson);
-            } else if (response.getStatusLine().getStatusCode() == 400) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
-            } else {
-                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return new Block(httpGet(rpcNodeUrl + "/block/?blockNumber=" + blockNumber).getJSONObject("block"));
     }
 
-    public static VmDataTxn[] getVMDataTxns(long startingBlock, long endingBlock, long vmId) {
-        try {
-            HttpGet request = new HttpGet(rpcNodeUrl + "/getVmTransactions/?startingBlock=" + startingBlock + "&endingBlock=" + endingBlock + "&vmId=" + vmId);
-            HttpResponse response = client.execute(request);
+    public static VmDataTxn[] getVMDataTxns(long startingBlock, long endingBlock, long vmId) throws IOException {
+        JSONObject object = httpGet(rpcNodeUrl + "/getVmTransactions/?startingBlock=" + startingBlock + "&endingBlock=" + endingBlock + "&vmId=" + vmId);
 
-            if (response.getStatusLine().getStatusCode() == 200) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
+        JSONArray txns = object.getJSONArray("transactions");
+        VmDataTxn[] txnsArray = new VmDataTxn[txns.length()];
 
-                JSONArray txns = object.getJSONArray("transactions");
-                VmDataTxn[] txnsArray = new VmDataTxn[txns.length()];
-
-                for(int i = 0; i < txns.length(); i++) {
-                    JSONObject txnObject = txns.getJSONObject(i);
-                    VmDataTxn txn = new VmDataTxn(txnObject);
-                    txnsArray[i] = txn;
-                }
-
-                return txnsArray;
-            } else if (response.getStatusLine().getStatusCode() == 400) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message") + " " + object.getString("error"));
-            } else {
-                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        for(int i = 0; i < txns.length(); i++) {
+            JSONObject txnObject = txns.getJSONObject(i);
+            VmDataTxn txn = new VmDataTxn(txnObject);
+            txnsArray[i] = txn;
         }
+
+        return txnsArray;
     }
 
-    public static VmDataTxn[] getVMDataTxnsFilterByBytePrefix(long startingBlock, long endingBlock, long vmId, byte[] prefix) {
-        try {
-            HttpGet request = new HttpGet(rpcNodeUrl + "/getVmTransactionsSortByBytePrefix/?startingBlock=" + startingBlock + "&endingBlock=" + endingBlock + "&vmId=" + vmId + "&bytePrefix=" + Hex.toHexString(prefix));
-            HttpResponse response = client.execute(request);
+    public static VmDataTxn[] getVMDataTxnsFilterByBytePrefix(long startingBlock, long endingBlock, long vmId, byte[] prefix) throws IOException {
+        JSONObject object = httpGet(rpcNodeUrl + "/getVmTransactionsSortByBytePrefix/?startingBlock=" + startingBlock + "&endingBlock=" + endingBlock + "&vmId=" + vmId + "&bytePrefix=" + Hex.toHexString(prefix));
 
-            if (response.getStatusLine().getStatusCode() == 200) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
+        JSONArray txns = object.getJSONArray("transactions");
+        VmDataTxn[] txnsArray = new VmDataTxn[txns.length()];
 
-                JSONArray txns = object.getJSONArray("transactions");
-                VmDataTxn[] txnsArray = new VmDataTxn[txns.length()];
-
-                for(int i = 0; i < txns.length(); i++) {
-                    JSONObject txnObject = txns.getJSONObject(i);
-                    VmDataTxn txn = new VmDataTxn(txnObject);
-                    txnsArray[i] = txn;
-                }
-
-                return txnsArray;
-            } else if (response.getStatusLine().getStatusCode() == 400) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message") + " " + object.getString("error"));
-            } else {
-                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        for(int i = 0; i < txns.length(); i++) {
+            JSONObject txnObject = txns.getJSONObject(i);
+            VmDataTxn txn = new VmDataTxn(txnObject);
+            txnsArray[i] = txn;
         }
+
+        return txnsArray;
     }
 
-    public static long getActiveVotingPower() {
-        try {
-            HttpGet request = new HttpGet(rpcNodeUrl + "/activeVotingPower/");
-            HttpResponse response = client.execute(request);
-
-            if (response.getStatusLine().getStatusCode() == 200) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                return object.getLong("activeVotingPower");
-            } else if (response.getStatusLine().getStatusCode() == 400) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
-            } else {
-                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
-        }
+    public static long getActiveVotingPower() throws IOException {
+        return httpGet(rpcNodeUrl + "/activeVotingPower/").getLong("activeVotingPower");
     }
 
     /**
@@ -437,41 +247,8 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public static int getTotalValidatorsCount() {
-        try {
-            HttpGet request = new HttpGet(rpcNodeUrl + "/totalValidatorsCount/");
-            HttpResponse response = client.execute(request);
-
-            if (response.getStatusLine().getStatusCode() == 200) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                return object.getInt("validatorsCount");
-            } else if (response.getStatusLine().getStatusCode() == 400) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
-            } else {
-                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
-        }
-//        HttpRequest request = HttpRequest.newBuilder()
-//                .uri(URI.create(rpcNodeUrl + "/totalValidatorsCount/"))
-//                .GET()
-//                .header("Accept", "application/json")
-//                .build();
-//
-//        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-//
-//        if (response.statusCode() == 200) {
-//            JSONObject object = new JSONObject(response.body());
-//            return object.getInt("validatorsCount");
-//        } else if (response.statusCode() == 400) {
-//            JSONObject object = new JSONObject(response.body());
-//            throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
-//        } else {
-//            throw new RuntimeException("Failed with HTTP error code : " + response.statusCode());
-//        }
+    public static int getTotalValidatorsCount() throws IOException {
+        return httpGet(rpcNodeUrl + "/totalValidatorsCount/").getInt("validatorsCount");
     }
 
     /**
@@ -485,41 +262,8 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public static int getStandbyValidatorsCount() {
-        try {
-            HttpGet request = new HttpGet(rpcNodeUrl + "/standbyValidatorsCount/");
-            HttpResponse response = client.execute(request);
-
-            if (response.getStatusLine().getStatusCode() == 200) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                return object.getInt("validatorsCount");
-            } else if (response.getStatusLine().getStatusCode() == 400) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
-            } else {
-                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
-        }
-//        HttpRequest request = HttpRequest.newBuilder()
-//                .uri(URI.create(rpcNodeUrl + "/totalValidatorsCount/"))
-//                .GET()
-//                .header("Accept", "application/json")
-//                .build();
-//
-//        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-//
-//        if (response.statusCode() == 200) {
-//            JSONObject object = new JSONObject(response.body());
-//            return object.getInt("validatorsCount");
-//        } else if (response.statusCode() == 400) {
-//            JSONObject object = new JSONObject(response.body());
-//            throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
-//        } else {
-//            throw new RuntimeException("Failed with HTTP error code : " + response.statusCode());
-//        }
+    public static int getStandbyValidatorsCount() throws IOException {
+        return httpGet(rpcNodeUrl + "/standbyValidatorsCount/").getInt("validatorsCount");
     }
 
     /**
@@ -533,24 +277,8 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public static int getActiveValidatorsCount() {
-        try {
-            HttpGet request = new HttpGet(rpcNodeUrl + "/activeValidatorsCount/");
-            HttpResponse response = client.execute(request);
-
-            if (response.getStatusLine().getStatusCode() == 200) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                return object.getInt("validatorsCount");
-            } else if (response.getStatusLine().getStatusCode() == 400) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
-            } else {
-                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
-        }
+    public static int getActiveValidatorsCount() throws IOException {
+        return httpGet(rpcNodeUrl + "/activeValidatorsCount/").getInt("validatorsCount");
     }
 
     /**
@@ -561,24 +289,8 @@ public class PWRJ {
      *
      * @return The total number of delegators.
      */
-    public static int getTotalDelegatorsCount() {
-        try {
-            HttpGet request = new HttpGet(rpcNodeUrl + "/totalDelegatorsCount/");
-            HttpResponse response = client.execute(request);
-
-            if (response.getStatusLine().getStatusCode() == 200) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                return object.getInt("delegatorsCount");
-            } else if (response.getStatusLine().getStatusCode() == 400) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
-            } else {
-                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
-        }
+    public static int getTotalDelegatorsCount() throws IOException {
+        return httpGet(rpcNodeUrl + "/totalDelegatorsCount/").getInt("delegatorsCount");
     }
 
     /**
@@ -592,52 +304,37 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public static List<Validator> getAllValidators() {
-        try {
-            HttpGet request = new HttpGet(rpcNodeUrl + "/allValidators/");
-            HttpResponse response = client.execute(request);
+    public static List<Validator> getAllValidators() throws IOException {
+        JSONObject object = httpGet(rpcNodeUrl + "/allValidators/");
+        JSONArray validators = object.getJSONArray("validators");
+        List<Validator> validatorsList = new ArrayList<>();
 
-            if (response.getStatusLine().getStatusCode() == 200) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                JSONArray validators = object.getJSONArray("validators");
-                List<Validator> validatorsList = new ArrayList<>();
-
-                for(int i = 0; i < validators.length(); i++) {
-                    JSONObject validatorObject = validators.getJSONObject(i);
-                    //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
-                    long votingPower, totalShares;
-                    if(validatorObject.has("votingPower")) {
-                        votingPower = validatorObject.getLong("votingPower");
-                    } else {
-                        votingPower = 0L;
-                    }
-
-                    if(validatorObject.has("totalShares")) {
-                        totalShares = validatorObject.getLong("totalShares");
-                    } else {
-                        totalShares = 0L;
-                    }
-
-                    int delegatorsCount;
-                    if(validatorObject.has("delegatorsCount")) {
-                        delegatorsCount = validatorObject.getInt("delegatorsCount");
-                    } else {
-                        delegatorsCount = 0;
-                    }
-
-                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), (Boolean) getOrDefault(validatorObject, "badActor", false), votingPower, totalShares, delegatorsCount, "active");validatorsList.add(validator);
-                }
-                return validatorsList;
-            } else if (response.getStatusLine().getStatusCode() == 400) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
+        for(int i = 0; i < validators.length(); i++) {
+            JSONObject validatorObject = validators.getJSONObject(i);
+            //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
+            long votingPower, totalShares;
+            if(validatorObject.has("votingPower")) {
+                votingPower = validatorObject.getLong("votingPower");
             } else {
-                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
+                votingPower = 0L;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new LinkedList<>();
+
+            if(validatorObject.has("totalShares")) {
+                totalShares = validatorObject.getLong("totalShares");
+            } else {
+                totalShares = 0L;
+            }
+
+            int delegatorsCount;
+            if(validatorObject.has("delegatorsCount")) {
+                delegatorsCount = validatorObject.getInt("delegatorsCount");
+            } else {
+                delegatorsCount = 0;
+            }
+
+            Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), (Boolean) getOrDefault(validatorObject, "badActor", false), votingPower, totalShares, delegatorsCount, "active");validatorsList.add(validator);
         }
+        return validatorsList;
     }
 
     /**
@@ -651,52 +348,37 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public static List<Validator> getStandbyValidators() {
-        try {
-            HttpGet request = new HttpGet(rpcNodeUrl + "/standbyValidators/");
-            HttpResponse response = client.execute(request);
+    public static List<Validator> getStandbyValidators() throws IOException {
+        JSONObject object = httpGet(rpcNodeUrl + "/standbyValidators/");
+        JSONArray validators = object.getJSONArray("validators");
+        List<Validator> validatorsList = new ArrayList<>();
 
-            if (response.getStatusLine().getStatusCode() == 200) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                JSONArray validators = object.getJSONArray("validators");
-                List<Validator> validatorsList = new ArrayList<>();
-
-                for(int i = 0; i < validators.length(); i++) {
-                    JSONObject validatorObject = validators.getJSONObject(i);
-                    //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
-                    long votingPower, totalShares;
-                    if(validatorObject.has("votingPower")) {
-                        votingPower = validatorObject.getLong("votingPower");
-                    } else {
-                        votingPower = 0L;
-                    }
-
-                    if(validatorObject.has("totalShares")) {
-                        totalShares = validatorObject.getLong("totalShares");
-                    } else {
-                        totalShares = 0L;
-                    }
-
-                    int delegatorsCount;
-                    if(validatorObject.has("delegatorsCount")) {
-                        delegatorsCount = validatorObject.getInt("delegatorsCount");
-                    } else {
-                        delegatorsCount = 0;
-                    }
-
-                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), (Boolean) getOrDefault(validatorObject, "badActor", false), votingPower, totalShares, delegatorsCount, "active");validatorsList.add(validator);
-                }
-                return validatorsList;
-            } else if (response.getStatusLine().getStatusCode() == 400) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
+        for(int i = 0; i < validators.length(); i++) {
+            JSONObject validatorObject = validators.getJSONObject(i);
+            //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
+            long votingPower, totalShares;
+            if(validatorObject.has("votingPower")) {
+                votingPower = validatorObject.getLong("votingPower");
             } else {
-                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
+                votingPower = 0L;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new LinkedList<>();
+
+            if(validatorObject.has("totalShares")) {
+                totalShares = validatorObject.getLong("totalShares");
+            } else {
+                totalShares = 0L;
+            }
+
+            int delegatorsCount;
+            if(validatorObject.has("delegatorsCount")) {
+                delegatorsCount = validatorObject.getInt("delegatorsCount");
+            } else {
+                delegatorsCount = 0;
+            }
+
+            Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), (Boolean) getOrDefault(validatorObject, "badActor", false), votingPower, totalShares, delegatorsCount, "active");validatorsList.add(validator);
         }
+        return validatorsList;
     }
 
     /**
@@ -710,151 +392,66 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public static List<Validator> getActiveValidators() {
-        try {
-            HttpGet request = new HttpGet(rpcNodeUrl + "/activeValidators/");
-            HttpResponse response = client.execute(request);
+    public static List<Validator> getActiveValidators() throws IOException {
+        JSONObject object = httpGet(rpcNodeUrl + "/activeValidators/");
+        JSONArray validators = object.getJSONArray("validators");
+        List<Validator> validatorsList = new ArrayList<>();
 
-            if (response.getStatusLine().getStatusCode() == 200) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                JSONArray validators = object.getJSONArray("validators");
-                List<Validator> validatorsList = new ArrayList<>();
-
-                for(int i = 0; i < validators.length(); i++) {
-                    JSONObject validatorObject = validators.getJSONObject(i);
-                    //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
-                    long votingPower, totalShares;
-                    if(validatorObject.has("votingPower")) {
-                        votingPower = validatorObject.getLong("votingPower");
-                    } else {
-                        votingPower = 0L;
-                    }
-
-                    if(validatorObject.has("totalShares")) {
-                        totalShares = validatorObject.getLong("totalShares");
-                    } else {
-                        totalShares = 0L;
-                    }
-
-                    int delegatorsCount;
-                    if(validatorObject.has("delegatorsCount")) {
-                        delegatorsCount = validatorObject.getInt("delegatorsCount");
-                    } else {
-                        delegatorsCount = 0;
-                    }
-
-                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), (Boolean) getOrDefault(validatorObject, "badActor", false), votingPower, totalShares, delegatorsCount, "active");
-                    validatorsList.add(validator);
-                }
-                return validatorsList;
-            } else if (response.getStatusLine().getStatusCode() == 400) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
+        for(int i = 0; i < validators.length(); i++) {
+            JSONObject validatorObject = validators.getJSONObject(i);
+            //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
+            long votingPower, totalShares;
+            if(validatorObject.has("votingPower")) {
+                votingPower = validatorObject.getLong("votingPower");
             } else {
-                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
+                votingPower = 0L;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new LinkedList<>();
+
+            if(validatorObject.has("totalShares")) {
+                totalShares = validatorObject.getLong("totalShares");
+            } else {
+                totalShares = 0L;
+            }
+
+            int delegatorsCount;
+            if(validatorObject.has("delegatorsCount")) {
+                delegatorsCount = validatorObject.getInt("delegatorsCount");
+            } else {
+                delegatorsCount = 0;
+            }
+
+            Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), (Boolean) getOrDefault(validatorObject, "badActor", false), votingPower, totalShares, delegatorsCount, "active");
+            validatorsList.add(validator);
         }
+        return validatorsList;
     }
 
-    public static List<Validator> getDelegatees(String address) {
-        try {
-            HttpGet request = new HttpGet(rpcNodeUrl + "/activeValidators/");
-            HttpResponse response = client.execute(request);
+    public static List<Validator> getDelegatees(String address) throws IOException {
+        JSONObject object = httpGet(rpcNodeUrl + "/delegateesOfUser/?userAddress=" + address);
+        JSONArray validators = object.getJSONArray("validators");
+        List<Validator> validatorsList = new ArrayList<>();
 
-            if (response.getStatusLine().getStatusCode() == 200) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                JSONArray validators = object.getJSONArray("validators");
-                List<Validator> validatorsList = new ArrayList<>();
-
-                for(int i = 0; i < validators.length(); i++) {
-                    JSONObject validatorObject = validators.getJSONObject(i);
-                    //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
-                    Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), validatorObject.getBoolean("badActor"), validatorObject.getLong("votingPower"), validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"), "active");
-                    validatorsList.add(validator);
-                }
-                return validatorsList;
-            } else if (response.getStatusLine().getStatusCode() == 400) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
-            } else {
-                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new LinkedList<>();
+        for(int i = 0; i < validators.length(); i++) {
+            JSONObject validatorObject = validators.getJSONObject(i);
+            //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
+            Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), validatorObject.getBoolean("badActor"), validatorObject.getLong("votingPower"), validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"), "active");
+            validatorsList.add(validator);
         }
+        return validatorsList;
     }
-    public static Validator getValidator(String validatorAddress) {
-        try {
-            HttpGet request = new HttpGet(rpcNodeUrl + "/validator/?validatorAddress=" + validatorAddress);
-            HttpResponse response = client.execute(request);
+    public static Validator getValidator(String validatorAddress) throws IOException {
+        JSONObject object = httpGet(rpcNodeUrl + "/validator/?validatorAddress=" + validatorAddress);
+        JSONObject validatorObject = object.getJSONObject("validator");
+        Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), validatorObject.getBoolean("badActor"), validatorObject.getLong("votingPower"), validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"), validatorObject.getString("status"));
 
-            if (response.getStatusLine().getStatusCode() == 200) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                JSONObject validatorObject = object.getJSONObject("validator");
-                Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), validatorObject.getBoolean("badActor"), validatorObject.getLong("votingPower"), validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"), validatorObject.getString("status"));
-
-                return validator;
-            } else if (response.getStatusLine().getStatusCode() == 400) {
-                return null;
-            } else {
-                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+        return validator;
     }
-    public static long getDelegatedPWR(String delegatorAddress, String validatorAddress) {
-        try {
-            HttpGet request = new HttpGet(rpcNodeUrl + "validator/delegator/delegatedPWROfAddress/?userAddress=" + delegatorAddress + "&validatorAddress=" + validatorAddress);
-            HttpResponse response = client.execute(request);
-
-            if (response.getStatusLine().getStatusCode() == 200) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-
-                return object.getLong("delegatedPWR");
-            } else if (response.getStatusLine().getStatusCode() == 400) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-
-                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
-            } else {
-                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
-
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
-        }
+    public static long getDelegatedPWR(String delegatorAddress, String validatorAddress) throws IOException {
+        return httpGet(rpcNodeUrl + "validator/delegator/delegatedPWROfAddress/?userAddress=" + delegatorAddress + "&validatorAddress=" + validatorAddress).getLong("delegatedPWR");
     }
 
-    public static BigDecimal getShareValue(String validator) {
-        try {
-            HttpPost postRequest = new HttpPost(rpcNodeUrl + "/validator/shareValue/?validatorAddress=" + validator);
-
-            // Set up the header types needed to properly transfer JSON
-            postRequest.setHeader("Accept", "application/json");
-            postRequest.setHeader("Content-type", "application/json");
-            // Execute request
-            HttpResponse response = client.execute(postRequest);
-
-            if (response.getStatusLine().getStatusCode() == 200) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                return object.getBigDecimal("shareValue");
-            } else if (response.getStatusLine().getStatusCode() == 400) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                System.out.printf(object.toString());
-                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
-            } else {
-                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return BigDecimal.valueOf(0);
-        }
+    public static BigDecimal getShareValue(String validator) throws IOException {
+        return httpGet(rpcNodeUrl + "/validator/shareValue/?validatorAddress=" + validator).getBigDecimal("shareValue");
     }
 
 
@@ -869,25 +466,8 @@ public class PWRJ {
      * @throws IOException If there's an issue with the network or stream handling.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public static String getOwnerOfVm(long vmId) {
-        try {
-            HttpGet request = new HttpGet(rpcNodeUrl + "/ownerOfVmId/?vmId=" + vmId);
-            HttpResponse response = client.execute(request);
-
-            if (response.getStatusLine().getStatusCode() == 200) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-
-                return object.getString("owner");
-            } else if (response.getStatusLine().getStatusCode() == 400) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
-            } else {
-                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "0x0000000000000000000000000000000000000000";
-        }
+    public static String getOwnerOfVm(long vmId) throws IOException {
+        return httpGet(rpcNodeUrl + "/ownerOfVmId/?vmId=" + vmId).getString("owner");
     }
 
 
@@ -907,41 +487,8 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public static void updateFeePerByte() {
-        try {
-            HttpGet request = new HttpGet(rpcNodeUrl + "/feePerByte/");
-            HttpResponse response = client.execute(request);
-
-            if (response.getStatusLine().getStatusCode() == 200) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                feePerByte = object.getLong("feePerByte");
-            } else if (response.getStatusLine().getStatusCode() == 400) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
-            } else {
-                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-//        HttpRequest request = HttpRequest.newBuilder()
-//                .uri(URI.create(rpcNodeUrl + "/feePerByte/"))
-//                .GET()
-//                .header("Accept", "application/json")
-//                .build();
-//
-//        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-//
-//        if (response.statusCode() == 200) {
-//            JSONObject object = new JSONObject(response.body());
-//            feePerByte = object.getLong("feePerByte");
-//        } else if (response.statusCode() == 400) {
-//            JSONObject object = new JSONObject(response.body());
-//            throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
-//        } else {
-//            throw new RuntimeException("Failed with HTTP error code : " + response.statusCode());
-//        }
+    public static void updateFeePerByte() throws IOException {
+        feePerByte = httpGet(rpcNodeUrl + "/feePerByte/").getLong("feePerByte");
     }
 
     /**
@@ -987,7 +534,7 @@ public class PWRJ {
                 return new Response(true, "0x" + Hex.toHexString(Hash.sha3(txn)), null);
             } else if (response.getStatusLine().getStatusCode() == 400) {
                 JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                System.out.printf(object.toString());
+                System.out.println("broadcast response:" + object.toString());
                 return new Response(false, null, object.getString("message"));
             } else {
                 throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
@@ -1000,5 +547,37 @@ public class PWRJ {
 
     public static Object getOrDefault(JSONObject jsonObject, String key, Object defaultValue) {
         return jsonObject.has(key) ? jsonObject.get(key) : defaultValue;
+    }
+
+    public static void main(String[] args) {
+        //Tests for all the function
+        try {
+            setRpcNodeUrl("https://pwrrpc.pwrlabs.io");
+            System.out.println(getChainId());
+            System.out.println(getFeePerByte());
+            System.out.println(getBlockchainVersion());
+            System.out.println(getBlocksCount());
+            System.out.println(getLatestBlockNumber());
+            System.out.println(getBlockByNumber(10000));
+            System.out.println(getActiveVotingPower());
+            System.out.println(getTotalValidatorsCount());
+            System.out.println(getStandbyValidatorsCount());
+            System.out.println(getActiveValidatorsCount());
+            System.out.println(getTotalDelegatorsCount());
+            System.out.println(getAllValidators());
+            System.out.println(getStandbyValidators());
+            System.out.println(getActiveValidators());
+            System.out.println(getVMDataTxns(1, 800, 10023));
+            System.out.println(getOwnerOfVm(100));
+            System.out.println(getNonceOfAddress("0xf6fe6a14b3aac06c2c102cf5f028df35157f9770"));
+            System.out.println(getBalanceOfAddress("0xf6fe6a14b3aac06c2c102cf5f028df35157f9770"));
+            System.out.println(getGuardianOfAddress("0xf6fe6a14b3aac06c2c102cf5f028df35157f9770"));
+            System.out.println(getDelegatees("0xf6fe6a14b3aac06c2c102cf5f028df35157f9770"));
+            System.out.println(getValidator("0xf6fe6a14b3aac06c2c102cf5f028df35157f9770"));
+            System.out.println(getDelegatedPWR("0xf6fe6a14b3aac06c2c102cf5f028df35157f9770", "0xf6fe6a14b3aac06c2c102cf5f028df35157f9770"));
+            System.out.println(getShareValue("0xf6fe6a14b3aac06c2c102cf5f028df35157f9770"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

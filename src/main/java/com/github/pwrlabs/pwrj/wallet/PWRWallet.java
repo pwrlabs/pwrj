@@ -26,6 +26,7 @@ import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
+import java.time.Instant;
 import java.util.Arrays;
 
 public class PWRWallet {
@@ -166,7 +167,7 @@ public class PWRWallet {
         return finalTxn.array();
     }
 
-    public byte[] getTxnBase(byte identifier, int nonce) {
+    public byte[] getTxnBase(byte identifier, int nonce) throws IOException {
         ByteBuffer buffer = ByteBuffer.allocate(6);
         buffer.put(identifier);
         buffer.put(PWRJ.getChainId());
@@ -183,8 +184,8 @@ public class PWRWallet {
      * @return A byte array that represents the transaction of this method.
      * @throws RuntimeException For various transaction-related validation issues.
      */
-    public byte[] getTransferPWRTxn(byte[] to, long amount, int nonce) {
-        if(to.length != 20) {
+    public byte[] getTransferPWRTxn(String to, long amount, int nonce) throws IOException {
+        if(to.length() != 40 && to.length() != 42) {
             throw new RuntimeException("Invalid address");
         }
         if (amount < 0) {
@@ -194,11 +195,15 @@ public class PWRWallet {
             throw new RuntimeException("Nonce cannot be negative");
         }
 
+        if(to.length() == 42) {
+            to = to.substring(2);
+        }
+
         byte[] txnBase = getTxnBase((byte) 0, nonce);
-        ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 8 + to.length);
+        ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 8 + 20);
         buffer.put(txnBase);
         buffer.putLong(amount);
-        buffer.put(to);
+        buffer.put(Hex.decode(to));
 
         return buffer.array();
     }
@@ -211,7 +216,7 @@ public class PWRWallet {
      * @return A byte array which represents the signed transaction of this method
      * @throws RuntimeException For various transaction-related validation issues.
      */
-    public byte[] getSignedTransferPWRTxn(byte[] to, long amount, int nonce) {
+    public byte[] getSignedTransferPWRTxn(String to, long amount, int nonce) throws IOException {
         return getSignedTxn(getTransferPWRTxn(to, amount, nonce));
     }
     /**
@@ -227,11 +232,8 @@ public class PWRWallet {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException For various transaction-related validation issues.
      */
-    public Response transferPWR(String to, long amount, int nonce) throws IOException, InterruptedException {
-        if(to.charAt(0) == '0' || to.charAt(1) == 'x') {
-            to = to.substring(2);
-        }
-        return PWRJ.broadcastTxn(getSignedTransferPWRTxn(Hex.decode(to), amount, nonce));
+    public Response transferPWR(String to, long amount, int nonce) throws IOException {
+        return PWRJ.broadcastTxn(getSignedTransferPWRTxn(to, amount, nonce));
     }
     /**
      * Transfers PWR tokens to a specified address using the current nonce.
@@ -256,7 +258,7 @@ public class PWRWallet {
      * @param nonce The transaction count of the wallet address.
      * @return A byte array that represents the transaction of this method
      */
-    public byte[] getJoinTxn(String ip, int nonce) {
+    public byte[] getJoinTxn(String ip, int nonce) throws IOException {
         byte[] txnBase = getTxnBase((byte) 1, nonce);
         byte[] ipBytes = ip.getBytes(StandardCharsets.UTF_8);
 
@@ -273,7 +275,7 @@ public class PWRWallet {
      * @param nonce The transaction count of the wallet address.
      * @return A byte array that represents a signed transaction of this method
      */
-    public byte[] getSignedJoinTxn(String ip, int nonce) {
+    public byte[] getSignedJoinTxn(String ip, int nonce) throws IOException {
         return getSignedTxn(getJoinTxn(ip, nonce));
     }
     /**
@@ -285,7 +287,7 @@ public class PWRWallet {
      *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
      *         On failure: Response(success=false, message=null, error=errorMessage).
      */
-    public Response join(String ip, int nonce) {
+    public Response join(String ip, int nonce) throws IOException {
         return PWRJ.broadcastTxn(getSignedJoinTxn(ip, nonce));
     }
     /**
@@ -308,7 +310,7 @@ public class PWRWallet {
      * @param nonce The transaction count of the wallet address.
      * @return A byte array that represents a signed transaction of the method
      */
-    public byte[] getClaimActiveNodeSpotTxn(int nonce) {
+    public byte[] getClaimActiveNodeSpotTxn(int nonce) throws IOException {
         byte[] txnBase = getTxnBase((byte) 2, nonce);
 
         return txnBase;
@@ -319,7 +321,7 @@ public class PWRWallet {
      * @param nonce The transaction count of the wallet address.
      * @return A byte array that represents the signed transaction of this method
      */
-    public byte[] getSignedClaimActiveNodeSpotTxn(int nonce) {
+    public byte[] getSignedClaimActiveNodeSpotTxn(int nonce) throws IOException {
         return getSignedTxn(getClaimActiveNodeSpotTxn(nonce));
     }
     /**
@@ -330,7 +332,7 @@ public class PWRWallet {
      *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
      *         On failure: Response(success=false, message=null, error=errorMessage).
      */
-    public Response claimActiveNodeSpot(int nonce) {
+    public Response claimActiveNodeSpot(int nonce) throws IOException {
         return PWRJ.broadcastTxn(getSignedClaimActiveNodeSpotTxn(nonce));
     }
     /**
@@ -354,8 +356,16 @@ public class PWRWallet {
      * @param nonce The transaction count of the wallet address.
      * @return A byte array that represents the transaction of the method
      */
-    public byte[] getDelegateTxn(String to, long amount, int nonce) {
-        if(to.charAt(0) == '0' || to.charAt(1) == 'x') {
+    public byte[] getDelegateTxn(String to, long amount, int nonce) throws IOException {
+        if(to.length() != 40 && to.length() != 42) {
+            throw new RuntimeException("Invalid address");
+        } if (amount < 0) {
+            throw new RuntimeException("Amount cannot be negative");
+        } if (nonce < 0) {
+            throw new RuntimeException("Nonce cannot be negative");
+        }
+
+        if(to.length() == 42) {
             to = to.substring(2);
         }
 
@@ -375,7 +385,7 @@ public class PWRWallet {
      * @param nonce The transaction count of the wallet address.
      * @return A byte array that represents a signed transaction of the method
      */
-    public byte[] getSignedDelegateTxn(String to, long amount, int nonce) {
+    public byte[] getSignedDelegateTxn(String to, long amount, int nonce) throws IOException {
         return getSignedTxn(getDelegateTxn(to, amount, nonce));
     }
     /**
@@ -388,7 +398,7 @@ public class PWRWallet {
      *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
      *         On failure: Response(success=false, message=null, error=errorMessage).
      */
-    public Response delegate(String to, long amount, int nonce) {
+    public Response delegate(String to, long amount, int nonce) throws IOException {
         return PWRJ.broadcastTxn(getSignedDelegateTxn(to, amount, nonce));
     }
     /**
@@ -414,8 +424,18 @@ public class PWRWallet {
      * @param nonce The transaction count of the wallet address.
      * @return A byte array that represents the transaction of this method
      */
-    public byte[] getWithdrawTxn(String from, long sharesAmount, int nonce) {
-        if(from.charAt(0) == '0' && from.charAt(1) == 'x') {
+    public byte[] getWithdrawTxn(String from, long sharesAmount, int nonce) throws IOException {
+        if(from.length() != 40 && from.length() != 42) {
+            throw new RuntimeException("Invalid address");
+        }
+        if (sharesAmount < 0) {
+            throw new RuntimeException("Shares amount cannot be negative");
+        }
+        if (nonce < 0) {
+            throw new RuntimeException("Nonce cannot be negative");
+        }
+
+        if(from.length() == 42) {
             from = from.substring(2);
         }
 
@@ -423,7 +443,7 @@ public class PWRWallet {
         ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 8 + (from.length()/2));
         buffer.put(txnBase);
         buffer.putLong(sharesAmount);
-        buffer.put(Hex.decode(from.substring(2)));
+        buffer.put(Hex.decode(from));
 
         return buffer.array();
     }
@@ -435,7 +455,7 @@ public class PWRWallet {
      * @param nonce The transaction count of the wallet address.
      * @return A byte array that represents the signed transaction of this method
      */
-    public byte[] getSignedWithdrawTxn(String from, long sharesAmount, int nonce) {
+    public byte[] getSignedWithdrawTxn(String from, long sharesAmount, int nonce) throws IOException {
         return getSignedTxn(getWithdrawTxn(from, sharesAmount, nonce));
     }
     /**
@@ -448,7 +468,7 @@ public class PWRWallet {
      *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
      *         On failure: Response(success=false, message=null, error=errorMessage).
      */
-    public Response withdraw(String from, long sharesAmount, int nonce) {
+    public Response withdraw(String from, long sharesAmount, int nonce) throws IOException {
         return PWRJ.broadcastTxn(getSignedWithdrawTxn(from, sharesAmount, nonce));
     }
     /**
@@ -474,19 +494,33 @@ public class PWRWallet {
      * @param nonce The transaction count of the wallet address.
      * @return A byte array that represents the transaction of this method
      */
-    public byte[] getWithdrawPWRTxn(String from, long pwrAmount, int nonce) {
+    public byte[] getWithdrawPWRTxn(String from, long pwrAmount, int nonce) throws IOException {
+        if(from.length() != 40 && from.length() != 42) {
+            throw new RuntimeException("Invalid address");
+        }
+        if (pwrAmount < 0) {
+            throw new RuntimeException("PWR amount cannot be negative");
+        }
+        if (nonce < 0) {
+            throw new RuntimeException("Nonce cannot be negative");
+        }
+
+        if(from.length() == 42) {
+            from = from.substring(2);
+        }
+
         BigDecimal shareValue = PWRJ.getShareValue(from);
         long sharesAmount = BigDecimal.valueOf(pwrAmount).divide(shareValue, 18, BigDecimal.ROUND_DOWN).longValue();
 
-        if(from.charAt(0) == '0' && from.charAt(1) == 'x') {
-            from = from.substring(2);
+        if(sharesAmount <= 0) {
+            throw new RuntimeException("Shares amount is too low");
         }
 
         byte[] txnBase = getTxnBase((byte) 4, nonce);
         ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 8 + (from.length()/2));
         buffer.put(txnBase);
         buffer.putLong(sharesAmount);
-        buffer.put(Hex.decode(from.substring(2)));
+        buffer.put(Hex.decode(from));
 
         return buffer.array();
     }
@@ -498,7 +532,7 @@ public class PWRWallet {
      * @param nonce The transaction count of the wallet address.
      * @return A byte array that represents the signed transaction of this method
      */
-    public byte[] getSignedWithdrawPWRTxn(String from, long pwrAmount, int nonce) {
+    public byte[] getSignedWithdrawPWRTxn(String from, long pwrAmount, int nonce) throws IOException {
         return getSignedTxn(getWithdrawPWRTxn(from, pwrAmount, nonce));
     }
     /**
@@ -511,7 +545,7 @@ public class PWRWallet {
      *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
      *         On failure: Response(success=false, message=null, error=errorMessage).
      */
-    public Response withdrawPWR(String from, long pwrAmount, int nonce) {
+    public Response withdrawPWR(String from, long pwrAmount, int nonce) throws IOException {
         return PWRJ.broadcastTxn(getSignedWithdrawPWRTxn(from, pwrAmount, nonce));
     }
     /**
@@ -613,7 +647,7 @@ public class PWRWallet {
      * @param nonce The transaction count of the wallet address.
      * @return A byte array that represents the transaction of this method
      */
-    public byte[] getClaimVmIdTxn(long vmId, int nonce) {
+    public byte[] getClaimVmIdTxn(long vmId, int nonce) throws IOException {
         byte[] txnBase = getTxnBase((byte) 6, nonce);
         ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 8);
         buffer.put(txnBase);
@@ -628,7 +662,7 @@ public class PWRWallet {
      * @param nonce The transaction count of the wallet address.
      * @return A byte array that represents a signed transaction of this method
      */
-    public byte[] getSignedClaimVmIdTxn(long vmId, int nonce) {
+    public byte[] getSignedClaimVmIdTxn(long vmId, int nonce) throws IOException {
         return getSignedTxn(getClaimVmIdTxn(vmId, nonce));
     }
     /**
@@ -640,7 +674,7 @@ public class PWRWallet {
      *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
      *         On failure: Response(success=false, message=null, error=errorMessage).
      */
-    public Response claimVmId(long vmId, int nonce) {
+    public Response claimVmId(long vmId, int nonce) throws IOException {
         return PWRJ.broadcastTxn(getSignedClaimVmIdTxn(vmId, nonce));
     }
     /**
@@ -676,7 +710,7 @@ public class PWRWallet {
             throw new RuntimeException("Nonce is too low");
         }
 
-        byte[] txnBase = getTxnBase((byte) 7, nonce);
+        byte[] txnBase = getTxnBase((byte) 11, nonce);
         ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 8 + txn.length);
         buffer.put(txnBase);
         buffer.putLong(vmId);
@@ -738,14 +772,26 @@ public class PWRWallet {
      * @param nonce the transaction count of the wallet address
      * @return a byte array with the outcome of this transaction
      */
-    public byte[] getSetGuardianTxn(byte[] guardianAddress, long expiryDate, int nonce) {
-        if(guardianAddress.length != 20) return null;
+    public byte[] getSetGuardianTxn(String guardianAddress, long expiryDate, int nonce) throws IOException {
+        if(guardianAddress.length() != 40 && guardianAddress.length() != 42) {
+            throw new RuntimeException("Invalid address");
+        } if (nonce < 0) {
+            throw new RuntimeException("Nonce cannot be negative");
+        } if (expiryDate < 0) {
+            throw new RuntimeException("Expiry date cannot be negative");
+        } if (expiryDate < Instant.now().getEpochSecond()) {
+            throw new RuntimeException("Expiry date cannot be in the past");
+        }
+
+        if(guardianAddress.length() == 42) {
+            guardianAddress = guardianAddress.substring(2);
+        }
 
         byte[] txnBase = getTxnBase((byte) 8, nonce);
         ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 20 + 8);
         buffer.put(txnBase);
         buffer.putLong(expiryDate);
-        buffer.put(guardianAddress);
+        buffer.put(Hex.decode(guardianAddress));
 
         return buffer.array();
     }
@@ -757,7 +803,7 @@ public class PWRWallet {
      * @param nonce the transaction count of the wallet address
      * @return a byte array with the outcome of this transaction
      */
-    public byte[] getSignedSetGuardianTxn(byte[] guardianAddress, long expiryDate, int nonce) {
+    public byte[] getSignedSetGuardianTxn(String guardianAddress, long expiryDate, int nonce) throws IOException {
         return getSignedTxn(getSetGuardianTxn(guardianAddress, expiryDate, nonce));
     }
     /**
@@ -770,7 +816,7 @@ public class PWRWallet {
      *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
      *         On failure: Response(success=false, message=errorMessage, error=null).
      */
-    public Response setGuardian(byte[] guardianAddress, long expiryDate, int nonce) {
+    public Response setGuardian(String guardianAddress, long expiryDate, int nonce) throws IOException {
         return PWRJ.broadcastTxn(getSignedSetGuardianTxn(guardianAddress, expiryDate, nonce));
     }
     /**
@@ -784,7 +830,7 @@ public class PWRWallet {
      * @throws IOException if there's an issue with the network or stream handling
      * @throws InterruptedException if the request is interrupted
      */
-    public Response setGuardian(byte[] guardianAddress, long expiryDate) throws IOException, InterruptedException {
+    public Response setGuardian(String guardianAddress, long expiryDate) throws IOException, InterruptedException {
         return setGuardian(guardianAddress, expiryDate, getNonce());
     }
 
@@ -794,7 +840,7 @@ public class PWRWallet {
      * @param nonce the transaction count of the wallet address
      * @return a byte array with the outcome of the transaction
      */
-    public byte[] getRemoveGuardianTxn(int nonce) {
+    public byte[] getRemoveGuardianTxn(int nonce) throws IOException {
         byte[] txnBase = getTxnBase((byte) 9, nonce);
 
         return txnBase;
@@ -805,8 +851,11 @@ public class PWRWallet {
      * @param nonce the transaction count of the wallet address
      * @return a byte array with the outcome of the transaction
      */
-    public byte[] getSignedRemoveGuardianTxn(int nonce) {
+    public byte[] getSignedRemoveGuardianTxn(int nonce) throws IOException {
         return getSignedTxn(getRemoveGuardianTxn(nonce));
+    }
+    public byte[] getSignedRemoveGuardianTxn() throws IOException, InterruptedException {
+        return getSignedTxn(getRemoveGuardianTxn(getNonce()));
     }
     /**
      * Removes/Revokes a guardian wallet
@@ -816,7 +865,7 @@ public class PWRWallet {
      *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
      *         On failure: Response(success=false, message=null, error=errorMessage).
      */
-    public Response removeGuardian(int nonce) {
+    public Response removeGuardian(int nonce) throws IOException {
         return PWRJ.broadcastTxn(getSignedRemoveGuardianTxn(nonce));
     }
     /**
@@ -840,7 +889,7 @@ public class PWRWallet {
      * @return A byte array representing the transaction of this method (not to be confused with the transaction
      *         to be sent to the guardian wallet)
      */
-    public byte[] getSendGuardianWrappedTransactionTxn(byte[] txn, int nonce) {
+    public byte[] getSendGuardianWrappedTransactionTxn(byte[] txn, int nonce) throws IOException {
         byte[] txnBase = getTxnBase((byte) 10, nonce);
         ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + txn.length);
         buffer.put(txnBase);
@@ -856,7 +905,7 @@ public class PWRWallet {
      * @return A byte array representing the transaction of this method (not to be confused with the transaction
      *         to be sent to the guardian wallet)
      */
-    public byte[] getSignedSendGuardianWrappedTransactionTxn(byte[] txn, int nonce) {
+    public byte[] getSignedSendGuardianWrappedTransactionTxn(byte[] txn, int nonce) throws IOException {
         return getSignedTxn(getSendGuardianWrappedTransactionTxn(txn, nonce));
     }
     /**
@@ -868,7 +917,7 @@ public class PWRWallet {
      *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
      *         On failure: Response(success=false, message=null, error=errorMessage).
      */
-    public Response sendGuardianWrappedTransaction(byte[] txn, int nonce) {
+    public Response sendGuardianWrappedTransaction(byte[] txn, int nonce) throws IOException {
         return PWRJ.broadcastTxn(getSignedSendGuardianWrappedTransactionTxn(txn, nonce));
     }
     /**
@@ -893,15 +942,21 @@ public class PWRWallet {
      * @throws IOException If there's an issue with the network or stream handling
      * @throws InterruptedException If the request is interrupted
      */
-    public byte[] getSendValidatorRemoveTxn(String validator, int nonce) {
-        if(validator.charAt(0) == '0' || validator.charAt(1) == 'x') {
+    public byte[] getSendValidatorRemoveTxn(String validator, int nonce) throws IOException {
+        if(validator.length() != 40 && validator.length() != 42) {
+            throw new RuntimeException("Invalid address");
+        } if (nonce < 0) {
+            throw new RuntimeException("Nonce cannot be negative");
+        }
+
+        if(validator.length() == 42) {
             validator = validator.substring(2);
         }
 
-        byte[] txnBase = getTxnBase((byte) 11, nonce);
+        byte[] txnBase = getTxnBase((byte) 7, nonce);
         ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 20);
         buffer.put(txnBase);
-        buffer.put(Hex.decode(validator.substring(2)));
+        buffer.put(Hex.decode(validator));
 
         return buffer.array();
     }
@@ -969,4 +1024,96 @@ public class PWRWallet {
         return (new FixedPointCombMultiplier()).multiply(Signature.CURVE.getG(), privKey);
     }
 
+    public static void main(String[] args) {
+        //Test for all the functions
+        try {
+            PWRWallet wallet = new PWRWallet(new BigInteger("19025338099182849188500822369817708178555441129124871592504836170414925188857"));
+            System.out.println("Wallet Address: " + wallet.getAddress());
+            System.exit(0);
+
+            int nonce = wallet.getNonce();
+
+            Response r = wallet.transferPWR("0x8953f1c3B53Bd9739F78dc8B0CD5DB9686C40b09", 1000000000, nonce);
+            System.out.println("Transfer PWR success: " + r.isSuccess());
+            System.out.println("Transfer PWR txn hash: " + r.getTxnHash());
+            System.out.println("Transfer PWR error: " + r.getError());
+            System.out.println();
+
+            ++nonce;
+            r = wallet.delegate("0x61Bd8fc1e30526Aaf1C4706Ada595d6d236d9883", 1000000000, nonce);
+            System.out.println("Delegate success: " + r.isSuccess());
+            System.out.println("Delegate txn hash: " + r.getTxnHash());
+            System.out.println("Delegate error: " + r.getError());
+            System.out.println();
+
+            ++nonce;
+            r = wallet.claimVmId(1, nonce);
+            System.out.println("Claim VM ID success: " + r.isSuccess());
+            System.out.println("Claim VM ID txn hash: " + r.getTxnHash());
+            System.out.println("Claim VM ID error: " + r.getError());
+
+            ++nonce;
+            r = wallet.sendVmDataTxn(1, "Hello World".getBytes(), nonce);
+            System.out.println("Send VM Data success: " + r.isSuccess());
+            System.out.println("Send VM Data txn hash: " + r.getTxnHash());
+            System.out.println("Send VM Data error: " + r.getError());
+
+            while(PWRJ.getDelegatedPWR(wallet.getAddress(), "0x61Bd8fc1e30526Aaf1C4706Ada595d6d236d9883") == 0) {
+                Thread.sleep(1000);
+            }
+
+            //TODO send this after the delegation has been completed
+            ++nonce;
+            r = wallet.withdraw("0x61Bd8fc1e30526Aaf1C4706Ada595d6d236d9883", 10, nonce);
+            System.out.println("Withdraw success: " + r.isSuccess());
+            System.out.println("Withdraw txn hash: " + r.getTxnHash());
+            System.out.println("Withdraw error: " + r.getError());
+            System.out.println();
+
+            //TODO send this after the delegation has been completed
+            ++nonce;
+            r = wallet.withdrawPWR("0x61Bd8fc1e30526Aaf1C4706Ada595d6d236d9883", 10000000, nonce);
+            System.out.println("Withdraw PWR success: " + r.isSuccess());
+            System.out.println("Withdraw PWR txn hash: " + r.getTxnHash());
+            System.out.println("Withdraw PWR error: " + r.getError());
+
+        } catch (Exception e) {
+
+        }
+    }
+
+    public static void guardianTest(PWRWallet wallet) {
+        try {
+            int nonce = wallet.getNonce();
+            Response r = wallet.setGuardian("0x61Bd8fc1e30526Aaf1C4706Ada595d6d236d9883", 1000000000, nonce);
+            System.out.println("Set Guardian success: " + r.isSuccess());
+            System.out.println("Set Guardian txn hash: " + r.getTxnHash());
+            System.out.println("Set Guardian error: " + r.getError());
+
+            while(PWRJ.getGuardianOfAddress(wallet.getAddress()) == null) {
+                Thread.sleep(1000);
+            }
+
+            ++nonce;
+            byte[] transferTxn = wallet.getSignedTransferPWRTxn("0x61Bd8fc1e30526Aaf1C4706Ada595d6d236d9883", 1000, nonce);
+
+            PWRWallet guardian = new PWRWallet(new BigInteger("03a5240936d67dc18dca348e793010a14c5eba86a73d0c9e45764681295a73df", 16));
+
+            r = guardian.sendGuardianWrappedTransaction(transferTxn);
+            System.out.println("Send Guardian Wrapped Transaction success: " + r.isSuccess());
+            System.out.println("Send Guardian Wrapped Transaction txn hash: " + r.getTxnHash());
+            System.out.println("Send Guardian Wrapped Transaction error: " + r.getError());
+
+            Thread.sleep(5000);
+
+            byte[] removeGuardianTxn = wallet.getSignedRemoveGuardianTxn();
+            r = guardian.sendGuardianWrappedTransaction(removeGuardianTxn);
+            System.out.println("Remove Guardian success: " + r.isSuccess());
+            System.out.println("Remove Guardian txn hash: " + r.getTxnHash());
+            System.out.println("Remove Guardian error: " + r.getError());
+
+        } catch (Exception e) {
+            System.out.println("Guardian test failed: " + e.getMessage());
+        }
+    }
 }
