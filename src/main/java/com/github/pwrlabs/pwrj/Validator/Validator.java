@@ -2,6 +2,8 @@ package com.github.pwrlabs.pwrj.Validator;
 
 import com.github.pwrlabs.pwrj.Delegator.Delegator;
 import com.github.pwrlabs.pwrj.protocol.PWRJ;
+import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -15,75 +17,16 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 
+@Getter
+@SuperBuilder
 public class Validator {
     private final String address;
     private final String ip;
-    private final boolean badActor;
+    private final boolean isBadActor;
     private final long votingPower;
     private final long shares;
     private final int delegatorsCount;
     private final String status;
-
-    public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount, String status) {
-        this.address = address;
-        this.ip = ip;
-        this.badActor = badActor;
-        this.votingPower = votingPower;
-        this.shares = shares;
-        this.delegatorsCount = delegatorsCount;
-        this.status = status;
-    }
-
-    //Getters
-
-    /**
-     * @return the address of the validator
-     */
-    public String getAddress() {
-        return address;
-    }
-
-    /**
-     * @return the ip of the validator
-     */
-    public String getIp() {
-        return ip;
-    }
-
-    /**
-     * @return true if the validator is a bad actor, false otherwise
-     */
-    public boolean isBadActor() {
-        return badActor;
-    }
-
-    /**
-     * @return the voting power of the validator
-     */
-    public long getVotingPower() {
-        return votingPower;
-    }
-
-    /**
-     * @return the shares of the validator
-     */
-    public long getShares() {
-        return shares;
-    }
-
-    /**
-     * @return the number of delegators of the validator
-     */
-    public int getDelegatorsCount() {
-        return delegatorsCount;
-    }
-
-    /**
-     * @return the status of the validator
-     */
-    public String getStatus() {
-        return status;
-    }
 
     public List<Delegator> getDelegators() {
         try {
@@ -101,9 +44,15 @@ public class Validator {
                 List<Delegator> delegatorsList = new LinkedList<>();
 
                 for (String delegatorAddress: delegators.keySet()) {
-                    long shares = delegators.getLong(delegatorAddress);
+                    long shares = delegators.optLong(delegatorAddress, 0);
                     long delegatedPWR = BigInteger.valueOf(shares).multiply(BigInteger.valueOf(this.votingPower)).divide(BigInteger.valueOf(this.shares)).longValue();
-                    Delegator d = new Delegator("0x" + delegatorAddress, address, shares, delegatedPWR);
+
+                    Delegator d = Delegator.builder()
+                            .address(delegatorAddress)
+                            .validatorAddress(address)
+                            .shares(shares)
+                            .delegatedPWR(delegatedPWR)
+                            .build();
 
                     delegatorsList.add(d);
                 }

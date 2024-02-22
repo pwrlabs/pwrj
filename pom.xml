@@ -26,6 +26,14 @@
     </properties>
 
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.30</version>
+            <scope>provided</scope>
+        </dependency>
+
         <!-- Bouncy Castle Provider -->
         <dependency>
             <groupId>org.bouncycastle</groupId>
@@ -39,12 +47,13 @@
             <version>4.5.14</version> <!-- Use the latest version available -->
         </dependency>
 
-
+        <!-- https://mvnrepository.com/artifact/org.json/json -->
         <dependency>
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
-            <version>20210307</version>
+            <version>20240205</version>
         </dependency>
+
     </dependencies>
 
     <scm>

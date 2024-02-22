@@ -54,7 +54,7 @@ public class PWRJ {
 
         if (response.getStatusLine().getStatusCode() == 200) {
             JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-            System.out.println("Reply object: " + object);
+
             return object;
         } else if (response.getStatusLine().getStatusCode() == 400) {
             JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
@@ -332,7 +332,16 @@ public class PWRJ {
                 delegatorsCount = 0;
             }
 
-            Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), (Boolean) getOrDefault(validatorObject, "badActor", false), votingPower, totalShares, delegatorsCount, "active");validatorsList.add(validator);
+            Validator validator = Validator.builder()
+                    .address("0x" + validatorObject.getString("address"))
+                    .ip(validatorObject.getString("ip"))
+                    .isBadActor(validatorObject.getBoolean("badActor"))
+                    .votingPower(votingPower)
+                    .shares(totalShares)
+                    .delegatorsCount(delegatorsCount)
+                    .status("active")
+                    .build();
+
         }
         return validatorsList;
     }
@@ -376,7 +385,15 @@ public class PWRJ {
                 delegatorsCount = 0;
             }
 
-            Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), (Boolean) getOrDefault(validatorObject, "badActor", false), votingPower, totalShares, delegatorsCount, "active");validatorsList.add(validator);
+            Validator validator = Validator.builder()
+                    .address("0x" + validatorObject.getString("address"))
+                    .ip(validatorObject.getString("ip"))
+                    .isBadActor(validatorObject.getBoolean("badActor"))
+                    .votingPower(votingPower)
+                    .shares(totalShares)
+                    .delegatorsCount(delegatorsCount)
+                    .status("active")
+                    .build();
         }
         return validatorsList;
     }
@@ -420,7 +437,16 @@ public class PWRJ {
                 delegatorsCount = 0;
             }
 
-            Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), (Boolean) getOrDefault(validatorObject, "badActor", false), votingPower, totalShares, delegatorsCount, "active");
+            Validator validator = Validator.builder()
+                    .address("0x" + validatorObject.getString("address"))
+                    .ip(validatorObject.getString("ip"))
+                    .isBadActor(validatorObject.getBoolean("badActor"))
+                    .votingPower(votingPower)
+                    .shares(totalShares)
+                    .delegatorsCount(delegatorsCount)
+                    .status("active")
+                    .build();
+
             validatorsList.add(validator);
         }
         return validatorsList;
@@ -434,7 +460,16 @@ public class PWRJ {
         for(int i = 0; i < validators.length(); i++) {
             JSONObject validatorObject = validators.getJSONObject(i);
             //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
-            Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), validatorObject.getBoolean("badActor"), validatorObject.getLong("votingPower"), validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"), "active");
+            Validator validator = Validator.builder()
+                    .address("0x" + validatorObject.getString("address"))
+                    .ip(validatorObject.getString("ip"))
+                    .isBadActor(validatorObject.getBoolean("badActor"))
+                    .votingPower(validatorObject.getLong("votingPower"))
+                    .shares(validatorObject.getLong("totalShares"))
+                    .delegatorsCount(validatorObject.getInt("delegatorsCount"))
+                    .status("active")
+                    .build();
+
             validatorsList.add(validator);
         }
         return validatorsList;
@@ -442,7 +477,15 @@ public class PWRJ {
     public static Validator getValidator(String validatorAddress) throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/validator/?validatorAddress=" + validatorAddress);
         JSONObject validatorObject = object.getJSONObject("validator");
-        Validator validator = new Validator("0x" + validatorObject.getString("address"), validatorObject.getString("ip"), validatorObject.getBoolean("badActor"), validatorObject.getLong("votingPower"), validatorObject.getLong("totalShares"), validatorObject.getInt("delegatorsCount"), validatorObject.getString("status"));
+        Validator validator = Validator.builder()
+                .address("0x" + validatorObject.getString("address"))
+                .ip(validatorObject.getString("ip"))
+                .isBadActor(validatorObject.getBoolean("badActor"))
+                .votingPower(validatorObject.getLong("votingPower"))
+                .shares(validatorObject.getLong("totalShares"))
+                .delegatorsCount(validatorObject.getInt("delegatorsCount"))
+                .status(validatorObject.getString("status"))
+                .build();
 
         return validator;
     }
