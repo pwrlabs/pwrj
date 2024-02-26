@@ -6,20 +6,23 @@ import org.json.JSONObject;
 
 @Getter
 @SuperBuilder
-public class ClaimVmIdTxn extends Transaction {
-    public static final String type = "Claim VM ID";
+public class PayableVmDataTxn extends Transaction {
+    public static String type = "Payable VM Data";
 
-    private final long vmId;
+    private long vmId;
+    private String data;
 
-    public ClaimVmIdTxn(JSONObject json) {
+    public PayableVmDataTxn(JSONObject json) {
         super(json);
         this.vmId = json.optLong("vmId", 0);
+        this.data = json.optString("data", "0x");
     }
 
     @Override
     public JSONObject toJSON() {
         JSONObject txn = super.toJSON();
         txn.put("vmId", vmId);
+        txn.put("data", data);
         return txn;
     }
 }

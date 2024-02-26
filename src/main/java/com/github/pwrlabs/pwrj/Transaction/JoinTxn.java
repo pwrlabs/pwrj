@@ -7,6 +7,8 @@ import org.json.JSONObject;
 @Getter
 @SuperBuilder
 public class JoinTxn extends Transaction {
+    public static final String type = "Validator Join";
+
     private final String validator;
 
     public JoinTxn(JSONObject json) {

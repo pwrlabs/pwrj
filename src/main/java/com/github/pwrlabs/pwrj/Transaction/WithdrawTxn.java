@@ -7,6 +7,8 @@ import org.json.JSONObject;
 @Getter
 @SuperBuilder
 public class WithdrawTxn extends Transaction {
+    public static final String type = "Withdraw";
+
     private final String validator;
     private final long shares;
 

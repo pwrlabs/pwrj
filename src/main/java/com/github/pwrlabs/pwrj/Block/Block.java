@@ -34,20 +34,32 @@ public class Block {
         for(int i = 0; i < txns.length(); i++) {
             JSONObject txnObject = txns.getJSONObject(i);
             Transaction txn = null;
-            
+
             String txnType = txnObject.has("type") ? txnObject.getString("type") : "Unknown";
-            if(txnType.equalsIgnoreCase("Transfer")) {
+            if(txnType.equalsIgnoreCase(TransferTxn.type)) {
                 txn = new TransferTxn(txnObject);
-            } else if(txnType.equalsIgnoreCase("VM Data")) {
+            } else if(txnType.equalsIgnoreCase(VmDataTxn.type)) {
                 txn = new VmDataTxn(txnObject);
-            } else if(txnType.equalsIgnoreCase("Delegate")) {
+            } else if(txnType.equalsIgnoreCase(DelegateTxn.type)) {
                 txn = new DelegateTxn(txnObject);
-            } else if(txnType.equalsIgnoreCase("Withdraw")) {
+            } else if(txnType.equalsIgnoreCase(WithdrawTxn.type)) {
                 txn = new WithdrawTxn(txnObject);
-            } else if(txnType.equalsIgnoreCase("Validator Join")) {
+            } else if(txnType.equalsIgnoreCase(JoinTxn.type)) {
                 txn = new JoinTxn(txnObject);
-            } else if(txnType.equalsIgnoreCase("Claim VM ID")) {
+            } else if(txnType.equalsIgnoreCase(ClaimVmIdTxn.type)) {
                 txn = new ClaimVmIdTxn(txnObject);
+            } else if(txnType.equalsIgnoreCase(SetGuardianTxn.type)) {
+                txn = new SetGuardianTxn(txnObject);
+            } else if(txnType.equalsIgnoreCase(PayableVmDataTxn.type)) {
+                txn = new PayableVmDataTxn(txnObject);
+            } else if(txnType.equalsIgnoreCase(GuardianApprovalTxn.type)) {
+                txn = new GuardianApprovalTxn(txnObject);
+            } else if(txnType.equalsIgnoreCase(ConduitApprovalTxn.type)) {
+                txn = new ConduitApprovalTxn(txnObject);
+            } else if(txnType.equalsIgnoreCase(RemoveGuardianTxn.type)) {
+                txn = new RemoveGuardianTxn(txnObject);
+            } else if(txnType.equalsIgnoreCase(ClaimSpotTxn.type)) {
+                txn = new ClaimSpotTxn(txnObject);
             } else {
                 txn = new Transaction(txnObject);
             }

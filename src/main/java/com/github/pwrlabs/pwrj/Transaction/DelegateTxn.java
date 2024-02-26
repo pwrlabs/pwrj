@@ -7,11 +7,13 @@ import org.json.JSONObject;
 @Getter
 @SuperBuilder
 public class DelegateTxn extends Transaction {
+    public static final String type = "Delegate";
+
     private final String validator;
 
     public DelegateTxn(JSONObject json) {
         super(json);
-        this.validator = json.optString("0x");
+        this.validator = json.optString("validator", "0x");
     }
 
     @Override

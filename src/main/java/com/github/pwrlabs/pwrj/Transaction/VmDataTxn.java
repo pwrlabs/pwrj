@@ -7,6 +7,8 @@ import org.json.JSONObject;
 @Getter
 @SuperBuilder
 public class VmDataTxn extends Transaction {
+    public static final String type = "VM Data";
+
     private final long vmId;
     private final String data;
 
