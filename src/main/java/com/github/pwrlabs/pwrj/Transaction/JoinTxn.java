@@ -11,7 +11,7 @@ public class JoinTxn extends Transaction {
 
     public JoinTxn(JSONObject json) {
         super(json);
-        this.validator = json.optString("0x");
+        this.validator = json.optString("sender", "0x");
     }
 
     @Override
