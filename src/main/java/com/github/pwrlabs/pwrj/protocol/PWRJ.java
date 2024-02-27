@@ -335,11 +335,11 @@ public class PWRJ {
             Validator validator = Validator.builder()
                     .address("0x" + validatorObject.getString("address"))
                     .ip(validatorObject.getString("ip"))
-                    .isBadActor(validatorObject.getBoolean("badActor"))
+                    .isBadActor(validatorObject.optBoolean("badActor", false))
                     .votingPower(votingPower)
                     .shares(totalShares)
                     .delegatorsCount(delegatorsCount)
-                    .status("active")
+                    .status(validatorObject.optString("status", "unknown"))
                     .build();
 
         }
@@ -388,11 +388,11 @@ public class PWRJ {
             Validator validator = Validator.builder()
                     .address("0x" + validatorObject.getString("address"))
                     .ip(validatorObject.getString("ip"))
-                    .isBadActor(validatorObject.getBoolean("badActor"))
+                    .isBadActor(validatorObject.optBoolean("badActor", false))
                     .votingPower(votingPower)
                     .shares(totalShares)
                     .delegatorsCount(delegatorsCount)
-                    .status("active")
+                    .status("standby")
                     .build();
         }
         return validatorsList;
