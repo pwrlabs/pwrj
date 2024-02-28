@@ -490,7 +490,7 @@ public class PWRJ {
         return validator;
     }
     public static long getDelegatedPWR(String delegatorAddress, String validatorAddress) throws IOException {
-        return httpGet(rpcNodeUrl + "validator/delegator/delegatedPWROfAddress/?userAddress=" + delegatorAddress + "&validatorAddress=" + validatorAddress).getLong("delegatedPWR");
+        return httpGet(rpcNodeUrl + "/validator/delegator/delegatedPWROfAddress/?userAddress=" + delegatorAddress + "&validatorAddress=" + validatorAddress).getLong("delegatedPWR");
     }
 
     public static BigDecimal getShareValue(String validator) throws IOException {
