@@ -11,8 +11,8 @@ public class DelegateTxn extends Transaction {
 
     private final String validator;
 
-    public DelegateTxn(JSONObject json) {
-        super(json);
+    public DelegateTxn(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
+        super(json, blockNumber, timestamp, positionInTheBlock);
         this.validator = json.optString("validator", "0x");
     }
 

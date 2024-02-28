@@ -11,8 +11,8 @@ public class ClaimSpotTxn extends Transaction {
 
     private String validator;
 
-    public ClaimSpotTxn(JSONObject json) {
-        super(json);
+    public ClaimSpotTxn(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
+        super(json, blockNumber, timestamp, positionInTheBlock);
         this.validator = getSender();
     }
 

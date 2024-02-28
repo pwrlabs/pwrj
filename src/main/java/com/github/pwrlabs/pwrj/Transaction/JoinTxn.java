@@ -11,8 +11,8 @@ public class JoinTxn extends Transaction {
 
     private final String validator;
 
-    public JoinTxn(JSONObject json) {
-        super(json);
+    public JoinTxn(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
+        super(json, blockNumber, timestamp, positionInTheBlock);
         this.validator = json.optString("sender", "0x");
     }
 

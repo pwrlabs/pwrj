@@ -12,8 +12,8 @@ public class PayableVmDataTxn extends Transaction {
     private long vmId;
     private String data;
 
-    public PayableVmDataTxn(JSONObject json) {
-        super(json);
+    public PayableVmDataTxn(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
+        super(json, blockNumber, timestamp, positionInTheBlock);
         this.vmId = json.optLong("vmId", 0);
         this.data = json.optString("data", "0x");
     }

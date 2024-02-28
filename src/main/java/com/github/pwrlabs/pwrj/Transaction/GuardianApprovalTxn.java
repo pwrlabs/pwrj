@@ -15,8 +15,8 @@ public class GuardianApprovalTxn extends Transaction {
 
     private List<String> transactions = new ArrayList<>();
 
-    public GuardianApprovalTxn(JSONObject json) {
-        super(json);
+    public GuardianApprovalTxn(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
+        super(json, blockNumber, timestamp, positionInTheBlock);
 
         JSONArray transactions = json.optJSONArray("transactions", null);
         if (transactions != null) {

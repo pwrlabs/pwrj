@@ -12,8 +12,8 @@ public class WithdrawTxn extends Transaction {
     private final String validator;
     private final long shares;
 
-    public WithdrawTxn(JSONObject json) {
-        super(json);
+    public WithdrawTxn(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
+        super(json, blockNumber, timestamp, positionInTheBlock);
         this.validator = json.optString("0x");
         this.shares = json.optLong("shares", 0);
     }

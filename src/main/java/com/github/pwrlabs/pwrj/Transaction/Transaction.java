@@ -19,17 +19,17 @@ public class Transaction {
     private final long timestamp;
     private final long value;
 
-    public Transaction(JSONObject json) {
+    public Transaction(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
         this.size = json.optInt("size", 0);
-        this.positionInTheBlock = json.optInt("positionInTheBlock", 0);
+        this.positionInTheBlock = positionInTheBlock;
         this.fee = json.optLong("fee", 0);
         this.type = json.optString("type", "unknown");
         this.sender = json.optString("sender", "0x");
         this.receiver = json.optString("receiver", "0x");
         this.nonce = json.optInt("nonce", 0);
         this.hash = json.optString("hash", "0x");
-        this.blockNumber = json.optLong("blockNumber", 0);
-        this.timestamp = json.optLong("timestamp", 0);
+        this.blockNumber = blockNumber;
+        this.timestamp = timestamp;
         this.value = json.optLong("value", 0);
     }
     public JSONObject toJSON() {

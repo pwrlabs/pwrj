@@ -12,8 +12,8 @@ public class VmDataTxn extends Transaction {
     private final long vmId;
     private final String data;
 
-    public VmDataTxn(JSONObject json) {
-        super(json);
+    public VmDataTxn(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
+        super(json, blockNumber, timestamp, positionInTheBlock);
         this.vmId = json.getLong("vmId");
         this.data = json.getString("data");
     }

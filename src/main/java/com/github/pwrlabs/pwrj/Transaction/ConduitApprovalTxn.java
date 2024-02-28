@@ -12,8 +12,8 @@ public class ConduitApprovalTxn extends Transaction {
     private long vmId;
     private List<String> transactions = new ArrayList<>();
 
-    public ConduitApprovalTxn(JSONObject json) {
-        super(json);
+    public ConduitApprovalTxn(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
+        super(json, blockNumber, timestamp, positionInTheBlock);
         this.vmId = json.optLong("vmId", 0);
         JSONArray transactions = json.optJSONArray("transactions", null);
         if (transactions != null) {

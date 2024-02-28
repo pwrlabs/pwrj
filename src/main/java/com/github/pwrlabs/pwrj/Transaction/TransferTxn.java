@@ -9,8 +9,8 @@ public class TransferTxn extends Transaction {
 
     public static final String type = "Transfer";
 
-    public TransferTxn(JSONObject json) {
-        super(json);
+    public TransferTxn(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
+        super(json, blockNumber, timestamp, positionInTheBlock);
     }
 }
 

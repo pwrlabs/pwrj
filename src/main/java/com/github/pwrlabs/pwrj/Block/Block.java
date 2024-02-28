@@ -37,31 +37,31 @@ public class Block {
 
             String txnType = txnObject.has("type") ? txnObject.getString("type") : "Unknown";
             if(txnType.equalsIgnoreCase(TransferTxn.type)) {
-                txn = new TransferTxn(txnObject);
+                txn = new TransferTxn(txnObject, number, timestamp, i);
             } else if(txnType.equalsIgnoreCase(VmDataTxn.type)) {
-                txn = new VmDataTxn(txnObject);
+                txn = new VmDataTxn(txnObject, number, timestamp, i);
             } else if(txnType.equalsIgnoreCase(DelegateTxn.type)) {
-                txn = new DelegateTxn(txnObject);
+                txn = new DelegateTxn(txnObject, number, timestamp, i);
             } else if(txnType.equalsIgnoreCase(WithdrawTxn.type)) {
-                txn = new WithdrawTxn(txnObject);
+                txn = new WithdrawTxn(txnObject, number, timestamp, i);
             } else if(txnType.equalsIgnoreCase(JoinTxn.type)) {
-                txn = new JoinTxn(txnObject);
+                txn = new JoinTxn(txnObject, number, timestamp, i);
             } else if(txnType.equalsIgnoreCase(ClaimVmIdTxn.type)) {
-                txn = new ClaimVmIdTxn(txnObject);
+                txn = new ClaimVmIdTxn(txnObject, number, timestamp, i);
             } else if(txnType.equalsIgnoreCase(SetGuardianTxn.type)) {
-                txn = new SetGuardianTxn(txnObject);
+                txn = new SetGuardianTxn(txnObject, number, timestamp, i);
             } else if(txnType.equalsIgnoreCase(PayableVmDataTxn.type)) {
-                txn = new PayableVmDataTxn(txnObject);
+                txn = new PayableVmDataTxn(txnObject, number, timestamp, i);
             } else if(txnType.equalsIgnoreCase(GuardianApprovalTxn.type)) {
-                txn = new GuardianApprovalTxn(txnObject);
+                txn = new GuardianApprovalTxn(txnObject, number, timestamp, i);
             } else if(txnType.equalsIgnoreCase(ConduitApprovalTxn.type)) {
-                txn = new ConduitApprovalTxn(txnObject);
+                txn = new ConduitApprovalTxn(txnObject, number, timestamp, i);
             } else if(txnType.equalsIgnoreCase(RemoveGuardianTxn.type)) {
-                txn = new RemoveGuardianTxn(txnObject);
+                txn = new RemoveGuardianTxn(txnObject, number, timestamp, i);
             } else if(txnType.equalsIgnoreCase(ClaimSpotTxn.type)) {
-                txn = new ClaimSpotTxn(txnObject);
+                txn = new ClaimSpotTxn(txnObject, number, timestamp, i);
             } else {
-                txn = new Transaction(txnObject);
+                txn = new Transaction(txnObject, number, timestamp, i);
             }
 
             transactions[i] = txn;

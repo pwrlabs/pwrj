@@ -11,8 +11,8 @@ public class ClaimVmIdTxn extends Transaction {
 
     private final long vmId;
 
-    public ClaimVmIdTxn(JSONObject json) {
-        super(json);
+    public ClaimVmIdTxn(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
+        super(json, blockNumber, timestamp, positionInTheBlock);
         this.vmId = json.optLong("vmId", 0);
     }
 

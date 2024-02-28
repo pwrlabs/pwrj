@@ -210,7 +210,7 @@ public class PWRJ {
 
         for(int i = 0; i < txns.length(); i++) {
             JSONObject txnObject = txns.getJSONObject(i);
-            VmDataTxn txn = new VmDataTxn(txnObject);
+            VmDataTxn txn = new VmDataTxn(txnObject, txnObject.optLong("blockNumber", 0), txnObject.optLong("timestamp", 0), txnObject.optInt("positionInTheBlock", 0));
             txnsArray[i] = txn;
         }
 
@@ -225,7 +225,7 @@ public class PWRJ {
 
         for(int i = 0; i < txns.length(); i++) {
             JSONObject txnObject = txns.getJSONObject(i);
-            VmDataTxn txn = new VmDataTxn(txnObject);
+            VmDataTxn txn = new VmDataTxn(txnObject, txnObject.optLong("blockNumber", 0), txnObject.optLong("timestamp", 0), txnObject.optInt("positionInTheBlock", 0));
             txnsArray[i] = txn;
         }
 

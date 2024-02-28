@@ -12,8 +12,8 @@ public class SetGuardianTxn extends Transaction {
     private String guardian;
     private long expiryDate;
 
-    public SetGuardianTxn(JSONObject json) {
-        super(json);
+    public SetGuardianTxn(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
+        super(json, blockNumber, timestamp, positionInTheBlock);
         this.guardian = json.optString("guardian", "0x");
         this.expiryDate = json.optLong("expiryDate", 0);
     }

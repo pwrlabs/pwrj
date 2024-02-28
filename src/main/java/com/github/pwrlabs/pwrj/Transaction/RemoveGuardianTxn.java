@@ -9,8 +9,8 @@ import org.json.JSONObject;
 public class RemoveGuardianTxn extends Transaction {
     public static final String type = "Remove Guardian";
 
-    public RemoveGuardianTxn(JSONObject json) {
-        super(json);
+    public RemoveGuardianTxn(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
+        super(json, blockNumber, timestamp, positionInTheBlock);
     }
 
 }
