@@ -1,10 +1,7 @@
 package com.github.pwrlabs.pwrj.wallet;
 
-import com.github.pwrlabs.pwrj.Utils.Hash;
 import com.github.pwrlabs.pwrj.Utils.Response;
-import jdk.javadoc.doclet.Reporter;
 import org.bouncycastle.jcajce.provider.digest.Keccak;
-import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.math.ec.FixedPointCombMultiplier;
 import org.bouncycastle.util.encoders.Hex;
 import com.github.pwrlabs.pwrj.protocol.PWRJ;
@@ -15,17 +12,12 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.http.HttpClient;
 import java.nio.ByteBuffer;
-import org.bouncycastle.crypto.digests.KeccakDigest;
-import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
-import org.bouncycastle.jce.spec.ECPrivateKeySpec;
 import org.bouncycastle.math.ec.ECPoint;
 
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.*;
-import java.security.spec.InvalidKeySpecException;
 import java.time.Instant;
 import java.util.Arrays;
 
@@ -574,7 +566,7 @@ public class PWRWallet {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException For various transaction-related validation issues.
      */
-    public byte[] getSendVmDataTxn(long vmId, byte[] data, int nonce) throws IOException, InterruptedException{
+    public byte[] getVmDataTxn(long vmId, byte[] data, int nonce) throws IOException, InterruptedException{
         if (nonce < 0) {
             throw new RuntimeException("Nonce cannot be negative");
         }
@@ -601,8 +593,8 @@ public class PWRWallet {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException For various transaction-related validation issues.
      */
-    public byte[] getSignedSendVmDataTxn(long vmId, byte[] data, int nonce) throws IOException, InterruptedException {
-        return getSignedTxn(getSendVmDataTxn(vmId, data, nonce));
+    public byte[] getSignedVmDataTxn(long vmId, byte[] data, int nonce) throws IOException, InterruptedException {
+        return getSignedTxn(getVmDataTxn(vmId, data, nonce));
     }
     /**
      * Sends data to a specified VM on the PWR network.
@@ -619,7 +611,7 @@ public class PWRWallet {
      */
     public Response sendVmDataTxn(long vmId, byte[] data, int nonce) {
         try {
-            return PWRJ.broadcastTxn(getSignedSendVmDataTxn(vmId, data, nonce));
+            return PWRJ.broadcastTxn(getSignedVmDataTxn(vmId, data, nonce));
         } catch (Exception e) {
             return new Response(false, null, e.getMessage());
         }
@@ -934,6 +926,90 @@ public class PWRWallet {
         return sendGuardianWrappedTransaction(txn, getNonce());
     }
 
+
+    /**
+     * Returns the transaction of send payable data to a specified VM on the PWR network.
+     *
+     * @param vmId The ID of the VM.
+     * @param value The amount of PWR tokens to be sent.
+     * @param data The data to be sent.
+     * @param nonce The transaction count of the wallet address.
+     * @return A byte array that represents the transaction of this method
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     * @throws RuntimeException For various transaction-related validation issues.
+     */
+    public byte[] getPayableVmDataTxn(long vmId, long value, byte[] data, int nonce) throws IOException, InterruptedException{
+        if (nonce < 0) {
+            throw new RuntimeException("Nonce cannot be negative");
+        }
+        if (nonce < getNonce()) {
+            throw new RuntimeException("Nonce is too low");
+        }
+
+        byte[] txnBase = getTxnBase((byte) 5, nonce);
+        ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 16 + data.length);
+        buffer.put(txnBase);
+        buffer.putLong(vmId);
+        buffer.put(data);
+        buffer.putLong(value);
+
+        return buffer.array();
+    }
+    /**
+     * Returns the signed transaction of send payable data to a specified VM on the PWR network.
+     *
+     * @param vmId The ID of the VM.
+     * @param value The amount of PWR tokens to be sent.
+     * @param data The data to be sent.
+     * @param nonce The transaction count of the wallet address.
+     * @return A byte array that represents a signed transaction of this method
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     * @throws RuntimeException For various transaction-related validation issues.
+     */
+    public byte[] getSignedPayableVmDataTxn(long vmId, long value, byte[] data, int nonce) throws IOException, InterruptedException {
+        return getSignedTxn(getPayableVmDataTxn(vmId, value, data, nonce));
+    }
+    /**
+     * Sends data and PWR coins to a specified VM on the PWR network.
+     *
+     * @param vmId The ID of the VM.
+     * @param value The amount of PWR tokens to be sent.
+     * @param data The data to be sent.
+     * @param nonce The transaction count of the wallet address.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     * @throws RuntimeException For various transaction-related validation issues.
+     */
+    public Response sendPayableVmDataTxn(long vmId, long value, byte[] data, int nonce) {
+        try {
+            return PWRJ.broadcastTxn(getSignedPayableVmDataTxn(vmId, value, data, nonce));
+        } catch (Exception e) {
+            return new Response(false, null, e.getMessage());
+        }
+    }
+
+    /**
+     * Sends data and PWR coins to a specified VM on the PWR network using the current nonce.
+     *
+     * @param vmId The ID of the VM.
+     * @param value The amount of PWR tokens to be sent.
+     * @param data The data to be sent.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=null, error=errorMessage).
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     */
+    public Response sendVmDataTxn(long vmId, long value, byte[] data) throws IOException, InterruptedException {
+        return sendPayableVmDataTxn(vmId, value, data, getNonce());
+    }
+
+
     /**
      * Returns the transaction of sending the transaction to remove validator
      *
@@ -1027,44 +1103,63 @@ public class PWRWallet {
     public static void main(String[] args) {
         //Test for all the functions
         try {
-            PWRWallet wallet = new PWRWallet(new BigInteger("19025338099182849188500822369817708178555441129124871592504836170414925188857"));
-            System.out.println("Wallet Address: " + wallet.getAddress());
-            System.exit(0);
+            PWRJ.setRpcNodeUrl("https://pwrrpc.pwrlabs.io/");
 
-            int nonce = wallet.getNonce();
+            //Change the value if testing from another tool
+            PWRWallet user = new PWRWallet(new BigInteger("19025338099182849188500822369817708178555441129124871592504836170414925188812"));
 
-            Response r = wallet.transferPWR("0x8953f1c3B53Bd9739F78dc8B0CD5DB9686C40b09", 1000000000, nonce);
+            //Change the value if testing from another tool
+            PWRWallet guardian = new PWRWallet(new BigInteger("19025338099182849188500822369817708178555441129124871592504836170414925188851"));
+
+            //Change the value if testing from another tool
+            long vmId = 897435;
+            System.out.println("User Wallet Address: " + user.getAddress());
+            System.out.println("Guardian Wallet Address: " + guardian.getAddress());
+            //System.exit(0);
+
+            int nonce = user.getNonce();
+
+            Response r = user.transferPWR("0x8953f1c3B53Bd9739F78dc8B0CD5DB9686C40b09", 1000000000, nonce);
             System.out.println("Transfer PWR success: " + r.isSuccess());
             System.out.println("Transfer PWR txn hash: " + r.getTxnHash());
             System.out.println("Transfer PWR error: " + r.getError());
             System.out.println();
 
             ++nonce;
-            r = wallet.delegate("0x61Bd8fc1e30526Aaf1C4706Ada595d6d236d9883", 1000000000, nonce);
+            r = user.delegate("0x61Bd8fc1e30526Aaf1C4706Ada595d6d236d9883", 1000000000, nonce);
             System.out.println("Delegate success: " + r.isSuccess());
             System.out.println("Delegate txn hash: " + r.getTxnHash());
             System.out.println("Delegate error: " + r.getError());
             System.out.println();
 
             ++nonce;
-            r = wallet.claimVmId(1, nonce);
+            r = user.claimVmId(vmId, nonce);
             System.out.println("Claim VM ID success: " + r.isSuccess());
             System.out.println("Claim VM ID txn hash: " + r.getTxnHash());
             System.out.println("Claim VM ID error: " + r.getError());
+            System.out.println();
 
             ++nonce;
-            r = wallet.sendVmDataTxn(1, "Hello World".getBytes(), nonce);
+            r = user.sendVmDataTxn(vmId, "Hello World".getBytes(), nonce);
             System.out.println("Send VM Data success: " + r.isSuccess());
             System.out.println("Send VM Data txn hash: " + r.getTxnHash());
             System.out.println("Send VM Data error: " + r.getError());
+            System.out.println();
 
-            while(PWRJ.getDelegatedPWR(wallet.getAddress(), "0x61Bd8fc1e30526Aaf1C4706Ada595d6d236d9883") == 0) {
+            ++nonce;
+            r = user.sendPayableVmDataTxn(vmId, 10, "Hello World".getBytes(), nonce);
+            System.out.println("Send Payable VM Data success: " + r.isSuccess());
+            System.out.println("Send Payable VM Data txn hash: " + r.getTxnHash());
+            System.out.println("Send Payable VM Data error: " + r.getError());
+            System.out.println();
+
+            while(PWRJ.getDelegatedPWR(user.getAddress(), "0x61Bd8fc1e30526Aaf1C4706Ada595d6d236d9883") == 0) {
                 Thread.sleep(1000);
             }
 
             //TODO send this after the delegation has been completed
             ++nonce;
-            r = wallet.withdraw("0x61Bd8fc1e30526Aaf1C4706Ada595d6d236d9883", 10, nonce);
+            r = user.withdraw("0x61Bd8fc1e30526Aaf1C4706Ada595d6d236d9883", 10, nonce);
             System.out.println("Withdraw success: " + r.isSuccess());
             System.out.println("Withdraw txn hash: " + r.getTxnHash());
             System.out.println("Withdraw error: " + r.getError());
@@ -1072,42 +1167,44 @@ public class PWRWallet {
 
             //TODO send this after the delegation has been completed
             ++nonce;
-            r = wallet.withdrawPWR("0x61Bd8fc1e30526Aaf1C4706Ada595d6d236d9883", 10000000, nonce);
+            r = user.withdrawPWR("0x61Bd8fc1e30526Aaf1C4706Ada595d6d236d9883", 10000000, nonce);
             System.out.println("Withdraw PWR success: " + r.isSuccess());
             System.out.println("Withdraw PWR txn hash: " + r.getTxnHash());
             System.out.println("Withdraw PWR error: " + r.getError());
 
+            Thread.sleep(10000);
+            guardianTest(user, guardian);
         } catch (Exception e) {
 
         }
     }
 
-    public static void guardianTest(PWRWallet wallet) {
+    public static void guardianTest(PWRWallet user, PWRWallet guardian) {
         try {
-            int nonce = wallet.getNonce();
-            Response r = wallet.setGuardian("0x61Bd8fc1e30526Aaf1C4706Ada595d6d236d9883", 1000000000, nonce);
+            int nonce = user.getNonce();
+            Response r = user.setGuardian("0x61Bd8fc1e30526Aaf1C4706Ada595d6d236d9883", 1000000000, nonce);
             System.out.println("Set Guardian success: " + r.isSuccess());
             System.out.println("Set Guardian txn hash: " + r.getTxnHash());
             System.out.println("Set Guardian error: " + r.getError());
 
-            while(PWRJ.getGuardianOfAddress(wallet.getAddress()) == null) {
+            while(PWRJ.getGuardianOfAddress(user.getAddress()) == null) {
                 Thread.sleep(1000);
             }
 
             ++nonce;
-            byte[] transferTxn = wallet.getSignedTransferPWRTxn("0x61Bd8fc1e30526Aaf1C4706Ada595d6d236d9883", 1000, nonce);
+            byte[] transferTxn = user.getSignedTransferPWRTxn("0x61Bd8fc1e30526Aaf1C4706Ada595d6d236d9883", 1000, nonce);
 
-            PWRWallet guardian = new PWRWallet(new BigInteger("03a5240936d67dc18dca348e793010a14c5eba86a73d0c9e45764681295a73df", 16));
-
-            r = guardian.sendGuardianWrappedTransaction(transferTxn);
+            int guardianNonce = guardian.getNonce();
+            r = guardian.sendGuardianWrappedTransaction(transferTxn, guardianNonce);
             System.out.println("Send Guardian Wrapped Transaction success: " + r.isSuccess());
             System.out.println("Send Guardian Wrapped Transaction txn hash: " + r.getTxnHash());
             System.out.println("Send Guardian Wrapped Transaction error: " + r.getError());
 
-            Thread.sleep(5000);
+            ++nonce;
+            byte[] removeGuardianTxn = user.getSignedRemoveGuardianTxn(nonce);
 
-            byte[] removeGuardianTxn = wallet.getSignedRemoveGuardianTxn();
-            r = guardian.sendGuardianWrappedTransaction(removeGuardianTxn);
+            ++guardianNonce;
+            r = guardian.sendGuardianWrappedTransaction(removeGuardianTxn, guardianNonce);
             System.out.println("Remove Guardian success: " + r.isSuccess());
             System.out.println("Remove Guardian txn hash: " + r.getTxnHash());
             System.out.println("Remove Guardian error: " + r.getError());
