@@ -440,7 +440,7 @@ public class PWRJ {
             Validator validator = Validator.builder()
                     .address("0x" + validatorObject.getString("address"))
                     .ip(validatorObject.getString("ip"))
-                    .isBadActor(validatorObject.getBoolean("badActor"))
+                    .isBadActor(validatorObject.optBoolean("badActor", false))
                     .votingPower(votingPower)
                     .shares(totalShares)
                     .delegatorsCount(delegatorsCount)
@@ -596,29 +596,14 @@ public class PWRJ {
         //Tests for all the function
         try {
             setRpcNodeUrl("https://pwrrpc.pwrlabs.io");
-            System.out.println(getChainId());
-            System.out.println(getFeePerByte());
-            System.out.println(getBlockchainVersion());
-            System.out.println(getBlocksCount());
-            System.out.println(getLatestBlockNumber());
-            System.out.println(getBlockByNumber(10000));
-            System.out.println(getActiveVotingPower());
-            System.out.println(getTotalValidatorsCount());
-            System.out.println(getStandbyValidatorsCount());
-            System.out.println(getActiveValidatorsCount());
-            System.out.println(getTotalDelegatorsCount());
-            System.out.println(getAllValidators());
-            System.out.println(getStandbyValidators());
-            System.out.println(getActiveValidators());
-            System.out.println(getVMDataTxns(1, 800, 10023));
-            System.out.println(getOwnerOfVm(100));
-            System.out.println(getNonceOfAddress("0xf6fe6a14b3aac06c2c102cf5f028df35157f9770"));
-            System.out.println(getBalanceOfAddress("0xf6fe6a14b3aac06c2c102cf5f028df35157f9770"));
-            System.out.println(getGuardianOfAddress("0xf6fe6a14b3aac06c2c102cf5f028df35157f9770"));
-            System.out.println(getDelegatees("0xf6fe6a14b3aac06c2c102cf5f028df35157f9770"));
-            System.out.println(getValidator("0xf6fe6a14b3aac06c2c102cf5f028df35157f9770"));
-            System.out.println(getDelegatedPWR("0xf6fe6a14b3aac06c2c102cf5f028df35157f9770", "0xf6fe6a14b3aac06c2c102cf5f028df35157f9770"));
-            System.out.println(getShareValue("0xf6fe6a14b3aac06c2c102cf5f028df35157f9770"));
+
+            List<Validator> v = getActiveValidators();
+
+            for(Validator validator : v) {
+                System.out.println(validator.getAddress());
+                System.out.println(validator.getIp());
+                System.out.println();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }

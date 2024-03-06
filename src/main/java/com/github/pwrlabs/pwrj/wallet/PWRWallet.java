@@ -552,7 +552,7 @@ public class PWRWallet {
      * @throws InterruptedException If the request is interrupted.
      */
     public Response withdrawPWR(String from, long pwrAmount) throws IOException, InterruptedException {
-        return withdraw(from, pwrAmount, getNonce());
+        return withdrawPWR(from, pwrAmount, getNonce());
     }
 
     /**
@@ -694,7 +694,7 @@ public class PWRWallet {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException For various transaction-related validation issues.
      */
-    public byte[] getSendConduitTransactionTxn(long vmId, byte[] txn, int nonce) throws  IOException, InterruptedException{
+    public byte[] getConduitTransactionTxn(long vmId, byte[] txn, int nonce) throws  IOException, InterruptedException{
         if (nonce < 0) {
             throw new RuntimeException("Nonce cannot be negative");
         }
@@ -721,8 +721,8 @@ public class PWRWallet {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException For various transaction-related validation issues.
      */
-    public byte[] getSignedSendConduitTransactionTxn(long vmId, byte[] txn, int nonce) throws IOException, InterruptedException{
-        return getSignedTxn(getSendConduitTransactionTxn(vmId, txn, nonce));
+    public byte[] getSignedConduitTransactionTxn(long vmId, byte[] txn, int nonce) throws IOException, InterruptedException{
+        return getSignedTxn(getConduitTransactionTxn(vmId, txn, nonce));
     }
     /**
      * Sends a conduit wrapped transaction of a specified VM on the PWR network. Must be sent from a conduit node of that VM.
@@ -738,7 +738,7 @@ public class PWRWallet {
      * @throws RuntimeException For various transaction-related validation issues.
      */
     public Response sendConduitTransaction(long vmId, byte[] txn, int nonce) throws IOException, InterruptedException {
-        return PWRJ.broadcastTxn(getSignedSendConduitTransactionTxn(vmId, txn, nonce));
+        return PWRJ.broadcastTxn(getSignedConduitTransactionTxn(vmId, txn, nonce));
     }
 
     /**
@@ -881,7 +881,7 @@ public class PWRWallet {
      * @return A byte array representing the transaction of this method (not to be confused with the transaction
      *         to be sent to the guardian wallet)
      */
-    public byte[] getSendGuardianWrappedTransactionTxn(byte[] txn, int nonce) throws IOException {
+    public byte[] getGuardianWrappedTransactionTxn(byte[] txn, int nonce) throws IOException {
         byte[] txnBase = getTxnBase((byte) 10, nonce);
         ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + txn.length);
         buffer.put(txnBase);
@@ -897,8 +897,8 @@ public class PWRWallet {
      * @return A byte array representing the transaction of this method (not to be confused with the transaction
      *         to be sent to the guardian wallet)
      */
-    public byte[] getSignedSendGuardianWrappedTransactionTxn(byte[] txn, int nonce) throws IOException {
-        return getSignedTxn(getSendGuardianWrappedTransactionTxn(txn, nonce));
+    public byte[] getSignedGuardianWrappedTransactionTxn(byte[] txn, int nonce) throws IOException {
+        return getSignedTxn(getGuardianWrappedTransactionTxn(txn, nonce));
     }
     /**
      * Sends the guardian wallet a wrapped transaction
@@ -910,7 +910,7 @@ public class PWRWallet {
      *         On failure: Response(success=false, message=null, error=errorMessage).
      */
     public Response sendGuardianWrappedTransaction(byte[] txn, int nonce) throws IOException {
-        return PWRJ.broadcastTxn(getSignedSendGuardianWrappedTransactionTxn(txn, nonce));
+        return PWRJ.broadcastTxn(getSignedGuardianWrappedTransactionTxn(txn, nonce));
     }
     /**
      * Sends the guardian wallet a wrapped transaction using current nonce
@@ -1005,7 +1005,7 @@ public class PWRWallet {
      * @throws IOException If there's an issue with the network or stream handling.
      * @throws InterruptedException If the request is interrupted.
      */
-    public Response sendVmDataTxn(long vmId, long value, byte[] data) throws IOException, InterruptedException {
+    public Response sendPayableVmDataTxn(long vmId, long value, byte[] data) throws IOException, InterruptedException {
         return sendPayableVmDataTxn(vmId, value, data, getNonce());
     }
 
@@ -1018,7 +1018,7 @@ public class PWRWallet {
      * @throws IOException If there's an issue with the network or stream handling
      * @throws InterruptedException If the request is interrupted
      */
-    public byte[] getSendValidatorRemoveTxn(String validator, int nonce) throws IOException {
+    public byte[] getValidatorRemoveTxn(String validator, int nonce) throws IOException {
         if(validator.length() != 40 && validator.length() != 42) {
             throw new RuntimeException("Invalid address");
         } if (nonce < 0) {
@@ -1044,8 +1044,8 @@ public class PWRWallet {
      * @throws IOException If there's an issue with the network or stream handling
      * @throws InterruptedException If the request is interrupted
      */
-    public byte[] getSignedSendValidatorRemoveTxn(String validator, int nonce) throws IOException, InterruptedException {
-        return getSignedTxn(getSendValidatorRemoveTxn(validator, nonce));
+    public byte[] getSignedValidatorRemoveTxn(String validator, int nonce) throws IOException, InterruptedException {
+        return getSignedTxn(getValidatorRemoveTxn(validator, nonce));
     }
     /**
      * Sends the transaction to remove validator
@@ -1058,7 +1058,7 @@ public class PWRWallet {
      * @throws InterruptedException If the request is interrupted
      */
     public Response sendValidatorRemoveTxn(String validator, int nonce) throws IOException, InterruptedException {
-        return PWRJ.broadcastTxn(getSignedSendValidatorRemoveTxn(validator, nonce));
+        return PWRJ.broadcastTxn(getSignedValidatorRemoveTxn(validator, nonce));
     }
     /**
      * Sends the transaction to remove validator
@@ -1071,7 +1071,7 @@ public class PWRWallet {
      * @throws InterruptedException If the request is interrupted
      */
     public Response sendValidatorRemoveTxn(String validator) throws IOException, InterruptedException {
-        return PWRJ.broadcastTxn(getSignedSendValidatorRemoveTxn(validator, getNonce()));
+        return PWRJ.broadcastTxn(getSignedValidatorRemoveTxn(validator, getNonce()));
     }
 
     /**
