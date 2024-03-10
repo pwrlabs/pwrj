@@ -33,7 +33,7 @@ PWRJ is available on Maven Central. Add this dependency to your `pom.xml`:
         <dependency>
             <groupId>com.github.pwrlabs</groupId>
             <artifactId>pwrj</artifactId>
-            <version>1.0.6</version>
+            <version>5.0.0</version>
         </dependency>
     </dependencies>
 ```
@@ -52,7 +52,7 @@ Add it in your root build.gradle at the end of repositories:
 Step 2. Add the dependency
 
 	dependencies {
-		implementation 'com.github.pwrlabs:pwrj:1.0.6'
+		implementation 'com.github.pwrlabs:pwrj:5.0.0'
 	}
 
 ### Usage
@@ -62,14 +62,15 @@ Step 2. Add the dependency
 import com.github.pwrlabs.pwrj.*;
 ```
 
-**Set your RPC node:**
+**Create your PWRJ Object:**
+This object will help connect with the PWR Chain, read data, and send transactoions
 ```java
-PWRJ.setRpcNodeUrl("https://pwrrpc.pwrlabs.io/");
+PWRJ pwrj = new PWRJ("https://pwrrpc.pwrlabs.io/");
 ```
 
 **Generate a new wallet:** 
 ```java
-PWRWallet wallet = new PWRWallet(); 
+PWRWallet wallet = new PWRWallet(pwrj); 
 ```
 
 You also have the flexibility to import existing wallets using a variety of constructors
@@ -131,14 +132,14 @@ if(r.isSuccess()) {
    System.out.println("Error: " + r.getError());
 }
 ```
-### Other Static Calls
+### Other Calls
 
 **Update fee per byte:**
 
 Fetches latest fee-per-byte rate from the RPC node and updates the local fee rate.
 
 ```java
-PWRJ.updateFeePerByte();
+pwrj.updateFeePerByte();
 ``` 
 
 **Get RPC Node Url:**
@@ -146,7 +147,7 @@ PWRJ.updateFeePerByte();
 Returns currently set RPC node URL.
 
 ```java
-String url = PWRJ.getRpcNodeUrl();
+String url = pwrj.getRpcNodeUrl();
 ```
 
 **Get Fee Per Byte: **
@@ -154,7 +155,7 @@ String url = PWRJ.getRpcNodeUrl();
 Gets the latest fee-per-byte rate.
 
 ```java
-long fee = PWRJ.getFeePerByte();
+long fee = pwrj.getFeePerByte();
 ```
 
 **Get Balance Of Address:**
@@ -162,7 +163,7 @@ long fee = PWRJ.getFeePerByte();
 Gets the balance of a specific address.
 
 ```java
-long balance = PWRJ.getBalanceOfAddress("0x...");
+long balance = pwrj.getBalanceOfAddress("0x...");
 ```
 
 **Get Nonce Of Address:**
@@ -170,7 +171,7 @@ long balance = PWRJ.getBalanceOfAddress("0x...");
 Gets the nonce/transaction count of a specific address.
 
 ```java
-int nonce = PWRJ.getNonceOfAddress("0x..."); 
+int nonce = pwrj.getNonceOfAddress("0x..."); 
 ```
 
 **Broadcast Txn:**
@@ -179,7 +180,7 @@ Broadcasts a signed transaction to the network.
 
 ```java
 byte[] signedTransaction = ...;
-PWRJ.broadcastTxn(signedTransaction);
+pwrj.broadcastTxn(signedTransaction);
 ```
 
 ## Contributing
