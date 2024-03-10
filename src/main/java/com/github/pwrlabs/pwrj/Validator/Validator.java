@@ -28,11 +28,11 @@ public class Validator {
     private final int delegatorsCount;
     private final String status;
 
-    public List<Delegator> getDelegators() {
+    public List<Delegator> getDelegators(PWRJ pwrj) {
         try {
             HttpClient client = HttpClients.createDefault();
 
-            HttpGet request = new HttpGet(PWRJ.getRpcNodeUrl() + "/validator/delegatorsOfValidator/?validatorAddress=" + address);
+            HttpGet request = new HttpGet(pwrj.getRpcNodeUrl() + "/validator/delegatorsOfValidator/?validatorAddress=" + address);
             HttpResponse response = client.execute(request);
 
             //System.out.printf(EntityUtils.toString(response.getEntity()));

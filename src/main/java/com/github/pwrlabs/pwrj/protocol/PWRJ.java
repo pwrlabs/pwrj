@@ -1,6 +1,8 @@
 package com.github.pwrlabs.pwrj.protocol;
 
 import com.github.pwrlabs.pwrj.Block.Block;
+import com.github.pwrlabs.pwrj.ResponseModels.TxnForGuardianApproval;
+import com.github.pwrlabs.pwrj.Transaction.Transaction;
 import com.github.pwrlabs.pwrj.Transaction.VmDataTxn;
 import com.github.pwrlabs.pwrj.Utils.Hash;
 import com.github.pwrlabs.pwrj.Utils.Response;
@@ -29,9 +31,12 @@ import java.util.*;
 
 public class PWRJ {
 
-    private static String rpcNodeUrl;
-    private static byte chainId = (byte) -1;
-    private static long feePerByte = 0;
+    public PWRJ(String rpcNodeUrl) {
+        this.rpcNodeUrl = rpcNodeUrl;
+    }
+    private String rpcNodeUrl;
+    private byte chainId = (byte) -1;
+    private long feePerByte = 0;
 
     public static JSONObject httpGet(String url) throws IOException {
         // Set timeouts
@@ -65,13 +70,40 @@ public class PWRJ {
         }
     }
 
-    /**
-     * Sets the RPC node URL. This URL will be used for all RPC calls in the PWRJ library
-     *
-     * @param url The URL of the RPC node.
-     */
-    public static void setRpcNodeUrl(String url) {
-        rpcNodeUrl = url;
+    public static JSONObject httpPost(String url, JSONObject body) throws IOException {
+        // Set timeouts
+        int connectionTimeout = 5 * 1000; // 5 seconds
+        int socketTimeout = 5 * 1000; // 5 seconds
+
+        // Create custom request configuration
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(connectionTimeout)
+                .setSocketTimeout(socketTimeout)
+                .build();
+
+        // Use custom configuration
+        CloseableHttpClient client = HttpClients.custom()
+                .setDefaultRequestConfig(requestConfig)
+                .build();
+
+        HttpPost postRequest = new HttpPost(url);
+        postRequest.setHeader("Accept", "application/json");
+        postRequest.setHeader("Content-type", "application/json");
+        postRequest.setEntity(new StringEntity(body.toString(), StandardCharsets.UTF_8));
+
+        HttpResponse response = client.execute(postRequest);
+
+        if (response.getStatusLine().getStatusCode() == 200) {
+            JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
+
+            return object;
+        } else if (response.getStatusLine().getStatusCode() == 400) {
+            JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
+
+            throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
+        } else {
+            throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
+        }
     }
 
     /**
@@ -79,11 +111,11 @@ public class PWRJ {
      *
      * @return The URL of the RPC node.
      */
-    public static String getRpcNodeUrl() {
+    public String getRpcNodeUrl() {
         return rpcNodeUrl;
     }
 
-    public static byte getChainId() throws IOException {
+    public byte getChainId() throws IOException {
         if(chainId == -1) {
             JSONObject object = httpGet(rpcNodeUrl + "/chainId/");
             chainId = (byte) object.getInt("chainId");
@@ -97,7 +129,7 @@ public class PWRJ {
      *
      * @return The fee-per-byte rate.
      */
-    public static long getFeePerByte() throws IOException {
+    public long getFeePerByte() throws IOException {
         if(feePerByte == 0) {
             JSONObject object = httpGet(rpcNodeUrl + "/feePerByte/");
             feePerByte = object.getLong("feePerByte");
@@ -106,7 +138,7 @@ public class PWRJ {
         return feePerByte;
     }
 
-    public static short getBlockchainVersion() throws IOException {
+    public short getBlockchainVersion() throws IOException {
         return (short) httpGet(rpcNodeUrl + "/blockchainVersion/").getInt("blockchainVersion");
     }
 
@@ -125,7 +157,7 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public static int getNonceOfAddress(String address) throws IOException {
+    public int getNonceOfAddress(String address) throws IOException {
         return httpGet(rpcNodeUrl + "/nonceOfUser/?userAddress=" + address).getInt("nonce");
     }
 
@@ -141,11 +173,11 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public static long getBalanceOfAddress(String address) throws IOException {
+    public long getBalanceOfAddress(String address) throws IOException {
         return httpGet(rpcNodeUrl + "/balanceOf/?userAddress=" + address).getLong("balance");
     }
 
-    public static String getGuardianOfAddress(String address) throws IOException {
+    public String getGuardianOfAddress(String address) throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/guardianOf/?userAddress=" + address);
 
         if(object.getBoolean("isGuarded")) {
@@ -167,7 +199,7 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public static long getBlocksCount() throws IOException {
+    public long getBlocksCount() throws IOException {
         return httpGet(rpcNodeUrl + "/blocksCount/").getLong("blocksCount");
     }
 
@@ -182,7 +214,7 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If there are issues retrieving the total count of blocks.
      */
-    public static long getLatestBlockNumber() throws IOException {
+    public long getLatestBlockNumber() throws IOException {
         return getBlocksCount() - 1;
     }
 
@@ -198,11 +230,11 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public static Block getBlockByNumber(long blockNumber) throws IOException {
+    public Block getBlockByNumber(long blockNumber) throws IOException {
         return new Block(httpGet(rpcNodeUrl + "/block/?blockNumber=" + blockNumber).getJSONObject("block"));
     }
 
-    public static VmDataTxn[] getVMDataTxns(long startingBlock, long endingBlock, long vmId) throws IOException {
+    public VmDataTxn[] getVMDataTxns(long startingBlock, long endingBlock, long vmId) throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/getVmTransactions/?startingBlock=" + startingBlock + "&endingBlock=" + endingBlock + "&vmId=" + vmId);
 
         JSONArray txns = object.getJSONArray("transactions");
@@ -217,7 +249,7 @@ public class PWRJ {
         return txnsArray;
     }
 
-    public static VmDataTxn[] getVMDataTxnsFilterByBytePrefix(long startingBlock, long endingBlock, long vmId, byte[] prefix) throws IOException {
+    public VmDataTxn[] getVMDataTxnsFilterByBytePrefix(long startingBlock, long endingBlock, long vmId, byte[] prefix) throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/getVmTransactionsSortByBytePrefix/?startingBlock=" + startingBlock + "&endingBlock=" + endingBlock + "&vmId=" + vmId + "&bytePrefix=" + Hex.toHexString(prefix));
 
         JSONArray txns = object.getJSONArray("transactions");
@@ -232,7 +264,26 @@ public class PWRJ {
         return txnsArray;
     }
 
-    public static long getActiveVotingPower() throws IOException {
+    public TxnForGuardianApproval isTransactionValidForGuardianApproval(String txn) throws IOException {
+        JSONObject object = httpPost(rpcNodeUrl + "/isTransactionValidForGuardianApproval/", new JSONObject().put("transaction", txn));
+
+        boolean valid = object.getBoolean("valid");
+        if(!valid) {
+            return TxnForGuardianApproval.builder()
+                    .valid(valid)
+                    .errorMessage(object.getString("error"))
+                    .transaction(null).build();
+        } else {
+            return TxnForGuardianApproval.builder()
+                    .valid(valid)
+                    .errorMessage(null)
+                    .transaction(Transaction.fromJSON(object.getJSONObject("transaction"), 0, 0, 0)).build();
+        }
+    }
+    public TxnForGuardianApproval isTransactionValidForGuardianApproval(byte[] txn) throws IOException {
+        return isTransactionValidForGuardianApproval(Hex.toHexString(txn));
+    }
+    public long getActiveVotingPower() throws IOException {
         return httpGet(rpcNodeUrl + "/activeVotingPower/").getLong("activeVotingPower");
     }
 
@@ -247,7 +298,7 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public static int getTotalValidatorsCount() throws IOException {
+    public int getTotalValidatorsCount() throws IOException {
         return httpGet(rpcNodeUrl + "/totalValidatorsCount/").getInt("validatorsCount");
     }
 
@@ -262,7 +313,7 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public static int getStandbyValidatorsCount() throws IOException {
+    public int getStandbyValidatorsCount() throws IOException {
         return httpGet(rpcNodeUrl + "/standbyValidatorsCount/").getInt("validatorsCount");
     }
 
@@ -277,7 +328,7 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public static int getActiveValidatorsCount() throws IOException {
+    public int getActiveValidatorsCount() throws IOException {
         return httpGet(rpcNodeUrl + "/activeValidatorsCount/").getInt("validatorsCount");
     }
 
@@ -289,7 +340,7 @@ public class PWRJ {
      *
      * @return The total number of delegators.
      */
-    public static int getTotalDelegatorsCount() throws IOException {
+    public int getTotalDelegatorsCount() throws IOException {
         return httpGet(rpcNodeUrl + "/totalDelegatorsCount/").getInt("delegatorsCount");
     }
 
@@ -304,7 +355,7 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public static List<Validator> getAllValidators() throws IOException {
+    public List<Validator> getAllValidators() throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/allValidators/");
         JSONArray validators = object.getJSONArray("validators");
         List<Validator> validatorsList = new ArrayList<>();
@@ -357,7 +408,7 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public static List<Validator> getStandbyValidators() throws IOException {
+    public List<Validator> getStandbyValidators() throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/standbyValidators/");
         JSONArray validators = object.getJSONArray("validators");
         List<Validator> validatorsList = new ArrayList<>();
@@ -409,7 +460,7 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public static List<Validator> getActiveValidators() throws IOException {
+    public List<Validator> getActiveValidators() throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/activeValidators/");
         JSONArray validators = object.getJSONArray("validators");
         List<Validator> validatorsList = new ArrayList<>();
@@ -452,7 +503,7 @@ public class PWRJ {
         return validatorsList;
     }
 
-    public static List<Validator> getDelegatees(String address) throws IOException {
+    public List<Validator> getDelegatees(String address) throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/delegateesOfUser/?userAddress=" + address);
         JSONArray validators = object.getJSONArray("validators");
         List<Validator> validatorsList = new ArrayList<>();
@@ -474,7 +525,7 @@ public class PWRJ {
         }
         return validatorsList;
     }
-    public static Validator getValidator(String validatorAddress) throws IOException {
+    public Validator getValidator(String validatorAddress) throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/validator/?validatorAddress=" + validatorAddress);
         JSONObject validatorObject = object.getJSONObject("validator");
         Validator validator = Validator.builder()
@@ -489,11 +540,11 @@ public class PWRJ {
 
         return validator;
     }
-    public static long getDelegatedPWR(String delegatorAddress, String validatorAddress) throws IOException {
+    public long getDelegatedPWR(String delegatorAddress, String validatorAddress) throws IOException {
         return httpGet(rpcNodeUrl + "/validator/delegator/delegatedPWROfAddress/?userAddress=" + delegatorAddress + "&validatorAddress=" + validatorAddress).getLong("delegatedPWR");
     }
 
-    public static BigDecimal getShareValue(String validator) throws IOException {
+    public BigDecimal getShareValue(String validator) throws IOException {
         return httpGet(rpcNodeUrl + "/validator/shareValue/?validatorAddress=" + validator).getBigDecimal("shareValue");
     }
 
@@ -509,7 +560,7 @@ public class PWRJ {
      * @throws IOException If there's an issue with the network or stream handling.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public static String getOwnerOfVm(long vmId) throws IOException {
+    public String getOwnerOfVm(long vmId) throws IOException {
         return httpGet(rpcNodeUrl + "/ownerOfVmId/?vmId=" + vmId).getString("owner");
     }
 
@@ -530,7 +581,7 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public static void updateFeePerByte() throws IOException {
+    public void updateFeePerByte() throws IOException {
         feePerByte = httpGet(rpcNodeUrl + "/feePerByte/").getLong("feePerByte");
     }
 
@@ -548,7 +599,7 @@ public class PWRJ {
      * @throws InterruptedException If the send operation is interrupted.
      * @throws RuntimeException If the server responds with a non-200 HTTP status code.
      */
-    public static Response broadcastTxn(byte[] txn) {
+    public Response broadcastTxn(byte[] txn) {
         try {
             // Timeout configuration
             int timeout = 3 * 1000; // 3 seconds in milliseconds
@@ -588,24 +639,7 @@ public class PWRJ {
     }
 
 
-    public static Object getOrDefault(JSONObject jsonObject, String key, Object defaultValue) {
+    public Object getOrDefault(JSONObject jsonObject, String key, Object defaultValue) {
         return jsonObject.has(key) ? jsonObject.get(key) : defaultValue;
-    }
-
-    public static void main(String[] args) {
-        //Tests for all the function
-        try {
-            setRpcNodeUrl("https://pwrrpc.pwrlabs.io");
-
-            List<Validator> v = getActiveValidators();
-
-            for(Validator validator : v) {
-                System.out.println(validator.getAddress());
-                System.out.println(validator.getIp());
-                System.out.println();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 }
