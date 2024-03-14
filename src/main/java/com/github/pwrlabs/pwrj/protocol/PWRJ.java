@@ -272,7 +272,9 @@ public class PWRJ {
             return TxnForGuardianApproval.builder()
                     .valid(valid)
                     .errorMessage(object.getString("error"))
-                    .transaction(null).build();
+                    .transaction(null)
+                    .guardianAddress(object.optString("guardian", "0x"))
+                    .build();
         } else {
             return TxnForGuardianApproval.builder()
                     .valid(valid)

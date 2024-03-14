@@ -8,6 +8,7 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class TxnForGuardianApproval {
     private boolean valid;
+    private String guardianAddress;
     private String errorMessage;
     private Transaction transaction;
 }
