@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.*;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.List;
 
 public class PWRWallet {
 
@@ -689,79 +690,6 @@ public class PWRWallet {
     }
 
     /**
-     * Returns a transaction of sending a conduit wrapped transaction of a specified VM on the PWR network. Must be sent from a conduit node of that VM.
-     *
-     * @param vmId The ID of the VM.
-     * @param txn The transaction to be sent.
-     * @param nonce The transaction count of the wallet address.
-     * @return A byte array that represents the transaction of this method
-     * @throws IOException If there's an issue with the network or stream handling.
-     * @throws InterruptedException If the request is interrupted.
-     * @throws RuntimeException For various transaction-related validation issues.
-     */
-    public byte[] getConduitTransactionTxn(long vmId, byte[] txn, int nonce) throws  IOException, InterruptedException{
-        if (nonce < 0) {
-            throw new RuntimeException("Nonce cannot be negative");
-        }
-        if (nonce < getNonce()) {
-            throw new RuntimeException("Nonce is too low");
-        }
-
-        byte[] txnBase = getTxnBase((byte) 11, nonce);
-        ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 8 + txn.length);
-        buffer.put(txnBase);
-        buffer.putLong(vmId);
-        buffer.put(txn);
-
-        return buffer.array();
-    }
-    /**
-     * Returns a transaction of sending a conduit wrapped transaction of a specified VM on the PWR network. Must be sent from a conduit node of that VM.
-     *
-     * @param vmId The ID of the VM.
-     * @param txn The transaction to be sent.
-     * @param nonce The transaction count of the wallet address.
-     * @return A byte array that represents the signed transaction of this method
-     * @throws IOException If there's an issue with the network or stream handling.
-     * @throws InterruptedException If the request is interrupted.
-     * @throws RuntimeException For various transaction-related validation issues.
-     */
-    public byte[] getSignedConduitTransactionTxn(long vmId, byte[] txn, int nonce) throws IOException, InterruptedException{
-        return getSignedTxn(getConduitTransactionTxn(vmId, txn, nonce));
-    }
-    /**
-     * Sends a conduit wrapped transaction of a specified VM on the PWR network. Must be sent from a conduit node of that VM.
-     *
-     * @param vmId The ID of the VM.
-     * @param txn The transaction to be sent.
-     * @param nonce The transaction count of the wallet address.
-     * @return A Response object encapsulating the outcome of the transaction broadcast.
-     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
-     *         On failure: Response(success=false, message=errorMessage, error=null).
-     * @throws IOException If there's an issue with the network or stream handling.
-     * @throws InterruptedException If the request is interrupted.
-     * @throws RuntimeException For various transaction-related validation issues.
-     */
-    public Response sendConduitTransaction(long vmId, byte[] txn, int nonce) throws IOException, InterruptedException {
-        return pwrj.broadcastTxn(getSignedConduitTransactionTxn(vmId, txn, nonce));
-    }
-
-    /**
-     * Sends a conduit wrapped transaction of a specified VM on the PWR network using the current nonce. Must be sent from a conduit node of that VM.
-     *
-     * @param vmId The ID of the VM.
-     * @param txn The transaction to be sent.
-     * @return A Response object encapsulating the outcome of the transaction broadcast.
-     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
-     *         On failure: Response(success=false, message=errorMessage, error=null).
-     * @throws IOException If there's an issue with the network or stream handling.
-     * @throws InterruptedException If the request is interrupted.
-     */
-    public Response sendConduitTransaction(long vmId, byte[] txn) throws IOException, InterruptedException {
-        return sendConduitTransaction(vmId, txn, getNonce());
-    }
-
-    /**
      * Returns a transaction of setting a guardian
      *
      * @param guardianAddress the wallet address of the chosen guardian
@@ -952,7 +880,7 @@ public class PWRWallet {
             throw new RuntimeException("Nonce is too low");
         }
 
-        byte[] txnBase = getTxnBase((byte) 5, nonce);
+        byte[] txnBase = getTxnBase((byte) 11, nonce);
         ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 16 + data.length);
         buffer.put(txnBase);
         buffer.putLong(vmId);
@@ -1078,6 +1006,182 @@ public class PWRWallet {
     public Response sendValidatorRemoveTxn(String validator) throws IOException, InterruptedException {
         return pwrj.broadcastTxn(getSignedValidatorRemoveTxn(validator, getNonce()));
     }
+
+    public byte[] getConduitApprovalTxn(long vmId, List<byte[]> txns, int nonce) throws  IOException, InterruptedException{
+        if (nonce < 0) {
+            throw new RuntimeException("Nonce cannot be negative");
+        }
+        if(txns.size() == 0) {
+            throw new RuntimeException("No transactions to approve");
+        }
+
+        int totalTxnsLength = 0;
+        for(byte[] txn : txns) {
+            totalTxnsLength += txn.length;
+        }
+
+        byte[] txnBase = getTxnBase((byte) 12, nonce);
+        ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 8 + (txns.size() * 4) + totalTxnsLength);
+        buffer.put(txnBase);
+        buffer.putLong(vmId);
+
+        for(byte[] txn : txns) {
+            buffer.putInt(txn.length);
+            buffer.put(txn);
+        }
+
+        return buffer.array();
+    }
+    /**
+     * Returns a transaction of sending a conduit wrapped transaction of a specified VM on the PWR network. Must be sent from a conduit node of that VM.
+     *
+     * @param vmId The ID of the VM.
+     * @param transactions The transaction to be sent.
+     * @param nonce The transaction count of the wallet address.
+     * @return A byte array that represents the signed transaction of this method
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     * @throws RuntimeException For various transaction-related validation issues.
+     */
+    public byte[] getSignedConduitApprovalTxn(long vmId, List<byte[]> transactions, int nonce) throws IOException, InterruptedException{
+        return getSignedTxn(getConduitApprovalTxn(vmId, transactions, nonce));
+    }
+    /**
+     * Sends a conduit wrapped transaction of a specified VM on the PWR network. Must be sent from a conduit node of that VM.
+     *
+     * @param vmId The ID of the VM.
+     * @param transactions The transactions to be sent.
+     * @param nonce The transaction count of the wallet address.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=errorMessage, error=null).
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     * @throws RuntimeException For various transaction-related validation issues.
+     */
+    public Response conduitApprove(long vmId, List<byte[]> transactions, int nonce) throws IOException, InterruptedException {
+        return pwrj.broadcastTxn(getSignedConduitApprovalTxn(vmId, transactions, nonce));
+    }
+    /**
+     * Sends a conduit wrapped transaction of a specified VM on the PWR network using the current nonce. Must be sent from a conduit node of that VM.
+     *
+     * @param vmId The ID of the VM.
+     * @param transactions The transactions to be sent.
+     * @return A Response object encapsulating the outcome of the transaction broadcast.
+     *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
+     *         On failure: Response(success=false, message=errorMessage, error=null).
+     * @throws IOException If there's an issue with the network or stream handling.
+     * @throws InterruptedException If the request is interrupted.
+     */
+    public Response conduitApprove(long vmId, List<byte[]> transactions) throws IOException, InterruptedException {
+        return conduitApprove(vmId, transactions, getNonce());
+    }
+
+    public byte[] getSetConduitsTxn(long vmId, List<byte[]> conduits, int nonce) throws  IOException, InterruptedException{
+        if (nonce < 0) {
+            throw new RuntimeException("Nonce cannot be negative");
+        }
+        if(conduits.size() == 0) {
+            throw new RuntimeException("No transactions to approve");
+        }
+
+        int totalConduitLength = 0;
+        for(byte[] conduit : conduits) {
+            totalConduitLength += conduit.length;
+        }
+
+        byte[] txnBase = getTxnBase((byte) 13, nonce);
+        ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 8 + (conduits.size() * 4) + totalConduitLength);
+        buffer.put(txnBase);
+        buffer.putLong(vmId);
+
+        for(byte[] conduit : conduits) {
+            buffer.putInt(conduit.length);
+            buffer.put(conduit);
+        }
+
+        return buffer.array();
+    }
+    public byte[] getSignedSetConduitTxn(long vmId, List<byte[]> conduits, int nonce) throws IOException, InterruptedException{
+        return getSignedTxn(getSetConduitsTxn(vmId, conduits, nonce));
+    }
+    public Response setConduits(long vmId, List<byte[]> conduits, int nonce) throws IOException, InterruptedException {
+        return pwrj.broadcastTxn(getSignedSetConduitTxn(vmId, conduits, nonce));
+    }
+    public Response setConduits(long vmId, List<byte[]> conduits) throws IOException, InterruptedException {
+        return setConduits(vmId, conduits, getNonce());
+    }
+
+    public byte[] getAddConduitsTxn(long vmId, List<byte[]> conduits, int nonce) throws  IOException, InterruptedException{
+        if (nonce < 0) {
+            throw new RuntimeException("Nonce cannot be negative");
+        }
+        if(conduits.size() == 0) {
+            throw new RuntimeException("No transactions to approve");
+        }
+
+        int totalConduitLength = 0;
+        for(byte[] conduit : conduits) {
+            totalConduitLength += conduit.length;
+        }
+
+        byte[] txnBase = getTxnBase((byte) 14, nonce);
+        ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 8 + (conduits.size() * 4) + totalConduitLength);
+        buffer.put(txnBase);
+        buffer.putLong(vmId);
+
+        for(byte[] conduit : conduits) {
+            buffer.putInt(conduit.length);
+            buffer.put(conduit);
+        }
+
+        return buffer.array();
+    }
+    public byte[] getSignedAddConduitTxn(long vmId, List<byte[]> conduits, int nonce) throws IOException, InterruptedException{
+        return getSignedTxn(getAddConduitsTxn(vmId, conduits, nonce));
+    }
+    public Response addConduits(long vmId, List<byte[]> conduits, int nonce) throws IOException, InterruptedException {
+        return pwrj.broadcastTxn(getSignedAddConduitTxn(vmId, conduits, nonce));
+    }
+    public Response addConduits(long vmId, List<byte[]> conduits) throws IOException, InterruptedException {
+        return addConduits(vmId, conduits, getNonce());
+    }
+
+    public byte[] getRemoveConduitsTxn(long vmId, List<byte[]> conduits, int nonce) throws  IOException, InterruptedException{
+        if (nonce < 0) {
+            throw new RuntimeException("Nonce cannot be negative");
+        }
+        if(conduits.size() == 0) {
+            throw new RuntimeException("No transactions to approve");
+        }
+
+        int totalConduitLength = 0;
+        for(byte[] conduit : conduits) {
+            totalConduitLength += conduit.length;
+        }
+
+        byte[] txnBase = getTxnBase((byte) 15, nonce);
+        ByteBuffer buffer = ByteBuffer.allocate(txnBase.length + 8 + (conduits.size() * 4) + totalConduitLength);
+        buffer.put(txnBase);
+        buffer.putLong(vmId);
+
+        for(byte[] conduit : conduits) {
+            buffer.putInt(conduit.length);
+            buffer.put(conduit);
+        }
+
+        return buffer.array();
+    }
+    public byte[] getSignedRemoveConduitTxn(long vmId, List<byte[]> conduits, int nonce) throws IOException, InterruptedException{
+        return getSignedTxn(getAddConduitsTxn(vmId, conduits, nonce));
+    }
+    public Response removeConduits(long vmId, List<byte[]> conduits, int nonce) throws IOException, InterruptedException {
+        return pwrj.broadcastTxn(getSignedRemoveConduitTxn(vmId, conduits, nonce));
+    }
+    public Response removeConduits(long vmId, List<byte[]> conduits) throws IOException, InterruptedException {
+        return removeConduits(vmId, conduits, getNonce());
+    }
+
 
     /**
      * Returns the public key of the wallet of this private key
