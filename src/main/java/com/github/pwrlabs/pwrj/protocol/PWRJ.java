@@ -63,7 +63,6 @@ public class PWRJ {
             return object;
         } else if (response.getStatusLine().getStatusCode() == 400) {
             JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-
             throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
         } else {
             throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
@@ -386,7 +385,7 @@ public class PWRJ {
             }
 
             Validator validator = Validator.builder()
-                    .address("0x" + validatorObject.getString("address"))
+                    .address(validatorObject.getString("address"))
                     .ip(validatorObject.getString("ip"))
                     .isBadActor(validatorObject.optBoolean("badActor", false))
                     .votingPower(votingPower)
@@ -395,6 +394,7 @@ public class PWRJ {
                     .status(validatorObject.optString("status", "unknown"))
                     .build();
 
+            validatorsList.add(validator);
         }
         return validatorsList;
     }
@@ -439,7 +439,7 @@ public class PWRJ {
             }
 
             Validator validator = Validator.builder()
-                    .address("0x" + validatorObject.getString("address"))
+                    .address(validatorObject.getString("address"))
                     .ip(validatorObject.getString("ip"))
                     .isBadActor(validatorObject.optBoolean("badActor", false))
                     .votingPower(votingPower)
@@ -447,6 +447,8 @@ public class PWRJ {
                     .delegatorsCount(delegatorsCount)
                     .status("standby")
                     .build();
+
+            validatorsList.add(validator);
         }
         return validatorsList;
     }
@@ -491,7 +493,7 @@ public class PWRJ {
             }
 
             Validator validator = Validator.builder()
-                    .address("0x" + validatorObject.getString("address"))
+                    .address(validatorObject.getString("address"))
                     .ip(validatorObject.getString("ip"))
                     .isBadActor(validatorObject.optBoolean("badActor", false))
                     .votingPower(votingPower)
@@ -514,7 +516,7 @@ public class PWRJ {
             JSONObject validatorObject = validators.getJSONObject(i);
             //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
             Validator validator = Validator.builder()
-                    .address("0x" + validatorObject.getString("address"))
+                    .address(validatorObject.getString("address"))
                     .ip(validatorObject.getString("ip"))
                     .isBadActor(validatorObject.getBoolean("badActor"))
                     .votingPower(validatorObject.getLong("votingPower"))
@@ -531,7 +533,7 @@ public class PWRJ {
         JSONObject object = httpGet(rpcNodeUrl + "/validator/?validatorAddress=" + validatorAddress);
         JSONObject validatorObject = object.getJSONObject("validator");
         Validator validator = Validator.builder()
-                .address("0x" + validatorObject.getString("address"))
+                .address(validatorObject.getString("address"))
                 .ip(validatorObject.getString("ip"))
                 .isBadActor(validatorObject.getBoolean("badActor"))
                 .votingPower(validatorObject.getLong("votingPower"))
