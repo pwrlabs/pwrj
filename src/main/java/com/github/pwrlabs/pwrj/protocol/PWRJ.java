@@ -1,9 +1,9 @@
 package com.github.pwrlabs.pwrj.protocol;
 
 import com.github.pwrlabs.pwrj.Block.Block;
-import com.github.pwrlabs.pwrj.ResponseModels.TxnForGuardianApproval;
+import com.github.pwrlabs.pwrj.ResponseModels.TransactionForGuardianApproval;
 import com.github.pwrlabs.pwrj.Transaction.Transaction;
-import com.github.pwrlabs.pwrj.Transaction.VmDataTxn;
+import com.github.pwrlabs.pwrj.Transaction.VmDataTransaction;
 import com.github.pwrlabs.pwrj.Utils.Hash;
 import com.github.pwrlabs.pwrj.Utils.Response;
 import com.github.pwrlabs.pwrj.Validator.Validator;
@@ -233,56 +233,57 @@ public class PWRJ {
         return new Block(httpGet(rpcNodeUrl + "/block/?blockNumber=" + blockNumber).getJSONObject("block"));
     }
 
-    public VmDataTxn[] getVMDataTxns(long startingBlock, long endingBlock, long vmId) throws IOException {
+    public VmDataTransaction[] getVMDataTransactions(long startingBlock, long endingBlock, long vmId) throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/getVmTransactions/?startingBlock=" + startingBlock + "&endingBlock=" + endingBlock + "&vmId=" + vmId);
 
-        JSONArray txns = object.getJSONArray("transactions");
-        VmDataTxn[] txnsArray = new VmDataTxn[txns.length()];
+        JSONArray Transactions = object.getJSONArray("transactions");
+        VmDataTransaction[] TransactionsArray = new VmDataTransaction[Transactions.length()];
 
-        for(int i = 0; i < txns.length(); i++) {
-            JSONObject txnObject = txns.getJSONObject(i);
-            VmDataTxn txn = new VmDataTxn(txnObject, txnObject.optLong("blockNumber", 0), txnObject.optLong("timestamp", 0), txnObject.optInt("positionInTheBlock", 0));
-            txnsArray[i] = txn;
+        for(int i = 0; i < Transactions.length(); i++) {
+            JSONObject TransactionObject = Transactions.getJSONObject(i);
+            VmDataTransaction Transaction = new VmDataTransaction(TransactionObject, TransactionObject.optLong("blockNumber", 0), TransactionObject.optLong("timestamp", 0), TransactionObject.optInt("positionInTheBlock", 0));
+            TransactionsArray[i] = Transaction;
         }
 
-        return txnsArray;
+        return TransactionsArray;
     }
 
-    public VmDataTxn[] getVMDataTxnsFilterByBytePrefix(long startingBlock, long endingBlock, long vmId, byte[] prefix) throws IOException {
+    public VmDataTransaction[] getVMDataTransactionsFilterByBytePrefix(long startingBlock, long endingBlock, long vmId, byte[] prefix) throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/getVmTransactionsSortByBytePrefix/?startingBlock=" + startingBlock + "&endingBlock=" + endingBlock + "&vmId=" + vmId + "&bytePrefix=" + Hex.toHexString(prefix));
 
-        JSONArray txns = object.getJSONArray("transactions");
-        VmDataTxn[] txnsArray = new VmDataTxn[txns.length()];
+        JSONArray Transactions = object.getJSONArray("transactions");
+        VmDataTransaction[] TransactionsArray = new VmDataTransaction[Transactions.length()];
 
-        for(int i = 0; i < txns.length(); i++) {
-            JSONObject txnObject = txns.getJSONObject(i);
-            VmDataTxn txn = new VmDataTxn(txnObject, txnObject.optLong("blockNumber", 0), txnObject.optLong("timestamp", 0), txnObject.optInt("positionInTheBlock", 0));
-            txnsArray[i] = txn;
+        for(int i = 0; i < Transactions.length(); i++) {
+            JSONObject TransactionObject = Transactions.getJSONObject(i);
+            VmDataTransaction Transaction = new VmDataTransaction(TransactionObject, TransactionObject.optLong("blockNumber", 0), TransactionObject.optLong("timestamp", 0), TransactionObject.optInt("positionInTheBlock", 0));
+            TransactionsArray[i] = Transaction;
         }
 
-        return txnsArray;
+        return TransactionsArray;
     }
 
-    public TxnForGuardianApproval isTransactionValidForGuardianApproval(String txn) throws IOException {
-        JSONObject object = httpPost(rpcNodeUrl + "/isTransactionValidForGuardianApproval/", new JSONObject().put("transaction", txn));
+    public TransactionForGuardianApproval isTransactionValidForGuardianApproval(String transaction) throws IOException {
+        JSONObject object = httpPost(rpcNodeUrl + "/isTransactionValidForGuardianApproval/", new JSONObject().put("transaction", transaction));
 
         boolean valid = object.getBoolean("valid");
-        if(!valid) {
-            return TxnForGuardianApproval.builder()
-                    .valid(valid)
+        if(valid) {
+            return TransactionForGuardianApproval.builder()
+                    .valid(true)
+                    .guardianAddress(object.optString("guardian", "0x"))
+                    .transaction(Transaction.fromJSON(object.optJSONObject("transaction", new JSONObject()), 0, 0, 0))
+                    .build();
+        } else {
+            return TransactionForGuardianApproval.builder()
+                    .valid(false)
                     .errorMessage(object.getString("error"))
                     .transaction(null)
                     .guardianAddress(object.optString("guardian", "0x"))
                     .build();
-        } else {
-            return TxnForGuardianApproval.builder()
-                    .valid(valid)
-                    .errorMessage(null)
-                    .transaction(Transaction.fromJSON(object.getJSONObject("transaction"), 0, 0, 0)).build();
         }
     }
-    public TxnForGuardianApproval isTransactionValidForGuardianApproval(byte[] txn) throws IOException {
-        return isTransactionValidForGuardianApproval(Hex.toHexString(txn));
+    public TransactionForGuardianApproval isTransactionValidForGuardianApproval(byte[] Transaction) throws IOException {
+        return isTransactionValidForGuardianApproval(Hex.toHexString(Transaction));
     }
     public long getActiveVotingPower() throws IOException {
         return httpGet(rpcNodeUrl + "/activeVotingPower/").getLong("activeVotingPower");
@@ -597,13 +598,13 @@ public class PWRJ {
      * hash is returned. In case of any issues during broadcasting, appropriate exceptions
      * are thrown to indicate the error.</p>
      *
-     * @param txn The raw transaction bytes intended for broadcasting.
+     * @param Transaction The raw transaction bytes intended for broadcasting.
 
      * @throws IOException If an I/O error occurs when sending or receiving.
      * @throws InterruptedException If the send operation is interrupted.
      * @throws RuntimeException If the server responds with a non-200 HTTP status code.
      */
-    public Response broadcastTxn(byte[] txn) {
+    public Response broadcastTransaction(byte[] Transaction) {
         try {
             // Timeout configuration
             int timeout = 3 * 1000; // 3 seconds in milliseconds
@@ -618,7 +619,7 @@ public class PWRJ {
             HttpPost postRequest = new HttpPost(rpcNodeUrl + "/broadcast/");
 
             JSONObject json = new JSONObject();
-            json.put("txn", Hex.toHexString(txn));
+            json.put("Transaction", Hex.toHexString(Transaction));
 
             // Set up the header types needed to properly transfer JSON
             postRequest.setHeader("Accept", "application/json");
@@ -629,7 +630,7 @@ public class PWRJ {
             HttpResponse response = client.execute(postRequest);
 
             if (response.getStatusLine().getStatusCode() == 200) {
-                return new Response(true, "0x" + Hex.toHexString(Hash.sha3(txn)), null);
+                return new Response(true, "0x" + Hex.toHexString(Hash.sha3(Transaction)), null);
             } else if (response.getStatusLine().getStatusCode() == 400) {
                 JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
                 System.out.println("broadcast response:" + object.toString());

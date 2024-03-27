@@ -53,32 +53,32 @@ public class Transaction {
     }
 
     public static Transaction fromJSON(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
-        String txnType = json.optString("type", "Unknown");
+        String TransactionType = json.optString("type", "Unknown");
 
-        if(txnType.equalsIgnoreCase(TransferTxn.type)) {
-            return new TransferTxn(json, blockNumber, timestamp, positionInTheBlock);
-        } else if(txnType.equalsIgnoreCase(VmDataTxn.type)) {
-            return new VmDataTxn(json, blockNumber, timestamp, positionInTheBlock);
-        } else if(txnType.equalsIgnoreCase(DelegateTxn.type)) {
-            return new DelegateTxn(json, blockNumber, timestamp, positionInTheBlock);
-        } else if(txnType.equalsIgnoreCase(WithdrawTxn.type)) {
-            return new WithdrawTxn(json, blockNumber, timestamp, positionInTheBlock);
-        } else if(txnType.equalsIgnoreCase(JoinTxn.type)) {
-            return new JoinTxn(json, blockNumber, timestamp, positionInTheBlock);
-        } else if(txnType.equalsIgnoreCase(ClaimVmIdTxn.type)) {
-            return new ClaimVmIdTxn(json, blockNumber, timestamp, positionInTheBlock);
-        } else if(txnType.equalsIgnoreCase(SetGuardianTxn.type)) {
-            return new SetGuardianTxn(json, blockNumber, timestamp, positionInTheBlock);
-        } else if(txnType.equalsIgnoreCase(PayableVmDataTxn.type)) {
-            return new PayableVmDataTxn(json, blockNumber, timestamp, positionInTheBlock);
-        } else if(txnType.equalsIgnoreCase(GuardianApprovalTxn.type)) {
-            return new GuardianApprovalTxn(json, blockNumber, timestamp, positionInTheBlock);
-        } else if(txnType.equalsIgnoreCase(ConduitApprovalTxn.type)) {
-            return new ConduitApprovalTxn(json, blockNumber, timestamp, positionInTheBlock);
-        } else if(txnType.equalsIgnoreCase(RemoveGuardianTxn.type)) {
-            return new RemoveGuardianTxn(json, blockNumber, timestamp, positionInTheBlock);
-        } else if(txnType.equalsIgnoreCase(ClaimSpotTxn.type)) {
-            return new ClaimSpotTxn(json, blockNumber, timestamp, positionInTheBlock);
+        if(TransactionType.equalsIgnoreCase(TransferTransaction.type)) {
+            return new TransferTransaction(json, blockNumber, timestamp, positionInTheBlock);
+        } else if(TransactionType.equalsIgnoreCase(VmDataTransaction.type)) {
+            return new VmDataTransaction(json, blockNumber, timestamp, positionInTheBlock);
+        } else if(TransactionType.equalsIgnoreCase(DelegateTransaction.type)) {
+            return new DelegateTransaction(json, blockNumber, timestamp, positionInTheBlock);
+        } else if(TransactionType.equalsIgnoreCase(WithdrawTransaction.type)) {
+            return new WithdrawTransaction(json, blockNumber, timestamp, positionInTheBlock);
+        } else if(TransactionType.equalsIgnoreCase(JoinTransaction.type)) {
+            return new JoinTransaction(json, blockNumber, timestamp, positionInTheBlock);
+        } else if(TransactionType.equalsIgnoreCase(ClaimVmIdTransaction.type)) {
+            return new ClaimVmIdTransaction(json, blockNumber, timestamp, positionInTheBlock);
+        } else if(TransactionType.equalsIgnoreCase(SetGuardianTransaction.type)) {
+            return new SetGuardianTransaction(json, blockNumber, timestamp, positionInTheBlock);
+        } else if(TransactionType.equalsIgnoreCase(PayableVmDataTransaction.type)) {
+            return new PayableVmDataTransaction(json, blockNumber, timestamp, positionInTheBlock);
+        } else if(TransactionType.equalsIgnoreCase(GuardianApprovalTransaction.type)) {
+            return new GuardianApprovalTransaction(json, blockNumber, timestamp, positionInTheBlock);
+        } else if(TransactionType.equalsIgnoreCase(ConduitApprovalTransaction.type)) {
+            return new ConduitApprovalTransaction(json, blockNumber, timestamp, positionInTheBlock);
+        } else if(TransactionType.equalsIgnoreCase(RemoveGuardianTransaction.type)) {
+            return new RemoveGuardianTransaction(json, blockNumber, timestamp, positionInTheBlock);
+        } else if(TransactionType.equalsIgnoreCase(ClaimSpotTransaction.type)) {
+            return new ClaimSpotTransaction(json, blockNumber, timestamp, positionInTheBlock);
         } else {
             return new Transaction(json, blockNumber, timestamp, positionInTheBlock);
         }
