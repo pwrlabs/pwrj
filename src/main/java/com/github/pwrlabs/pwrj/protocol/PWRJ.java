@@ -271,7 +271,7 @@ public class PWRJ {
             return TransactionForGuardianApproval.builder()
                     .valid(true)
                     .guardianAddress(object.optString("guardian", "0x"))
-                    .transaction(Transaction.fromJSON(object.optJSONObject("transaction", new JSONObject()), 0, 0, 0))
+                    .transaction(Transaction.fromJSON(object.getJSONObject("transaction"), 0, 0, 0))
                     .build();
         } else {
             return TransactionForGuardianApproval.builder()
