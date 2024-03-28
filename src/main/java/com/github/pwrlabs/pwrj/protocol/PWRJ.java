@@ -598,13 +598,13 @@ public class PWRJ {
      * hash is returned. In case of any issues during broadcasting, appropriate exceptions
      * are thrown to indicate the error.</p>
      *
-     * @param Transaction The raw transaction bytes intended for broadcasting.
+     * @param transaction The raw transaction bytes intended for broadcasting.
 
      * @throws IOException If an I/O error occurs when sending or receiving.
      * @throws InterruptedException If the send operation is interrupted.
      * @throws RuntimeException If the server responds with a non-200 HTTP status code.
      */
-    public Response broadcastTransaction(byte[] Transaction) {
+    public Response broadcastTransaction(byte[] transaction) {
         try {
             // Timeout configuration
             int timeout = 3 * 1000; // 3 seconds in milliseconds
@@ -619,18 +619,19 @@ public class PWRJ {
             HttpPost postRequest = new HttpPost(rpcNodeUrl + "/broadcast/");
 
             JSONObject json = new JSONObject();
-            json.put("transaction", Hex.toHexString(Transaction));
+            json.put("transaction", Hex.toHexString(transaction));
+            json.put("txn", Hex.toHexString(transaction));
 
             // Set up the header types needed to properly transfer JSON
             postRequest.setHeader("Accept", "application/json");
             postRequest.setHeader("Content-type", "application/json");
-            postRequest.setEntity(new StringEntity(json.toString(), StandardCharsets.UTF_8));
+            postRequest.setEntity(new StringEntity(json.toString().toLowerCase(), StandardCharsets.UTF_8));
 
             // Execute request
             HttpResponse response = client.execute(postRequest);
 
             if (response.getStatusLine().getStatusCode() == 200) {
-                return new Response(true, "0x" + Hex.toHexString(Hash.sha3(Transaction)), null);
+                return new Response(true, "0x" + Hex.toHexString(Hash.sha3(transaction)), null);
             } else if (response.getStatusLine().getStatusCode() == 400) {
                 JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
                 System.out.println("broadcast response:" + object.toString());
