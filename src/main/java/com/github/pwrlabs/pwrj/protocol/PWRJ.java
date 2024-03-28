@@ -619,7 +619,7 @@ public class PWRJ {
             HttpPost postRequest = new HttpPost(rpcNodeUrl + "/broadcast/");
 
             JSONObject json = new JSONObject();
-            json.put("Transaction", Hex.toHexString(Transaction));
+            json.put("transaction", Hex.toHexString(Transaction));
 
             // Set up the header types needed to properly transfer JSON
             postRequest.setHeader("Accept", "application/json");

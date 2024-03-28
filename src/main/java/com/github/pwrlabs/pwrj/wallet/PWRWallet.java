@@ -1,10 +1,10 @@
 package com.github.pwrlabs.pwrj.wallet;
 
+import com.github.pwrlabs.pwrj.Utils.Hex;
 import com.github.pwrlabs.pwrj.Utils.Response;
 import com.github.pwrlabs.pwrj.protocol.PWRJ;
 import org.bouncycastle.jcajce.provider.digest.Keccak;
 import org.bouncycastle.math.ec.FixedPointCombMultiplier;
-import org.bouncycastle.util.encoders.Hex;
 import com.github.pwrlabs.pwrj.protocol.Signature;
 
 import java.io.IOException;
@@ -137,7 +137,7 @@ public class PWRWallet {
      * @throws IOException If there's an issue with the network or stream handling.
      * @throws InterruptedException If the request is interrupted.
      */
-    public int getNonce() throws IOException, InterruptedException {
+    public int getNonce() throws IOException {
         return pwrj.getNonceOfAddress(getAddress());
     }
 
@@ -1191,6 +1191,32 @@ public class PWRWallet {
         return removeConduits(vmId, conduits, getNonce());
     }
 
+
+    public byte[] getMoveStakeTransaction(long sharesAmount, byte[] fromValidator, byte[] toValidator, int nonce) throws IOException {
+        byte[] TransactionBase = getTransactionBase((byte) 16, nonce);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 8 + fromValidator.length + toValidator.length);
+        buffer.put(TransactionBase);
+        buffer.putLong(sharesAmount);
+        buffer.put(fromValidator);
+        buffer.put(toValidator);
+
+        return buffer.array();
+    }
+    public byte[] getMoveStakeTransaction(long sharesAmount, String fromValidator, String toValidator, int nonce) throws IOException {
+        return getMoveStakeTransaction(sharesAmount, Hex.decode(fromValidator), Hex.decode(toValidator), nonce);
+    }
+    public byte[] getSignedMoveStakeTransaction(long sharesAmount, byte[] fromValidator, byte[] toValidator, int nonce) throws IOException {
+        return getSignedTransaction(getMoveStakeTransaction(sharesAmount, fromValidator, toValidator, nonce));
+    }
+    public byte[] getSignedMoveStakeTransaction(long sharesAmount, String fromValidator, String toValidator, int nonce) throws IOException {
+        return getSignedTransaction(getMoveStakeTransaction(sharesAmount, fromValidator, toValidator, nonce));
+    }
+    public Response moveStake(long sharesAmount, byte[] fromValidator, byte[] toValidator, int nonce) throws IOException {
+        return pwrj.broadcastTransaction(getSignedMoveStakeTransaction(sharesAmount, fromValidator, toValidator, nonce));
+    }
+    public Response moveStake(long sharesAmount, String fromValidator, String toValidator, int nonce) throws IOException {
+        return moveStake(sharesAmount, Hex.decode(fromValidator), Hex.decode(toValidator), nonce);
+    }
 
     /**
      * Returns the public key of the wallet of this private key
