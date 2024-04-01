@@ -28,7 +28,7 @@ public class Block {
         submitter = blockJson.optString("blockSubmitter", null);
         success = blockJson.optBoolean("success", false);
 
-        JSONArray txns = blockJson.optJSONArray("transactions", new JSONArray());
+        JSONArray txns = blockJson.getJSONArray("transactions");
         transactions = new Transaction[txns.length()];
 
         for(int i = 0; i < txns.length(); i++) {

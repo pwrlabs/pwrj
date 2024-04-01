@@ -620,6 +620,7 @@ public class PWRJ {
 
             JSONObject json = new JSONObject();
             json.put("transaction", Hex.toHexString(transaction));
+            //TODO remove this in future updates
             json.put("txn", Hex.toHexString(transaction));
 
             // Set up the header types needed to properly transfer JSON
