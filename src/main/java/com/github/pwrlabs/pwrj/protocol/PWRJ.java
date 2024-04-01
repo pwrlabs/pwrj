@@ -636,7 +636,7 @@ public class PWRJ {
             } else if (response.getStatusLine().getStatusCode() == 400) {
                 JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
                 System.out.println("broadcast response:" + object.toString());
-                return new Response(false, null, object.getString("message"));
+                return new Response(false, null, object.optString("message", ""));
             } else {
                 throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
             }
