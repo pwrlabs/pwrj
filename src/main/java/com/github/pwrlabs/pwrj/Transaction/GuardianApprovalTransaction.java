@@ -18,7 +18,7 @@ public class GuardianApprovalTransaction extends Transaction {
     public GuardianApprovalTransaction(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
         super(json, blockNumber, timestamp, positionInTheBlock);
 
-        JSONArray transactions = json.optJSONArray("transactions", null);
+        JSONArray transactions = json.getJSONArray("transactions");
         if (transactions != null) {
             for (int i = 0; i < transactions.length(); i++) {
                 this.transactions.add(transactions.getString(i));

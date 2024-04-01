@@ -15,7 +15,7 @@ public class ConduitApprovalTransaction extends Transaction {
     public ConduitApprovalTransaction(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
         super(json, blockNumber, timestamp, positionInTheBlock);
         this.vmId = json.optLong("vmId", 0);
-        JSONArray transactions = json.optJSONArray("transactions", null);
+        JSONArray transactions = json.getJSONArray("transactions");
         if (transactions != null) {
             for (int i = 0; i < transactions.length(); i++) {
                 this.transactions.add(transactions.getString(i));
