@@ -105,6 +105,20 @@ public class PWRJ {
         }
     }
 
+    public static String getVmIdAddress(long vmId) {
+        String hexAddress = vmId >= 0 ? "1" : "0";
+        if(vmId < 0) vmId = -vmId;
+        String vmIdString = Long.toString(vmId);
+
+        for(int i=0; i < 39 - vmIdString.length(); i++) {
+            hexAddress += "0";
+        }
+
+        hexAddress += vmIdString;
+
+        return "0x" + hexAddress;
+    }
+
     /**
      * Retrieves the current RPC node URL being used.
      *
