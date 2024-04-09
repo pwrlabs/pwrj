@@ -1,12 +1,12 @@
 package com.github.pwrlabs.pwrj.protocol;
 
-import com.github.pwrlabs.pwrj.Block.Block;
-import com.github.pwrlabs.pwrj.ResponseModels.TransactionForGuardianApproval;
-import com.github.pwrlabs.pwrj.Transaction.Transaction;
-import com.github.pwrlabs.pwrj.Transaction.VmDataTransaction;
+import com.github.pwrlabs.pwrj.record.block.Block;
+import com.github.pwrlabs.pwrj.record.response.Response;
+import com.github.pwrlabs.pwrj.record.response.TransactionForGuardianApproval;
+import com.github.pwrlabs.pwrj.record.transaction.Transaction;
+import com.github.pwrlabs.pwrj.record.transaction.VmDataTransaction;
 import com.github.pwrlabs.pwrj.Utils.Hash;
-import com.github.pwrlabs.pwrj.Utils.Response;
-import com.github.pwrlabs.pwrj.Validator.Validator;
+import com.github.pwrlabs.pwrj.record.validator.Validator;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.*;
 import org.bouncycastle.util.encoders.Hex;
@@ -19,7 +19,6 @@ import java.math.BigDecimal;
 //import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.HttpResponse;
@@ -33,9 +32,23 @@ public class PWRJ {
 
     public PWRJ(String rpcNodeUrl) {
         this.rpcNodeUrl = rpcNodeUrl;
+
+        try {
+            JSONObject object = httpGet(rpcNodeUrl + "/chainId/");
+            chainId = (byte) object.getInt("chainId");
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get chain ID from the RPC node: " + e.getMessage());
+        }
+
+        try {
+            JSONObject object = httpGet(rpcNodeUrl + "/feePerByte/");
+            feePerByte = object.getLong("feePerByte");
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to get fee per byte from the RPC node: " + e.getMessage());
+        }
     }
     private String rpcNodeUrl;
-    private byte chainId = (byte) -1;
+    private final byte chainId;
     private long feePerByte = 0;
 
     public static JSONObject httpGet(String url) throws IOException {
@@ -128,12 +141,7 @@ public class PWRJ {
         return rpcNodeUrl;
     }
 
-    public byte getChainId() throws IOException {
-        if(chainId == -1) {
-            JSONObject object = httpGet(rpcNodeUrl + "/chainId/");
-            chainId = (byte) object.getInt("chainId");
-        }
-
+    public byte getChainId() {
         return chainId;
     }
 
@@ -143,11 +151,6 @@ public class PWRJ {
      * @return The fee-per-byte rate.
      */
     public long getFeePerByte() throws IOException {
-        if(feePerByte == 0) {
-            JSONObject object = httpGet(rpcNodeUrl + "/feePerByte/");
-            feePerByte = object.getLong("feePerByte");
-        }
-
         return feePerByte;
     }
 
@@ -563,6 +566,9 @@ public class PWRJ {
         return httpGet(rpcNodeUrl + "/validator/delegator/delegatedPWROfAddress/?userAddress=" + delegatorAddress + "&validatorAddress=" + validatorAddress).getLong("delegatedPWR");
     }
 
+    public long getSharesOfDelegator(String delegatorAddress, String validatorAddress) throws IOException {
+        return httpGet(rpcNodeUrl + "/validator/delegator/sharesOfAddress/?userAddress=" + delegatorAddress + "&validatorAddress=" + validatorAddress).getLong("shares");
+    }
     public BigDecimal getShareValue(String validator) throws IOException {
         return httpGet(rpcNodeUrl + "/validator/shareValue/?validatorAddress=" + validator).getBigDecimal("shareValue");
     }
@@ -580,8 +586,34 @@ public class PWRJ {
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
     public String getOwnerOfVm(long vmId) throws IOException {
-        return httpGet(rpcNodeUrl + "/ownerOfVmId/?vmId=" + vmId).getString("owner");
+        JSONObject response = httpGet(rpcNodeUrl + "/ownerOfVmId/?vmId=" + vmId);
+
+        if(response.optBoolean("claimed", false)) {
+            return response.getString("owner");
+        } else {
+            return null;
+        }
     }
+
+    public List<Validator> getConduitsOfVm(long vmId) {
+        try {
+            JSONObject object = httpGet(rpcNodeUrl + "/conduitsOfVm/?vmId=" + vmId);
+            JSONArray validators = object.getJSONArray("conduits");
+            List<Validator> validatorsList = new ArrayList<>();
+
+            for(int i = 0; i < validators.length(); i++) {
+                JSONObject validatorObject = validators.getJSONObject(i);
+                Validator validator = new Validator(validatorObject);
+                validatorsList.add(validator);
+            }
+
+            return validatorsList;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
 
 
 
@@ -652,7 +684,7 @@ public class PWRJ {
                 System.out.println("broadcast response:" + object.toString());
                 return new Response(false, null, object.optString("message", ""));
             } else {
-                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
+                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode() + " " + EntityUtils.toString(response.getEntity()));
             }
         } catch (Exception e) {
             return new Response(false, null, e.getMessage());
