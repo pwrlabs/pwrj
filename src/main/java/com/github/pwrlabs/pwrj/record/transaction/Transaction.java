@@ -1,5 +1,6 @@
 package com.github.pwrlabs.pwrj.record.transaction;
 
+import com.github.pwrlabs.pwrj.Utils.Hex;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 import org.json.JSONObject;
@@ -18,6 +19,8 @@ public class Transaction {
     private final String hash;
     private final long timestamp;
     private final long value;
+    private final byte[] rawTransaction;
+    public byte chainId;
 
     public Transaction(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
         this.size = json.optInt("size", 0);
@@ -31,6 +34,8 @@ public class Transaction {
         this.blockNumber = blockNumber;
         this.timestamp = timestamp;
         this.value = json.optLong("value", 0);
+        this.rawTransaction = Hex.decode(json.optString("rawTransaction", ""));
+        this.chainId = (byte) json.optInt("chainId", 0);
     }
 
     public JSONObject toJSON() {
@@ -48,6 +53,7 @@ public class Transaction {
         json.put("nonce", nonce);
         json.put("timestamp", timestamp);
         json.put("value", value);
+        json.put("rawTransaction", Hex.toHexString(rawTransaction));
 
         return json;
     }
@@ -79,10 +85,22 @@ public class Transaction {
             return new RemoveGuardianTransaction(json, blockNumber, timestamp, positionInTheBlock);
         } else if(TransactionType.equalsIgnoreCase(ClaimSpotTransaction.type)) {
             return new ClaimSpotTransaction(json, blockNumber, timestamp, positionInTheBlock);
-        } else {
+        } else if(TransactionType.equalsIgnoreCase(SetConduitsTransactions.type)) {
+            return new SetConduitsTransactions(json, blockNumber, timestamp, positionInTheBlock);
+        } else if(TransactionType.equalsIgnoreCase(AddConduitsTransaction.type)) {
+            return new AddConduitsTransaction(json, blockNumber, timestamp, positionInTheBlock);
+        } else if(TransactionType.equalsIgnoreCase(RemoveGuardianTransaction.type)) {
+            return new RemoveGuardianTransaction(json, blockNumber, timestamp, positionInTheBlock);
+        } else if(TransactionType.equalsIgnoreCase(MoveStakeTransaction.type)) {
+            return new MoveStakeTransaction(json, blockNumber, timestamp, positionInTheBlock);
+        }
+        else {
             return new Transaction(json, blockNumber, timestamp, positionInTheBlock);
         }
     }
 
+    public static void main(String[] args) {
+        Hex.decode("");
+    }
 
 }

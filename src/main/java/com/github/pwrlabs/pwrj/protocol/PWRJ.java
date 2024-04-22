@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 //import java.net.http.HttpClient;
 //import java.net.http.HttpResponse;
+import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.http.client.methods.HttpGet;
@@ -130,6 +131,21 @@ public class PWRJ {
         hexAddress += vmIdString;
 
         return "0x" + hexAddress;
+    }
+
+    public static boolean isVmAddress(String address) {
+        if (address == null || (address.length() != 40 && address.length() != 42)) return false;
+        if(address.startsWith("0x")) address = address.substring(2);
+        if(!address.startsWith("0") && !address.startsWith("1")) return false;
+
+        BigInteger maxLong = BigInteger.valueOf(Long.MAX_VALUE);
+        BigInteger minLong = BigInteger.valueOf(Long.MIN_VALUE);
+
+        BigInteger vmId = new BigInteger(address, 16);
+
+        if(vmId.compareTo(maxLong) > 0 || vmId.compareTo(minLong) < 0) return false;
+
+        return true;
     }
 
     /**

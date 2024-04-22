@@ -7,6 +7,7 @@ import com.github.pwrlabs.pwrj.record.response.Response;
 import com.github.pwrlabs.pwrj.record.validator.Validator;
 import com.github.pwrlabs.pwrj.wallet.PWRWallet;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.time.Instant;
 import java.util.List;
@@ -24,6 +25,8 @@ public class Main {
     public static final String VALIDATOR_ADDRESS_2 = "0x4dc619b41224d82d153fbc6389ca910f7f56de63";
 
     public static void main(String[] args) throws Exception {
+        removeValidator("0x1eefccf7869a290a01b7def0399b8b7b9dd4f548");
+        System.exit(0);
         PWRJ pwrj = new PWRJ(RPC_URL);
         PWRWallet wallet1 = new PWRWallet(PRIVATE_KEY_1, pwrj);
         PWRWallet wallet2 = new PWRWallet(PRIVATE_KEY_2, pwrj);
@@ -39,7 +42,23 @@ public class Main {
         //testMoveStake(wallet1, pwrj);
        // testValidatorTransactions(wallet1, wallet2, pwrj);
         //testPayableVmDataTransaction(wallet1, wallet2, pwrj);
-        testConduitTransactions(wallet1, wallet2, pwrj);
+       // testConduitTransactions(wallet1, wallet2, pwrj);
+        testTransferPWRFromVM(wallet1, wallet2, pwrj);
+    }
+
+    public static void removeValidator(String address) throws Exception {
+        PWRJ pwrj = new PWRJ("https://pwrrpc.pwrlabs.io/");
+        PWRWallet wallet = new PWRWallet(new BigInteger("03a5240936d67dc18dca348e793010a14c5eba86a73d0c9e45764681295a73df", 16), pwrj);
+
+        Response r = wallet.sendValidatorRemoveTransaction(address, wallet.getNonce());
+
+        if(r.isSuccess()) {
+            System.out.println("Validator removed successfully");
+            System.out.println(r.getTransactionHash());
+            System.out.println(r.getError());
+        } else {
+            System.out.println("Failed to remove validator: " + r.getError());
+        }
     }
 
     private static void testTransferPWR(PWRWallet sender, PWRWallet recipient, PWRJ pwrj) throws Exception {
@@ -400,6 +419,67 @@ public class Main {
 
         System.out.println("Remove conduit test successful");
     }
+    private static void testTransferPWRFromVM(PWRWallet vmOwner, PWRWallet recipient, PWRJ pwrj) throws Exception {
+        int vmOwnerNonce = vmOwner.getNonce();
+        long vmId = new Random().nextLong();
+        long transferAmount = 1000000000;
+        long payableAmount = 10000000000L;
+
+        System.out.println("Claiming VM ID");
+
+        Response claimResponse = vmOwner.claimVmId(vmId, vmOwnerNonce++);
+        assertTrue("Claim VM ID failed: " + claimResponse.getError(), claimResponse.isSuccess());
+
+        while (pwrj.getOwnerOfVm(vmId) == null) {
+            Thread.sleep(1000);
+        }
+
+        System.out.println("VM ID claimed by: " + pwrj.getOwnerOfVm(vmId));
+
+        System.out.println("Setting conduits");
+
+        byte[] conduit = Hex.decode(vmOwner.getAddress());
+        List<byte[]> conduits = List.of(conduit);
+
+        Response setConduitsResponse = vmOwner.setConduits(vmId, conduits, vmOwnerNonce++);
+        assertTrue("Set conduits failed: " + setConduitsResponse.getError(), setConduitsResponse.isSuccess());
+
+        while (pwrj.getConduitsOfVm(vmId).size() == 0) {
+            Thread.sleep(1000);
+        }
+
+        System.out.println("Set conduits successful");
+
+        long initialVMBalance = pwrj.getBalanceOfAddress(pwrj.getVmIdAddress(vmId));
+        long initialRecipientBalance = recipient.getBalance();
+
+        System.out.println("Sending payable VM data");
+
+        // Send a payable VM transaction to transfer PWR to the VM
+        Response payableVMResponse = vmOwner.sendPayableVmDataTransaction(vmId, payableAmount, "Payable VM Data".getBytes(), vmOwnerNonce++);
+        assertTrue("Payable VM transaction failed: " + payableVMResponse.getError(), payableVMResponse.isSuccess());
+
+        Thread.sleep(5000);
+
+        System.out.println("Sending transfer PWR transaction from VM " + vmId + " to recipient " + recipient.getAddress() + " for amount " + transferAmount);
+
+        int vmNonce = pwrj.getNonceOfAddress(pwrj.getVmIdAddress(vmId));
+        byte[] transferTxn = TransactionBuilder.getTransferPWRTransaction(recipient.getAddress(), transferAmount, vmNonce, pwrj.getChainId());
+
+        Response conduitApprovalResponse = vmOwner.conduitApprove(vmId, List.of(transferTxn), vmOwnerNonce++);
+        assertTrue("Conduit approval failed: " + conduitApprovalResponse.getError(), conduitApprovalResponse.isSuccess());
+
+        Thread.sleep(5000);
+
+        long finalVMBalance = pwrj.getBalanceOfAddress(pwrj.getVmIdAddress(vmId));
+        long finalRecipientBalance = recipient.getBalance();
+
+        assertEquals(initialVMBalance + payableAmount - transferAmount, finalVMBalance);
+        assertEquals(initialRecipientBalance + transferAmount, finalRecipientBalance);
+
+        System.out.println("Transfer PWR from VM test successful");
+    }
+
     private static boolean isValidator(String validatorAddress, PWRJ pwrj) throws Exception {
         List<Validator> validators = pwrj.getAllValidators();
         for (Validator v : validators) {
