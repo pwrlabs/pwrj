@@ -135,7 +135,8 @@ public class PWRJ {
 
     public static boolean isVmAddress(String address) {
         if (address == null || (address.length() != 40 && address.length() != 42)) return false;
-        if(address.startsWith("0x")) address = address.substring(2);
+        if(address.startsWith("0x")) address = address.substring(3);
+        else address = address.substring(1);
         if(!address.startsWith("0") && !address.startsWith("1")) return false;
 
         BigInteger maxLong = BigInteger.valueOf(Long.MAX_VALUE);
@@ -577,6 +578,11 @@ public class PWRJ {
                 .build();
 
         return validator;
+    }
+
+    public static void main(String[] args) throws IOException {
+        PWRJ pwrj = new PWRJ("https://pwrrpc.pwrlabs.io/");
+        pwrj.getValidator("0x0x7111434F00E6C66616fc25cff3Fa080cdb95562B");
     }
     public long getDelegatedPWR(String delegatorAddress, String validatorAddress) throws IOException {
         return httpGet(rpcNodeUrl + "/validator/delegator/delegatedPWROfAddress/?userAddress=" + delegatorAddress + "&validatorAddress=" + validatorAddress).getLong("delegatedPWR");
