@@ -567,13 +567,13 @@ public class PWRJ {
         JSONObject object = httpGet(rpcNodeUrl + "/validator/?validatorAddress=" + validatorAddress);
         JSONObject validatorObject = object.getJSONObject("validator");
         Validator validator = Validator.builder()
-                .address(validatorObject.getString("address"))
-                .ip(validatorObject.getString("ip"))
-                .isBadActor(validatorObject.getBoolean("badActor"))
-                .votingPower(validatorObject.getLong("votingPower"))
-                .shares(validatorObject.getLong("totalShares"))
-                .delegatorsCount(validatorObject.getInt("delegatorsCount"))
-                .status(validatorObject.getString("status"))
+                .address(validatorObject.optString("address", "0x"))
+                .ip(validatorObject.optString("ip", ""))
+                .isBadActor(validatorObject.optBoolean("badActor", false))
+                .votingPower(validatorObject.optLong("votingPower", 0))
+                .shares(validatorObject.optLong("totalShares", 0))
+                .delegatorsCount(validatorObject.optInt("delegatorsCount", 0))
+                .status(validatorObject.optString("status", "unknown"))
                 .build();
 
         return validator;

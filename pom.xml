@@ -73,6 +73,7 @@
 
     </dependencies>
 
+
     <scm>
         <connection>scm:git:git://github.com/pwrlabs/pwrj.git</connection>
         <developerConnection>scm:git:ssh://github.com:pwrlabs/pwrj.git</developerConnection>
