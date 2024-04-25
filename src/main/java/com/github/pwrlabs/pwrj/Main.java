@@ -25,7 +25,11 @@ public class Main {
     public static final String VALIDATOR_ADDRESS_2 = "0x4dc619b41224d82d153fbc6389ca910f7f56de63";
 
     public static void main(String[] args) throws Exception {
-        removeValidator("0x1eefccf7869a290a01b7def0399b8b7b9dd4f548");
+        System.out.println(Long.MAX_VALUE);
+        System.out.println(Long.MIN_VALUE);
+        System.exit(0);
+        removeValidator("0x995e5b77e3cdc413bb5562f24abceb725a6f92b8");
+        Thread.sleep(1000);
         System.exit(0);
         PWRJ pwrj = new PWRJ(RPC_URL);
         PWRWallet wallet1 = new PWRWallet(PRIVATE_KEY_1, pwrj);
