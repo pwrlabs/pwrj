@@ -550,13 +550,13 @@ public class PWRJ {
             JSONObject validatorObject = validators.getJSONObject(i);
             //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
             Validator validator = Validator.builder()
-                    .address(validatorObject.getString("address"))
-                    .ip(validatorObject.getString("ip"))
-                    .isBadActor(validatorObject.getBoolean("badActor"))
-                    .votingPower(validatorObject.getLong("votingPower"))
-                    .shares(validatorObject.getLong("totalShares"))
-                    .delegatorsCount(validatorObject.getInt("delegatorsCount"))
-                    .status("active")
+                    .address(validatorObject.optString("address", "0x"))
+                    .ip(validatorObject.optString("ip", ""))
+                    .isBadActor(validatorObject.optBoolean("badActor", false))
+                    .votingPower(validatorObject.optLong("votingPower", 0))
+                    .shares(validatorObject.optLong("totalShares", 0))
+                    .delegatorsCount(validatorObject.optInt("delegatorsCount", 0))
+                    .status(validatorObject.optString("status", "unknown"))
                     .build();
 
             validatorsList.add(validator);
