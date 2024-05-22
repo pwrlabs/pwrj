@@ -15,7 +15,7 @@ public class SetGuardianTransaction extends Transaction {
     public SetGuardianTransaction(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
         super(json, blockNumber, timestamp, positionInTheBlock);
         this.guardian = json.optString("guardian", "0x");
-        this.expiryDate = json.optLong("expiryDate", 0);
+        this.expiryDate = json.optLong("guardianExpiryDate", 0);
     }
 
     @Override
