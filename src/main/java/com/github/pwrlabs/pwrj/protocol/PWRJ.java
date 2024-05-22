@@ -3,6 +3,7 @@ package com.github.pwrlabs.pwrj.protocol;
 import com.github.pwrlabs.pwrj.record.block.Block;
 import com.github.pwrlabs.pwrj.record.response.Response;
 import com.github.pwrlabs.pwrj.record.response.TransactionForGuardianApproval;
+import com.github.pwrlabs.pwrj.record.transaction.GuardianApprovalTransaction;
 import com.github.pwrlabs.pwrj.record.transaction.Transaction;
 import com.github.pwrlabs.pwrj.record.transaction.VmDataTransaction;
 import com.github.pwrlabs.pwrj.Utils.Hash;
@@ -51,6 +52,7 @@ public class PWRJ {
     private String rpcNodeUrl;
     private final byte chainId;
     private long feePerByte = 0;
+    private long ecdsaVerificationFee = 10000;
 
     public static JSONObject httpGet(String url) throws IOException {
         // Set timeouts
@@ -119,6 +121,17 @@ public class PWRJ {
         }
     }
 
+    public long getFee(byte[] txn) {
+        Transaction transaction = TransactionDecoder.decode(txn);
+        if(transaction instanceof GuardianApprovalTransaction) {
+            GuardianApprovalTransaction guardianApprovalTransaction = (GuardianApprovalTransaction) transaction;
+            long fee = (txn.length * feePerByte) + ecdsaVerificationFee;
+            fee += guardianApprovalTransaction.getTransactions().size() * ecdsaVerificationFee;
+            return fee;
+        } else {
+            return (txn.length * feePerByte) + ecdsaVerificationFee;
+        }
+    }
     public static String getVmIdAddress(long vmId) {
         String hexAddress = vmId >= 0 ? "1" : "0";
         if(vmId < 0) vmId = -vmId;
