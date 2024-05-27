@@ -33,6 +33,10 @@ public class Transaction {
         this.errorMessage = json.optString("errorMessage", null);
     }
 
+    public boolean hasError() {
+        return hasError;
+    }
+
     public JSONObject toJSON() {
         JSONObject json = new JSONObject();
 

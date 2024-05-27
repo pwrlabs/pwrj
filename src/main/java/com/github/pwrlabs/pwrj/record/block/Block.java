@@ -37,4 +37,8 @@ public class Block {
         }
 
     }
+
+    public boolean processedWithoutCriticalErrors() {
+        return processedWithoutCriticalErrors;
+    }
 }
