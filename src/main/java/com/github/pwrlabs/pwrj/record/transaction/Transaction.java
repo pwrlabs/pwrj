@@ -8,24 +8,17 @@ import org.json.JSONObject;
 @Getter
 @SuperBuilder
 public class Transaction {
-    private final int size;
-    private final long blockNumber;
-    private final int positionInTheBlock;
-    private final long fee;
-    private final String type;
-    private final String sender;
-    private final String receiver;
-    private final int nonce;
-    private final String hash;
-    private final long timestamp;
-    private final long value;
-    private final byte[] rawTransaction;
     public byte chainId;
+    private final boolean hasError;
+    private final int nonce, size, positionInTheBlock;
+    private final String type, sender, receiver, hash, errorMessage;
+    private final long timestamp, value, blockNumber, fee;
+    private final byte[] rawTransaction;
 
     public Transaction(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
         this.size = json.optInt("size", 0);
         this.positionInTheBlock = positionInTheBlock;
-        this.fee = json.optLong("fee", 0);
+        this.fee = json.optLong("fee", 0L);
         this.type = json.optString("type", "unknown");
         this.sender = json.optString("sender", "0x");
         this.receiver = json.optString("receiver", "0x");
@@ -36,6 +29,8 @@ public class Transaction {
         this.value = json.optLong("value", 0);
         this.rawTransaction = Hex.decode(json.optString("rawTransaction", ""));
         this.chainId = (byte) json.optInt("chainId", 0);
+        this.hasError = !json.optBoolean("success", true);
+        this.errorMessage = json.optString("errorMessage", null);
     }
 
     public JSONObject toJSON() {
@@ -54,6 +49,9 @@ public class Transaction {
         json.put("timestamp", timestamp);
         json.put("value", value);
         json.put("rawTransaction", Hex.toHexString(rawTransaction));
+        json.put("chainId", chainId);
+        json.put("success", !hasError);
+        json.put("errorMessage", errorMessage);
 
         return json;
     }

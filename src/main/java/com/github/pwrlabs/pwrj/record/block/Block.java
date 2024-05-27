@@ -14,7 +14,7 @@ public class Block {
     private final long timestamp;
     private final String hash;
     private final String submitter;
-    private final boolean success;
+    private final boolean processedWithoutCriticalErrors;
     private final Transaction[] transactions;
 
     public Block(JSONObject blockJson) {
@@ -25,7 +25,7 @@ public class Block {
         timestamp = blockJson.optLong("timestamp", 0);
         hash = blockJson.optString("blockHash", null);
         submitter = blockJson.optString("blockSubmitter", null);
-        success = blockJson.optBoolean("success", false);
+        processedWithoutCriticalErrors = blockJson.optBoolean("processedWithoutCriticalErrors", true);
 
         JSONArray txns = blockJson.getJSONArray("transactions");
         transactions = new Transaction[txns.length()];

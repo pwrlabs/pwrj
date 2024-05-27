@@ -716,8 +716,10 @@ public class PWRJ {
             HttpResponse response = client.execute(postRequest);
 
             if (response.getStatusLine().getStatusCode() == 200) {
+                System.out.println("Status code: " + response.getStatusLine().getStatusCode());
                 return new Response(true, "0x" + Hex.toHexString(Hash.sha3(transaction)), null);
             } else if (response.getStatusLine().getStatusCode() == 400) {
+                System.out.println("Status code: " + response.getStatusLine().getStatusCode());
                 JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
                 System.out.println("broadcast response:" + object.toString());
                 return new Response(false, null, object.optString("message", ""));

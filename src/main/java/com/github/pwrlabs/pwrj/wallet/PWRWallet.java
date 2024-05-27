@@ -88,6 +88,10 @@ public class PWRWallet {
         this.pwrj = pwrj;
     }
 
+    public BigInteger getPublicKey() {
+        return publicKeyFromPrivate(privateKey);
+    }
+
     /**
      * Retrieves the address associated with the wallet's credentials.
      *
