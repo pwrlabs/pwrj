@@ -61,6 +61,31 @@ public class TransactionDecoder {
                 return decodeRemoveConduitsTxn(txn, sender, nonce);
             case 16:
                 return decodeMoveStakeTxn(txn, sender, nonce);
+            case 17:
+                return decodeChangeEarlyWithdrawPenaltyProposalTxn(txn, sender, nonce, false);
+            case 18:
+                return decodeChangeFeePerByteProposalTxn(txn, sender, nonce, false);
+            case 19:
+                return decodeChangeMaxBlockSizeProposalTxn(txn, sender, nonce, false);
+            case 20:
+                return decodeChangeMaxTxnSizeProposalTxn(txn, sender, nonce, false);
+            case 21:
+                return decodeChangeOverallBurnPercentageProposalTxn(txn, sender, nonce, false);
+            case 22:
+                return decodeChangeRewardPerYearProposalTxn(txn, sender, nonce, false);
+            case 23:
+                return decodeChangeValidatorCountLimitProposalTxn(txn, sender, nonce, false);
+            case 24:
+                return decodeChangeValidatorJoiningFeeProposalTxn(txn, sender, nonce, false);
+            case 25:
+                return decodeChangeVmIdClaimingFeeProposalTxn(txn, sender, nonce, false);
+            case 26:
+                return decodeChangeVmOwnerTxnFeeShareProposalTxn(txn, sender, nonce, false);
+            case 27:
+                return decodeOtherProposalTxn(txn, sender, nonce, false);
+            case 28:
+                return decodeVoteOnProposalTxn(txn, sender, nonce, false);
+
             default: {
                 throw new RuntimeException("Invalid txn identifier: " + txn[0]);
             }

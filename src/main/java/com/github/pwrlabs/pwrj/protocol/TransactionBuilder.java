@@ -104,10 +104,10 @@ public class TransactionBuilder {
     /**
      * Returns the transaction of delegating PWR tokens to a specified validator.
      *
-     * @param validator      The validator address.
-     * @param amount  The amount of PWR tokens to be delegated.
-     * @param nonce   The transaction nonce.
-     * @param chainId The chain ID.
+     * @param validator The validator address.
+     * @param amount    The amount of PWR tokens to be delegated.
+     * @param nonce     The transaction nonce.
+     * @param chainId   The chain ID.
      * @return A byte array that represents the transaction of the method.
      * @throws RuntimeException For various transaction-related validation issues.
      */
@@ -132,7 +132,7 @@ public class TransactionBuilder {
     /**
      * Returns the transaction of withdrawing PWR tokens from a specified validator.
      *
-     * @param validator         The validator address.
+     * @param validator    The validator address.
      * @param sharesAmount The amount of shares to be withdrawn.
      * @param nonce        The transaction nonce.
      * @param chainId      The chain ID.
@@ -165,7 +165,7 @@ public class TransactionBuilder {
      * @param nonce   The transaction nonce.
      * @param chainId The chain ID.
      * @return A byte array that represents the transaction of this method.
-     * @throws RuntimeException     For various transaction-related validation issues.
+     * @throws RuntimeException For various transaction-related validation issues.
      */
     public static byte[] getVmDataTransaction(long vmId, byte[] data, int nonce, byte chainId) {
         if (nonce < 0) {
@@ -201,12 +201,12 @@ public class TransactionBuilder {
     /**
      * Returns a transaction of setting a guardian.
      *
-     * @param guardian The wallet address of the chosen guardian.
-     * @param expiryDate      The expiry date after which the guardian will have revoked privileges.
-     * @param nonce           The transaction nonce.
-     * @param chainId         The chain ID.
+     * @param guardian   The wallet address of the chosen guardian.
+     * @param expiryDate The expiry date after which the guardian will have revoked privileges.
+     * @param nonce      The transaction nonce.
+     * @param chainId    The chain ID.
      * @return A byte array with the outcome of this transaction.
-     * @throws RuntimeException     For various transaction-related validation issues.
+     * @throws RuntimeException For various transaction-related validation issues.
      */
     public static byte[] getSetGuardianTransaction(String guardian, long expiryDate, int nonce, byte chainId) {
         assetAddressValidity(guardian);
@@ -278,7 +278,7 @@ public class TransactionBuilder {
      * @param nonce   The transaction nonce.
      * @param chainId The chain ID.
      * @return A byte array that represents the transaction of this method.
-     * @throws RuntimeException     For various transaction-related validation issues.
+     * @throws RuntimeException For various transaction-related validation issues.
      */
     public static byte[] getPayableVmDataTransaction(long vmId, long value, byte[] data, int nonce, byte chainId) {
         if (nonce < 0) {
@@ -328,7 +328,7 @@ public class TransactionBuilder {
      * @param nonce        The transaction nonce.
      * @param chainId      The chain ID.
      * @return A byte array representing the transaction of this method.
-     * @throws RuntimeException     If the nonce is negative or there are no transactions to approve.
+     * @throws RuntimeException If the nonce is negative or there are no transactions to approve.
      */
     public static byte[] getConduitApprovalTransaction(long vmId, List<byte[]> transactions, int nonce, byte chainId) {
         if (nonce < 0) {
@@ -364,7 +364,7 @@ public class TransactionBuilder {
      * @param nonce    The transaction nonce.
      * @param chainId  The chain ID.
      * @return A byte array representing the transaction of this method.
-     * @throws RuntimeException     If the nonce is negative or there are no conduits to set.
+     * @throws RuntimeException If the nonce is negative or there are no conduits to set.
      */
     public static byte[] getSetConduitsTransaction(long vmId, List<byte[]> conduits, int nonce, byte chainId) {
         if (nonce < 0) {
@@ -400,7 +400,7 @@ public class TransactionBuilder {
      * @param nonce    The transaction nonce.
      * @param chainId  The chain ID.
      * @return A byte array representing the transaction of this method.
-     * @throws RuntimeException     If the nonce is negative or there are no conduits to add.
+     * @throws RuntimeException If the nonce is negative or there are no conduits to add.
      */
     public static byte[] getAddConduitsTransaction(long vmId, List<byte[]> conduits, int nonce, byte chainId) {
         if (nonce < 0) {
@@ -430,7 +430,7 @@ public class TransactionBuilder {
      * @param nonce    The transaction nonce.
      * @param chainId  The chain ID.
      * @return A byte array representing the transaction of this method.
-     * @throws RuntimeException     If the nonce is negative or there are no conduits to remove.
+     * @throws RuntimeException If the nonce is negative or there are no conduits to remove.
      */
     public static byte[] getRemoveConduitsTransaction(long vmId, List<byte[]> conduits, int nonce, byte chainId) {
         if (nonce < 0) {
@@ -462,7 +462,7 @@ public class TransactionBuilder {
      * @param chainId       The chain ID.
      * @return A byte array representing the transaction of this method.
      */
-    public static byte[] getMoveStakeTransaction(long sharesAmount, String fromValidator, String toValidator, int nonce, byte chainId)  {
+    public static byte[] getMoveStakeTransaction(long sharesAmount, String fromValidator, String toValidator, int nonce, byte chainId) {
         assetAddressValidity(fromValidator);
         assetAddressValidity(toValidator);
 
@@ -475,4 +475,138 @@ public class TransactionBuilder {
 
         return buffer.array();
     }
+
+
+    public static byte[] getChangeEarlyWithdrawPenaltyProposalTxn(long withdrawalPenaltyTime, long withdrawalPenalty, String description, int nonce, byte chainId) {
+
+        byte[] TransactionBase = getTransactionBase((byte) 16, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 48);
+        buffer.put(TransactionBase);
+        buffer.putLong(withdrawalPenaltyTime);
+        buffer.putLong(withdrawalPenalty);
+        buffer.put(Hex.decode(description));
+
+        return buffer.array();
+    }
+
+    public static byte[] getChangeFeePerByteProposalTxn(long feePerByte, String description, int nonce, byte chainId) {
+
+        byte[] TransactionBase = getTransactionBase((byte) 16, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 48);
+        buffer.put(TransactionBase);
+        buffer.putLong(feePerByte);
+        buffer.put(Hex.decode(description));
+
+        return buffer.array();
+    }
+
+    public static byte[] getChangeMaxBlockSizeProposalTxn(int maxBlockSize, String description, int nonce, byte chainId) {
+
+        byte[] TransactionBase = getTransactionBase((byte) 16, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 48);
+        buffer.put(TransactionBase);
+        buffer.putInt(maxBlockSize);
+        buffer.put(Hex.decode(description));
+
+        return buffer.array();
+    }
+
+    public static byte[] getChangeMaxTxnSizeProposalTxn(int maxTxnSize, String description, int nonce, byte chainId) {
+
+        byte[] TransactionBase = getTransactionBase((byte) 16, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 48);
+        buffer.put(TransactionBase);
+        buffer.putInt(maxTxnSize);
+        buffer.put(Hex.decode(description));
+
+        return buffer.array();
+    }
+
+    public static byte[] getChangeOverallBurnPercentageProposalTxn(int burnPercentage, String description, int nonce, byte chainId) {
+
+        byte[] TransactionBase = getTransactionBase((byte) 16, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 48);
+        buffer.put(TransactionBase);
+        buffer.putInt(burnPercentage);
+        buffer.put(Hex.decode(description));
+
+        return buffer.array();
+    }
+
+    public static byte[] getChangeRewardPerYearProposalTxn(long rewardPerYear, String description, int nonce, byte chainId) {
+
+        byte[] TransactionBase = getTransactionBase((byte) 16, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 48);
+        buffer.put(TransactionBase);
+        buffer.putLong(rewardPerYear);
+        buffer.put(Hex.decode(description));
+
+        return buffer.array();
+    }
+
+    public static byte[] getChangeValidatorCountLimitProposalTxn(int validatorCountLimit, String description, int nonce, byte chainId) {
+
+        byte[] TransactionBase = getTransactionBase((byte) 16, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 48);
+        buffer.put(TransactionBase);
+        buffer.putLong(validatorCountLimit);
+        buffer.put(Hex.decode(description));
+
+        return buffer.array();
+    }
+
+    public static byte[] getChangeValidatorJoiningFeeProposalTxn(long joiningFee, String description, int nonce, byte chainId) {
+
+        byte[] TransactionBase = getTransactionBase((byte) 16, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 48);
+        buffer.put(TransactionBase);
+        buffer.putLong(joiningFee);
+        buffer.put(Hex.decode(description));
+
+        return buffer.array();
+    }
+
+    public static byte[] getChangeVmIdClaimingFeeProposalTxn(long claimingFee, String description, int nonce, byte chainId) {
+
+        byte[] TransactionBase = getTransactionBase((byte) 16, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 48);
+        buffer.put(TransactionBase);
+        buffer.putLong(claimingFee);
+        buffer.put(Hex.decode(description));
+
+        return buffer.array();
+    }
+
+    public static byte[] getChangeVmOwnerTxnFeeShareProposalTxn(long feeShare, String description, int nonce, byte chainId) {
+
+        byte[] TransactionBase = getTransactionBase((byte) 16, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 48);
+        buffer.put(TransactionBase);
+        buffer.putLong(feeShare);
+        buffer.put(Hex.decode(description));
+
+        return buffer.array();
+    }
+
+    public static byte[] getOtherProposalTxn(String description, int nonce, byte chainId) {
+
+        byte[] TransactionBase = getTransactionBase((byte) 16, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 48);
+        buffer.put(TransactionBase);
+        buffer.put(Hex.decode(description));
+
+        return buffer.array();
+    }
+
+    public static byte[] getVoteOnProposalTxn(int proposalId, int vote, int nonce, byte chainId) {
+
+        byte[] TransactionBase = getTransactionBase((byte) 16, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 48);
+        buffer.put(TransactionBase);
+        buffer.putInt(proposalId);
+        buffer.putInt(vote);
+
+        return buffer.array();
+    }
+
 }
