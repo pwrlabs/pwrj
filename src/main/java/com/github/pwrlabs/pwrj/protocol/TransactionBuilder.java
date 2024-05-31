@@ -478,24 +478,24 @@ public class TransactionBuilder {
 
 
     public static byte[] getChangeEarlyWithdrawPenaltyProposalTxn(long withdrawalPenaltyTime, long withdrawalPenalty, String description, int nonce, byte chainId) {
+        byte[] TransactionBase = getTransactionBase((byte) 17, nonce, chainId);
+        byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
 
-        byte[] TransactionBase = getTransactionBase((byte) 16, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 48);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 16 + descriptionBytea.length);
         buffer.put(TransactionBase);
         buffer.putLong(withdrawalPenaltyTime);
         buffer.putLong(withdrawalPenalty);
-        buffer.put(Hex.decode(description));
-
+        buffer.put(description.getBytes(StandardCharsets.UTF_8));
         return buffer.array();
     }
 
     public static byte[] getChangeFeePerByteProposalTxn(long feePerByte, String description, int nonce, byte chainId) {
 
-        byte[] TransactionBase = getTransactionBase((byte) 16, nonce, chainId);
+        byte[] TransactionBase = getTransactionBase((byte) 18, nonce, chainId);
         ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 48);
         buffer.put(TransactionBase);
         buffer.putLong(feePerByte);
-        buffer.put(Hex.decode(description));
+        buffer.put(description.getBytes(StandardCharsets.UTF_8));
 
         return buffer.array();
     }
@@ -506,7 +506,7 @@ public class TransactionBuilder {
         ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 48);
         buffer.put(TransactionBase);
         buffer.putInt(maxBlockSize);
-        buffer.put(Hex.decode(description));
+        buffer.put(description.getBytes(StandardCharsets.UTF_8));
 
         return buffer.array();
     }
@@ -517,7 +517,7 @@ public class TransactionBuilder {
         ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 48);
         buffer.put(TransactionBase);
         buffer.putInt(maxTxnSize);
-        buffer.put(Hex.decode(description));
+        buffer.put(description.getBytes(StandardCharsets.UTF_8));
 
         return buffer.array();
     }
@@ -528,7 +528,7 @@ public class TransactionBuilder {
         ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 48);
         buffer.put(TransactionBase);
         buffer.putInt(burnPercentage);
-        buffer.put(Hex.decode(description));
+        buffer.put(description.getBytes(StandardCharsets.UTF_8));
 
         return buffer.array();
     }
@@ -539,7 +539,7 @@ public class TransactionBuilder {
         ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 48);
         buffer.put(TransactionBase);
         buffer.putLong(rewardPerYear);
-        buffer.put(Hex.decode(description));
+        buffer.put(description.getBytes(StandardCharsets.UTF_8));
 
         return buffer.array();
     }
@@ -550,7 +550,7 @@ public class TransactionBuilder {
         ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 48);
         buffer.put(TransactionBase);
         buffer.putLong(validatorCountLimit);
-        buffer.put(Hex.decode(description));
+        buffer.put(description.getBytes(StandardCharsets.UTF_8));
 
         return buffer.array();
     }
@@ -561,7 +561,7 @@ public class TransactionBuilder {
         ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 48);
         buffer.put(TransactionBase);
         buffer.putLong(joiningFee);
-        buffer.put(Hex.decode(description));
+        buffer.put(description.getBytes(StandardCharsets.UTF_8));
 
         return buffer.array();
     }
@@ -572,7 +572,7 @@ public class TransactionBuilder {
         ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 48);
         buffer.put(TransactionBase);
         buffer.putLong(claimingFee);
-        buffer.put(Hex.decode(description));
+        buffer.put(description.getBytes(StandardCharsets.UTF_8));
 
         return buffer.array();
     }
@@ -583,7 +583,7 @@ public class TransactionBuilder {
         ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 48);
         buffer.put(TransactionBase);
         buffer.putLong(feeShare);
-        buffer.put(Hex.decode(description));
+        buffer.put(description.getBytes(StandardCharsets.UTF_8));
 
         return buffer.array();
     }
@@ -593,7 +593,7 @@ public class TransactionBuilder {
         byte[] TransactionBase = getTransactionBase((byte) 16, nonce, chainId);
         ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 48);
         buffer.put(TransactionBase);
-        buffer.put(Hex.decode(description));
+        buffer.put(description.getBytes(StandardCharsets.UTF_8));
 
         return buffer.array();
     }
