@@ -18,8 +18,8 @@ public class ClaimVmIdTransaction extends Transaction {
 
     @Override
     public JSONObject toJSON() {
-        JSONObject Transaction = super.toJSON();
-        Transaction.put("vmId", vmId);
-        return Transaction;
+        JSONObject data = super.toJSON();
+        data.put("vmId", vmId);
+        return data;
     }
 }

@@ -1,6 +1,5 @@
 package com.github.pwrlabs.pwrj.protocol;
 
-import com.github.pwrlabs.pwrj.Utils.Hash;
 import com.github.pwrlabs.pwrj.Utils.Hex;
 import com.github.pwrlabs.pwrj.record.transaction.*;
 import org.web3j.crypto.Keys;
@@ -13,13 +12,12 @@ import java.security.SignatureException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 public class TransactionDecoder {
 
     public static Transaction decode(byte[] txn) {
-            byte[] sender = getSender(txn);
-            return decode(txn, sender);
+        byte[] sender = getSender(txn);
+        return decode(txn, sender);
     }
 
     public static Transaction decode(byte[] txn, byte[] sender) {
@@ -28,43 +26,68 @@ public class TransactionDecoder {
         int nonce = buffer.getInt();
         byte chainId = buffer.get();
 
-            switch (txn[0]) {
-                case 0:
-                    return decodeTransfer(txn, sender, nonce);
-                case 1:
-                    return decodeJoin(txn, sender, nonce);
-                case 2:
-                    return decodeClaimSpot(txn, sender, nonce);
-                case 3:
-                    return decodeDelegate(txn, sender, nonce);
-                case 4:
-                    return decodeWithdraw(txn, sender, nonce);
-                case 5:
-                    return decodeVmDataTxn(txn, sender, nonce);
-                case 6:
-                    return decodeClaimVmId(txn, sender, nonce);
-                case 8:
-                    return decodeSetGuardianTxn(txn, sender, nonce);
-                case 9:
-                    return decodeRemoveGuardianTxn(txn, sender, nonce);
-                case 10:
-                    return decodeGuardianApprovalTxn(txn, sender, nonce);
-                case 11:
-                    return decodePayableVmDataTxn(txn, sender, nonce);
-                case 12:
-                    return decodeConduitApprovalTxn(txn, sender, nonce);
-                case 13:
-                    return decodeSetConduitsTxn(txn, sender, nonce);
-                case 14:
-                    return decodeAddConduitsTxn(txn, sender, nonce);
-                case 15:
-                    return decodeRemoveConduitsTxn(txn, sender, nonce);
-                case 16:
-                    return decodeMoveStakeTxn(txn, sender, nonce);
-                default: {
-                    throw new RuntimeException("Invalid txn identifier: " + txn[0]);
-                }
+        switch (txn[0]) {
+            case 0:
+                return decodeTransfer(txn, sender, nonce);
+            case 1:
+                return decodeJoin(txn, sender, nonce);
+            case 2:
+                return decodeClaimSpot(txn, sender, nonce);
+            case 3:
+                return decodeDelegate(txn, sender, nonce);
+            case 4:
+                return decodeWithdraw(txn, sender, nonce);
+            case 5:
+                return decodeVmDataTxn(txn, sender, nonce);
+            case 6:
+                return decodeClaimVmId(txn, sender, nonce);
+            case 8:
+                return decodeSetGuardianTxn(txn, sender, nonce);
+            case 9:
+                return decodeRemoveGuardianTxn(txn, sender, nonce);
+            case 10:
+                return decodeGuardianApprovalTxn(txn, sender, nonce);
+            case 11:
+                return decodePayableVmDataTxn(txn, sender, nonce);
+            case 12:
+                return decodeConduitApprovalTxn(txn, sender, nonce);
+            case 13:
+                return decodeSetConduitsTxn(txn, sender, nonce);
+            case 14:
+                return decodeAddConduitsTxn(txn, sender, nonce);
+            case 15:
+                return decodeRemoveConduitsTxn(txn, sender, nonce);
+            case 16:
+                return decodeMoveStakeTxn(txn, sender, nonce);
+            case 17:
+                return decodeChangeEarlyWithdrawPenaltyProposalTxn(txn, sender, nonce);
+            case 18:
+                return decodeChangeFeePerByteProposalTxn(txn, sender, nonce);
+            case 19:
+                return decodeChangeMaxBlockSizeProposalTxn(txn, sender, nonce);
+            case 20:
+                return decodeChangeMaxTxnSizeProposalTxn(txn, sender, nonce);
+            case 21:
+                return decodeChangeOverallBurnPercentageProposalTxn(txn, sender, nonce);
+            case 22:
+                return decodeChangeRewardPerYearProposalTxn(txn, sender, nonce);
+            case 23:
+                return decodeChangeValidatorCountLimitProposalTxn(txn, sender, nonce);
+            case 24:
+                return decodeChangeValidatorJoiningFeeProposalTxn(txn, sender, nonce);
+            case 25:
+                return decodeChangeVmIdClaimingFeeProposalTxn(txn, sender, nonce);
+            case 26:
+                return decodeChangeVmOwnerTxnFeeShareProposalTxn(txn, sender, nonce);
+            case 27:
+                return decodeOtherProposalTxn(txn, sender, nonce);
+            case 28:
+                return decodeVoteOnProposalTxn(txn, sender, nonce);
+
+            default: {
+                throw new RuntimeException("Invalid txn identifier: " + txn[0]);
             }
+        }
     }
 
     private static Transaction decodeTransfer(byte[] txn, byte[] sender, int nonce) {
@@ -97,8 +120,11 @@ public class TransactionDecoder {
                 .chainId(txn[1])
                 .build();
     }
+
     private static Transaction decodeJoin(byte[] txn, byte[] sender, int nonce) {
-        if(txn.length < 79 || txn.length > 87) {throw new RuntimeException("Invalid length for join txn");}
+        if (txn.length < 79 || txn.length > 87) {
+            throw new RuntimeException("Invalid length for join txn");
+        }
 
         /*
          * Identifier - 1
@@ -122,8 +148,9 @@ public class TransactionDecoder {
                 .chainId(txn[1])
                 .build();
     }
+
     private static Transaction decodeClaimSpot(byte[] txn, byte[] sender, int nonce) {
-        if(txn.length != 71) throw new RuntimeException("Invalid length for claim spot txn");
+        if (txn.length != 71) throw new RuntimeException("Invalid length for claim spot txn");
 
         /*
          * Identifier - 1
@@ -140,8 +167,10 @@ public class TransactionDecoder {
                 .chainId(txn[1])
                 .build();
     }
+
     private static Transaction decodeDelegate(byte[] txn, byte[] sender, int nonce) {
-        if (txn.length != 34 /*Without Signature*/ && txn.length != 99 /*With Signature*/) throw new RuntimeException("Invalid length for delegate txn");
+        if (txn.length != 34 /*Without Signature*/ && txn.length != 99 /*With Signature*/)
+            throw new RuntimeException("Invalid length for delegate txn");
 
         /*
          * Identifier - 1
@@ -168,8 +197,10 @@ public class TransactionDecoder {
                 .chainId(txn[1])
                 .build();
     }
+
     private static Transaction decodeWithdraw(byte[] txn, byte[] sender, int nonce) {
-        if (txn.length != 34 /*Without Signature*/ && txn.length != 99 /*With Signature*/) throw new RuntimeException("Invalid length for withdraw txn");
+        if (txn.length != 34 /*Without Signature*/ && txn.length != 99 /*With Signature*/)
+            throw new RuntimeException("Invalid length for withdraw txn");
 
         /*
          * Identifier - 1
@@ -196,8 +227,9 @@ public class TransactionDecoder {
                 .chainId(txn[1])
                 .build();
     }
+
     private static Transaction decodeVmDataTxn(byte[] txn, byte[] sender, int nonce) {
-        if(txn.length < 14) throw new RuntimeException("Invalid length for VM Data txn");
+        if (txn.length < 14) throw new RuntimeException("Invalid length for VM Data txn");
 
         ByteBuffer buffer = ByteBuffer.wrap(txn);
         buffer.position(6);
@@ -214,7 +246,7 @@ public class TransactionDecoder {
          * */
 
         int dataLength;
-        if(PWRJ.isVmAddress(Hex.toHexString(sender))) dataLength = txn.length - 14;
+        if (PWRJ.isVmAddress(Hex.toHexString(sender))) dataLength = txn.length - 14;
         else dataLength = txn.length - 79;
 
         byte[] data = new byte[dataLength];
@@ -230,8 +262,11 @@ public class TransactionDecoder {
                 .chainId(txn[1])
                 .build();
     }
+
     private static Transaction decodeClaimVmId(byte[] txn, byte[] sender, int nonce) {
-        if(txn.length != 14 /*Without Signature*/ && txn.length != 79 /*With Signature*/) throw new RuntimeException("Invalid length for claim vm id txn");;
+        if (txn.length != 14 /*Without Signature*/ && txn.length != 79 /*With Signature*/)
+            throw new RuntimeException("Invalid length for claim vm id txn");
+        ;
 
         ByteBuffer buffer = ByteBuffer.wrap(txn);
         buffer.position(6);
@@ -255,8 +290,10 @@ public class TransactionDecoder {
                 .chainId(txn[1])
                 .build();
     }
+
     private static Transaction decodeSetGuardianTxn(byte[] txn, byte[] sender, int nonce) {
-        if(txn.length != 99) throw new RuntimeException("Invalid length for set guardian txn");;
+        if (txn.length != 99) throw new RuntimeException("Invalid length for set guardian txn");
+        ;
 
         ByteBuffer buffer = ByteBuffer.wrap(txn);
         buffer.position(6);
@@ -284,8 +321,10 @@ public class TransactionDecoder {
                 .chainId(txn[1])
                 .build();
     }
+
     private static Transaction decodeRemoveGuardianTxn(byte[] txn, byte[] sender, int nonce) {
-        if(txn.length != 71) throw new RuntimeException("Invalid length for remove guardian txn");;
+        if (txn.length != 71) throw new RuntimeException("Invalid length for remove guardian txn");
+        ;
 
         /*
          * Identifier - 1
@@ -302,6 +341,7 @@ public class TransactionDecoder {
                 .chainId(txn[1])
                 .build();
     }
+
     private static Transaction decodeGuardianApprovalTxn(byte[] txn, byte[] sender, int nonce) {
         ByteBuffer buffer = ByteBuffer.wrap(txn);
         buffer.position(6);
@@ -316,7 +356,7 @@ public class TransactionDecoder {
         }
 
         List<Transaction> txns = new LinkedList<>();
-        for(byte[] wrappedTxn : wrappedTxns) {
+        for (byte[] wrappedTxn : wrappedTxns) {
             Transaction t = decode(wrappedTxn);
             txns.add(t);
         }
@@ -338,8 +378,9 @@ public class TransactionDecoder {
                 .chainId(txn[1])
                 .build();
     }
+
     private static Transaction decodePayableVmDataTxn(byte[] txn, byte[] sender, int nonce) {
-        if(txn.length < 22) throw new RuntimeException("Invalid length for payable VM Data txn");
+        if (txn.length < 22) throw new RuntimeException("Invalid length for payable VM Data txn");
 
         ByteBuffer buffer = ByteBuffer.wrap(txn);
         buffer.position(6);
@@ -358,7 +399,7 @@ public class TransactionDecoder {
 
 
         int dataLength;
-        if(PWRJ.isVmAddress(Hex.toHexString(sender))) dataLength = txn.length - 22;
+        if (PWRJ.isVmAddress(Hex.toHexString(sender))) dataLength = txn.length - 22;
         else dataLength = txn.length - 87;
 
         byte[] data = new byte[dataLength];
@@ -377,6 +418,7 @@ public class TransactionDecoder {
                 .chainId(txn[1])
                 .build();
     }
+
     private static Transaction decodeConduitApprovalTxn(byte[] txn, byte[] sender, int nonce) {
         /*
          * Identifier - 1
@@ -403,7 +445,7 @@ public class TransactionDecoder {
 
         byte[] vmAddress = Hex.decode(PWRJ.getVmIdAddress(vmId));
         List<Transaction> txns = new LinkedList<>();
-        for(byte[] wrappedTxn : wrappedTxns) {
+        for (byte[] wrappedTxn : wrappedTxns) {
             Transaction t = decode(wrappedTxn, vmAddress);
             txns.add(t);
         }
@@ -417,6 +459,7 @@ public class TransactionDecoder {
                 .chainId(txn[1])
                 .build();
     }
+
     private static Transaction decodeSetConduitsTxn(byte[] txn, byte[] sender, int nonce) {
         /*
          * Identifier - 1
@@ -443,7 +486,7 @@ public class TransactionDecoder {
             conduits.add("0x" + Hex.toHexString(conduit));
         }
 
-        if(buffer.remaining() != 65) {
+        if (buffer.remaining() != 65) {
             throw new RuntimeException("Invalid remaining  length for set conduits txn. Remaining: " + buffer.remaining() + " Expected: 65");
         }
 
@@ -457,6 +500,7 @@ public class TransactionDecoder {
                 .chainId(txn[1])
                 .build();
     }
+
     private static Transaction decodeAddConduitsTxn(byte[] txn, byte[] sender, int nonce) {
         /*
          * Identifier - 1
@@ -489,6 +533,7 @@ public class TransactionDecoder {
                 .chainId(txn[1])
                 .build();
     }
+
     private static Transaction decodeRemoveConduitsTxn(byte[] txn, byte[] sender, int nonce) {
         /*
          * Identifier - 1
@@ -521,8 +566,9 @@ public class TransactionDecoder {
                 .chainId(txn[1])
                 .build();
     }
+
     private static Transaction decodeMoveStakeTxn(byte[] txn, byte[] sender, int nonce) {
-        if(txn.length != 54 && txn.length != 119) throw new RuntimeException("Invalid length for move stake txn");
+        if (txn.length != 54 && txn.length != 119) throw new RuntimeException("Invalid length for move stake txn");
 
         /*
          * Identifier - 1
@@ -550,6 +596,424 @@ public class TransactionDecoder {
                 .fromValidator("0x" + Hex.toHexString(fromValidator))
                 .toValidator("0x" + Hex.toHexString(toValidator))
                 .sharesAmount(sharesAmount)
+                .rawTransaction(txn)
+                .chainId(txn[1])
+                .build();
+    }
+
+    private static Transaction decodeChangeEarlyWithdrawPenaltyProposalTxn(byte[] txn, byte[] sender, int nonce) {
+        if (txn.length < 18)
+            throw new RuntimeException("Invalid length for change early withdrawal penalty proposal txn");
+        /*
+        Identifier - 1
+        chain id - 1
+        nonce - 4
+        withdrawal penalty time - 8
+        withdrawal penalty - 4
+        description - x
+        signature - 65
+        */
+
+        ByteBuffer buffer = ByteBuffer.wrap(txn);
+        buffer.position(6);
+
+        long earlyWithdrawalTime = buffer.getLong();
+        int withdrawalPenalty = buffer.getInt();
+        String description = null;
+
+        int descriptionLength;
+        if (PWRJ.isVmAddress(Hex.toHexString(sender))) descriptionLength = txn.length - 18;
+        else descriptionLength = txn.length - 75;
+
+        byte[] descriptionBytea = new byte[descriptionLength];
+        buffer.get(descriptionBytea);
+        description = new String(descriptionBytea, StandardCharsets.UTF_8);
+
+        return ChangeEarlyWithdrawPenaltyProposalTransaction.builder()
+                .sender("0x" + Hex.toHexString(sender))
+                .nonce(nonce)
+                .size(txn.length)
+                .extraFee(0)
+                .withdrawalPenaltyTime(earlyWithdrawalTime)
+                .withdrawalPenalty(withdrawalPenalty)
+                .description(description)
+                .rawTransaction(txn)
+                .chainId(txn[1])
+                .build();
+
+    }
+
+    public static Transaction decodeChangeFeePerByteProposalTxn(byte[] txn, byte[] sender, int nonce) {
+        if (txn.length < 16) throw new RuntimeException("Invalid length for change fee per byte proposal txn");
+        /*
+        Identifier - 1
+        chain id - 1
+        nonce - 4
+        fee per byte - 8
+        description - x
+        signature - 65
+        */
+
+        ByteBuffer buffer = ByteBuffer.wrap(txn);
+        buffer.position(6);
+
+        long feePerByte = buffer.getLong();
+        String description = null;
+
+        int descriptionLength;
+        if (PWRJ.isVmAddress(Hex.toHexString(sender))) descriptionLength = txn.length - 16;
+        else descriptionLength = txn.length - 81;
+
+        byte[] descriptionBytea = new byte[descriptionLength];
+        buffer.get(descriptionBytea);
+        description = new String(descriptionBytea, StandardCharsets.UTF_8);
+
+        return ChangeFeePerByteProposalTransaction.builder()
+                .sender("0x" + Hex.toHexString(sender))
+                .nonce(nonce)
+                .size(txn.length)
+                .feePerByte(feePerByte)
+                .description(description)
+                .rawTransaction(txn)
+                .chainId(txn[1])
+                .build();
+    }
+
+    public static Transaction decodeChangeMaxBlockSizeProposalTxn(byte[] txn, byte[] sender, int nonce) {
+        if (txn.length < 10) throw new RuntimeException("Invalid length for change fee per byte proposal txn");
+        /*
+        Identifier - 1
+        chain id - 1
+        nonce - 4
+        max block size - 4
+        description - x
+        signature - 65
+        */
+
+        ByteBuffer buffer = ByteBuffer.wrap(txn);
+        buffer.position(6);
+
+        int maxBlockSize = buffer.getInt();
+        String description = null;
+
+        int descriptionLength;
+        if (PWRJ.isVmAddress(Hex.toHexString(sender))) descriptionLength = txn.length - 10;
+        else descriptionLength = txn.length - 75;
+
+        byte[] descriptionBytea = new byte[descriptionLength];
+        buffer.get(descriptionBytea);
+        description = new String(descriptionBytea, StandardCharsets.UTF_8);
+
+        return ChangeMaxBlockSizeProposalTranscation.builder()
+                .sender("0x" + Hex.toHexString(sender))
+                .nonce(nonce)
+                .size(txn.length)
+                .maxBlockSize(maxBlockSize)
+                .description(description)
+                .rawTransaction(txn)
+                .chainId(txn[1])
+                .build();
+    }
+
+    public static Transaction decodeChangeMaxTxnSizeProposalTxn(byte[] txn, byte[] sender, int nonce) {
+        if (txn.length < 10) throw new RuntimeException("Invalid length for change fee per byte proposal txn");
+        /*
+        Identifier - 1
+        chain id - 1
+        nonce - 4
+        max txn size - 4
+        description - x
+        signature - 65
+        */
+
+        ByteBuffer buffer = ByteBuffer.wrap(txn);
+        buffer.position(6);
+
+        int maxTxnSize = buffer.getInt();
+        String description = null;
+
+        int descriptionLength = PWRJ.isVmAddress(Hex.toHexString(sender)) ? txn.length - 10 : txn.length - 75;
+
+        byte[] descriptionBytea = new byte[descriptionLength];
+        buffer.get(descriptionBytea);
+        description = new String(descriptionBytea, StandardCharsets.UTF_8);
+
+        return ChangeMaxTxnSizeProposalTransaction.builder()
+                .sender("0x" + Hex.toHexString(sender))
+                .nonce(nonce)
+                .size(txn.length)
+                .maxTxnSize(maxTxnSize)
+                .description(description)
+                .rawTransaction(txn)
+                .chainId(txn[1])
+                .build();
+    }
+
+    public static Transaction decodeChangeOverallBurnPercentageProposalTxn(byte[] txn, byte[] sender, int nonce) {
+        if (txn.length < 10) throw new RuntimeException("Invalid length for change fee per byte proposal txn");
+        /*
+        Identifier - 1
+        chain id - 1
+        nonce - 4
+        burn percentage - 4
+        description - x
+        signature - 65
+        */
+
+        ByteBuffer buffer = ByteBuffer.wrap(txn);
+        buffer.position(6);
+
+        int burnPercentage = buffer.getInt();
+        String description = null;
+
+        int descriptionLength = PWRJ.isVmAddress(Hex.toHexString(sender)) ? txn.length - 10 : txn.length - 75;
+
+        byte[] descriptionBytea = new byte[descriptionLength];
+        buffer.get(descriptionBytea);
+        description = new String(descriptionBytea, StandardCharsets.UTF_8);
+
+        return ChangeOverallBurnPercentageProposalTransaction.builder()
+                .sender("0x" + Hex.toHexString(sender))
+                .nonce(nonce)
+                .size(txn.length)
+                .burnPercentage(burnPercentage)
+                .description(description)
+                .rawTransaction(txn)
+                .chainId(txn[1])
+                .build();
+    }
+
+    public static Transaction decodeChangeRewardPerYearProposalTxn(byte[] txn, byte[] sender, int nonce) {
+        if (txn.length < 14) throw new RuntimeException("Invalid length for change fee per byte proposal txn");
+        /*
+        Identifier - 1
+        chain id - 1
+        nonce - 4
+        reward per year - 8
+        description - x
+        signature - 65
+        */
+
+        ByteBuffer buffer = ByteBuffer.wrap(txn);
+        buffer.position(6);
+
+        long rewardPerYear = buffer.getLong();
+        String description = null;
+
+        int descriptionLength = PWRJ.isVmAddress(Hex.toHexString(sender)) ? txn.length - 14 : txn.length - 79;
+
+        byte[] descriptionBytea = new byte[descriptionLength];
+        buffer.get(descriptionBytea);
+        description = new String(descriptionBytea, StandardCharsets.UTF_8);
+
+        return ChangeRewardPerYearProposalTransaction.builder()
+                .sender("0x" + Hex.toHexString(sender))
+                .nonce(nonce)
+                .size(txn.length)
+                .rewardPerYear(rewardPerYear)
+                .description(description)
+                .rawTransaction(txn)
+                .chainId(txn[1])
+                .build();
+    }
+
+    public static Transaction decodeChangeValidatorCountLimitProposalTxn(byte[] txn, byte[] sender, int nonce) {
+        if (txn.length < 10) throw new RuntimeException("Invalid length for change fee per byte proposal txn");
+        /*
+        Identifier - 1
+        chain id - 1
+        nonce - 4
+        validator count limit - 4
+        description - x
+        signature - 65
+        */
+
+        ByteBuffer buffer = ByteBuffer.wrap(txn);
+        buffer.position(6);
+
+        int validatorCountLimit = buffer.getInt();
+        String description = null;
+
+        int descriptionLength = PWRJ.isVmAddress(Hex.toHexString(sender)) ? txn.length - 10 : txn.length - 75;
+
+        byte[] descriptionBytea = new byte[descriptionLength];
+        buffer.get(descriptionBytea);
+        description = new String(descriptionBytea, StandardCharsets.UTF_8);
+
+        return ChangeValidatorCountLimitProposalTransaction.builder()
+                .sender("0x" + Hex.toHexString(sender))
+                .nonce(nonce)
+                .size(txn.length)
+                .validatorCountLimit(validatorCountLimit)
+                .description(description)
+                .rawTransaction(txn)
+                .chainId(txn[1])
+                .build();
+    }
+
+    public static Transaction decodeChangeValidatorJoiningFeeProposalTxn(byte[] txn, byte[] sender, int nonce) {
+        if (txn.length < 14) throw new RuntimeException("Invalid length for change fee per byte proposal txn");
+        /*
+        Identifier - 1
+        chain id - 1
+        nonce - 4
+        joining fee - 8
+        description - x
+        signature - 65
+        */
+
+        ByteBuffer buffer = ByteBuffer.wrap(txn);
+        buffer.position(6);
+
+        long joiningFee = buffer.getLong();
+        String description = null;
+
+        int descriptionLength = PWRJ.isVmAddress(Hex.toHexString(sender)) ? txn.length - 14 : txn.length - 79;
+
+        byte[] descriptionBytea = new byte[descriptionLength];
+        buffer.get(descriptionBytea);
+        description = new String(descriptionBytea, StandardCharsets.UTF_8);
+
+        return ChangeValidatorJoiningFeeProposalTranscation.builder()
+                .sender("0x" + Hex.toHexString(sender))
+                .nonce(nonce)
+                .size(txn.length)
+                .joiningFee(joiningFee)
+                .description(description)
+                .rawTransaction(txn)
+                .chainId(txn[1])
+                .build();
+    }
+
+    private static Transaction decodeChangeVmIdClaimingFeeProposalTxn(byte[] txn, byte[] sender, int nonce) {
+        if (txn.length < 18) throw new RuntimeException("Invalid length for change vm id claiming fee proposal txn");
+        /*
+        Identifier - 1
+        chain id - 1
+        nonce - 4
+        vm id claiming fee - 8
+        description - x
+        signature - 65
+        */
+
+        ByteBuffer buffer = ByteBuffer.wrap(txn);
+        buffer.position(6);
+
+        long vmIdClaimingFee = buffer.getLong();
+        String description = null;
+
+        int descriptionLength;
+        if (PWRJ.isVmAddress(Hex.toHexString(sender))) descriptionLength = txn.length - 16;
+        else descriptionLength = txn.length - 81;
+
+        byte[] descriptionBytea = new byte[descriptionLength];
+        buffer.get(descriptionBytea);
+        description = new String(descriptionBytea, StandardCharsets.UTF_8);
+
+        return ChangeVmIdClaimingFeeProposalTransaction.builder()
+                .sender("0x" + Hex.toHexString(sender))
+                .nonce(nonce)
+                .size(txn.length)
+                .claimingFee(vmIdClaimingFee)
+                .description(description)
+                .rawTransaction(txn)
+                .chainId(txn[1])
+                .build();
+    }
+
+    private static Transaction decodeChangeVmOwnerTxnFeeShareProposalTxn(byte[] txn, byte[] sender, int nonce) {
+        if (txn.length < 10)
+            throw new RuntimeException("Invalid length for change vm owner txn fee share proposal txn");
+        /*
+        Identifier - 1
+        chain id - 1
+        nonce - 4
+        vm owner txn fee share - 4
+        description - x
+        signature - 65
+        */
+
+        ByteBuffer buffer = ByteBuffer.wrap(txn);
+        buffer.position(6);
+
+        int vmOwnerTxnFeeShare = buffer.getInt();
+        String description = null;
+
+        int descriptionLength;
+        if (PWRJ.isVmAddress(Hex.toHexString(sender))) descriptionLength = txn.length - 10;
+        else descriptionLength = txn.length - 75;
+
+        byte[] descriptionBytea = new byte[descriptionLength];
+        buffer.get(descriptionBytea);
+        description = new String(descriptionBytea, StandardCharsets.UTF_8);
+
+        return ChangeVmOwnerTxnFeeShareProposalTransaction.builder()
+                .sender("0x" + Hex.toHexString(sender))
+                .nonce(nonce)
+                .size(txn.length)
+                .feeShare(vmOwnerTxnFeeShare)
+                .description(description)
+                .rawTransaction(txn)
+                .chainId(txn[1])
+                .build();
+    }
+
+    private static Transaction decodeOtherProposalTxn(byte[] txn, byte[] sender, int nonce) {
+        if (txn.length < 6) throw new RuntimeException("Invalid length for change vm owner txn fee share proposal txn");
+        /*
+        Identifier - 1
+        chain id - 1
+        nonce - 4
+        description - x
+        signature - 65
+        */
+
+        ByteBuffer buffer = ByteBuffer.wrap(txn);
+        buffer.position(6);
+
+        String description = null;
+
+        int descriptionLength;
+        if (PWRJ.isVmAddress(Hex.toHexString(sender))) descriptionLength = txn.length - 10;
+        else descriptionLength = txn.length - 75;
+
+        byte[] descriptionBytea = new byte[descriptionLength];
+        buffer.get(descriptionBytea);
+        description = new String(descriptionBytea, StandardCharsets.UTF_8);
+
+        return OtherProposalTxn.builder()
+                .sender("0x" + Hex.toHexString(sender))
+                .nonce(nonce)
+                .size(txn.length)
+                .description(description)
+                .rawTransaction(txn)
+                .chainId(txn[1])
+                .build();
+    }
+
+    private static Transaction decodeVoteOnProposalTxn(byte[] txn, byte[] sender, int nonce) {
+        /*
+        Identifier - 1
+        chain id - 1
+        nonce - 4
+        proposal hash - 32
+        vote - 1
+        signature - 65
+        */
+
+        ByteBuffer buffer = ByteBuffer.wrap(txn);
+        buffer.position(6);
+
+        byte[] proposalHash = new byte[32];
+        buffer.get(proposalHash);
+        byte vote = buffer.get();
+
+        return VoteOnProposalTxn.builder()
+                .sender("0x" + Hex.toHexString(sender))
+                .nonce(nonce)
+                .size(txn.length)
+                .proposalHash("0x" + Hex.toHexString(proposalHash))
+                .vote(vote)
                 .rawTransaction(txn)
                 .chainId(txn[1])
                 .build();

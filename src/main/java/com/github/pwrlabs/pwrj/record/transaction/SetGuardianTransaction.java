@@ -20,10 +20,10 @@ public class SetGuardianTransaction extends Transaction {
 
     @Override
     public JSONObject toJSON() {
-        JSONObject Transaction = super.toJSON();
-        Transaction.put("guardian", guardian);
-        Transaction.put("expiryDate", expiryDate);
-        return Transaction;
+        JSONObject data = super.toJSON();
+        data.put("guardian", guardian);
+        data.put("expiryDate", expiryDate);
+        return data;
     }
 
 }

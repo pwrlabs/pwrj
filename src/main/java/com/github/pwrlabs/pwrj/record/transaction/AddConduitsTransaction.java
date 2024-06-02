@@ -21,15 +21,16 @@ public class AddConduitsTransaction extends Transaction {
 
     @Override
     public JSONObject toJSON() {
-        JSONObject Transaction = super.toJSON();
-        Transaction.put("vmId", vmId);
+        JSONObject data = super.toJSON();
+        data.put("vmId", vmId);
+        data.put("type", type);
 
         JSONArray conduits = new JSONArray();
         for(String c : this.conduits) {
             conduits.put(c);
         }
 
-        Transaction.put("conduits", conduits);
-        return Transaction;
+        data.put("conduits", conduits);
+        return data;
     }
 }
