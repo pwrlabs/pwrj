@@ -17,9 +17,10 @@ public class OtherProposalTxn extends Transaction {
 
     @Override
     public JSONObject toJSON() {
-        JSONObject Transaction = super.toJSON();
-        Transaction.put("description", description);
+        JSONObject data = super.toJSON();
+        data.put("type", type);
+        data.put("description", description);
 
-        return Transaction;
+        return data;
     }
 }

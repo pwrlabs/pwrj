@@ -6,12 +6,12 @@ import org.json.JSONObject;
 
 @SuperBuilder
 @Getter
-public class ChangeMaxBlockSizeProposalTxn extends Transaction {
+public class ChangeMaxBlockSizeProposalTranscation extends Transaction {
     public static final String type = "Change Max Block Size Proposal";
     private int maxBlockSize;
     private String description;
 
-    public ChangeMaxBlockSizeProposalTxn(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
+    public ChangeMaxBlockSizeProposalTranscation(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
         super(json, blockNumber, timestamp, positionInTheBlock);
         this.maxBlockSize = json.optInt("maxBlockSize" , 4);
         this.description = json.optString("description", "x");
@@ -19,10 +19,11 @@ public class ChangeMaxBlockSizeProposalTxn extends Transaction {
 
     @Override
     public JSONObject toJSON() {
-        JSONObject Transaction = super.toJSON();
-        Transaction.put("maxBlockSize", maxBlockSize);
-        Transaction.put("description", description);
+        JSONObject data = super.toJSON();
+        data.put("type", type);
+        data.put("maxBlockSize", maxBlockSize);
+        data.put("description", description);
 
-        return Transaction;
+        return data;
     }
 }

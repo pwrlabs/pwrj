@@ -20,10 +20,10 @@ public class WithdrawTransaction extends Transaction {
 
     @Override
     public JSONObject toJSON() {
-        JSONObject Transaction = super.toJSON();
-        Transaction.put("validator", validator);
-        Transaction.put("shares", shares);
-        return Transaction;
+        JSONObject data = super.toJSON();
+        data.put("validator", validator);
+        data.put("shares", shares);
+        return data;
     }
 
 }

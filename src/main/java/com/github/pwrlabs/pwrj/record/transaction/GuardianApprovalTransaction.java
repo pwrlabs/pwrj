@@ -28,12 +28,12 @@ public class GuardianApprovalTransaction extends Transaction {
 
     @Override
     public JSONObject toJSON() {
-        JSONObject Transaction = super.toJSON();
+        JSONObject data = super.toJSON();
         JSONArray transactions = new JSONArray();
         for (com.github.pwrlabs.pwrj.record.transaction.Transaction transaction : this.transactions) {
             transactions.put(transaction.toJSON());
         }
-        Transaction.put("transactions", transactions);
-        return Transaction;
+        data.put("transactions", transactions);
+        return data;
     }
 }

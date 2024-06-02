@@ -20,10 +20,10 @@ public class VmDataTransaction extends Transaction {
 
     @Override
     public JSONObject toJSON() {
-        JSONObject Transaction = super.toJSON();
-        Transaction.put("vmId", vmId);
-        Transaction.put("data", data);
-        Transaction.put("type", "VM Data");
-        return Transaction;
+        JSONObject data = super.toJSON();
+        data.put("vmId", vmId);
+        data.put("data", data);
+        data.put("type", "VM Data");
+        return data;
     }
 }

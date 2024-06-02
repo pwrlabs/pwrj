@@ -8,22 +8,22 @@ import lombok.experimental.SuperBuilder;
 @Getter
 public class VoteOnProposalTxn extends Transaction {
     public static final String type = "Vote On Proposal";
-    private int proposalId;
+    private String proposalHash;
     private int vote;
 
     public VoteOnProposalTxn(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
         super(json, blockNumber, timestamp, positionInTheBlock);
-        this.proposalId = json.optInt("proposalId", 1);
+        this.proposalHash = json.optString("proposalHash", "0x");
         this.vote = json.optInt("vote", 0);
     }
 
     @Override
     public JSONObject toJSON() {
-        JSONObject Transaction = super.toJSON();
-        Transaction.put("proposalId", proposalId);
-        Transaction.put("vote", vote);
+        JSONObject data = super.toJSON();
+        data.put("proposalHash", proposalHash);
+        data.put("vote", vote);
 
-        return Transaction;
+        return data;
     }
 
 }

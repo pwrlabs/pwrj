@@ -6,22 +6,23 @@ import org.json.JSONObject;
 
 @SuperBuilder
 @Getter
-public class ChangeRewardPerYearProposalTxn extends Transaction {
+public class ChangeRewardPerYearProposalTransaction extends Transaction {
     public static final String type = "Change Reward Per Year Proposal";
     private long rewardPerYear;
     private String description;
 
-    public ChangeRewardPerYearProposalTxn(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
+    public ChangeRewardPerYearProposalTransaction(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
         super(json, blockNumber, timestamp, positionInTheBlock);
         this.rewardPerYear = json.optLong("rewardPerYear", 8);
         this.description = json.optString("description", "x");
     }
 
     public JSONObject toJSON() {
-        JSONObject Transaction = super.toJSON();
-        Transaction.put("rewardPerYear", rewardPerYear);
-        Transaction.put("description", description);
+        JSONObject data = super.toJSON();
+        data.put("type", type);
+        data.put("rewardPerYear", rewardPerYear);
+        data.put("description", description);
 
-        return Transaction;
+        return data;
     }
 }

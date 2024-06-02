@@ -97,26 +97,26 @@ public class Transaction {
             return new RemoveGuardianTransaction(json, blockNumber, timestamp, positionInTheBlock);
         } else if (TransactionType.equalsIgnoreCase(MoveStakeTransaction.type)) {
             return new MoveStakeTransaction(json, blockNumber, timestamp, positionInTheBlock);
-        } else if (TransactionType.equalsIgnoreCase(ChangeEarlyWithdrawPenaltyProposalTxn.type)) {
-            return new ChangeEarlyWithdrawPenaltyProposalTxn(json, blockNumber, timestamp, positionInTheBlock);
-        } else if (TransactionType.equalsIgnoreCase(ChangeFeePerByteProposalTxn.type)) {
-            return new ChangeFeePerByteProposalTxn(json, blockNumber, timestamp, positionInTheBlock);
-        } else if (TransactionType.equalsIgnoreCase(ChangeMaxBlockSizeProposalTxn.type)) {
-            return new ChangeMaxBlockSizeProposalTxn(json, blockNumber, timestamp, positionInTheBlock);
-        } else if (TransactionType.equalsIgnoreCase(ChangeMaxTxnSizeProposalTxn.type)) {
-            return new ChangeMaxTxnSizeProposalTxn(json, blockNumber, timestamp, positionInTheBlock);
-        } else if (TransactionType.equalsIgnoreCase(ChangeOverallBurnPercentageProposalTxn.type)) {
-            return new ChangeOverallBurnPercentageProposalTxn(json, blockNumber, timestamp, positionInTheBlock);
-        } else if (TransactionType.equalsIgnoreCase(ChangeRewardPerYearProposalTxn.type)) {
-            return new ChangeRewardPerYearProposalTxn(json, blockNumber, timestamp, positionInTheBlock);
-        } else if (TransactionType.equalsIgnoreCase(ChangeValidatorCountLimitProposalTxn.type)) {
-            return new ChangeValidatorCountLimitProposalTxn(json, blockNumber, timestamp, positionInTheBlock);
-        } else if (TransactionType.equalsIgnoreCase(ChangeValidatorJoiningFeeProposalTxn.type)) {
-            return new ChangeValidatorJoiningFeeProposalTxn(json, blockNumber, timestamp, positionInTheBlock);
-        } else if (TransactionType.equalsIgnoreCase(ChangeVmIdClaimingFeeProposalTxn.type)) {
-            return new ChangeVmIdClaimingFeeProposalTxn(json, blockNumber, timestamp, positionInTheBlock);
-        } else if (TransactionType.equalsIgnoreCase(ChangeVmOwnerTxnFeeShareProposalTxn.type)) {
-            return new ChangeVmOwnerTxnFeeShareProposalTxn(json, blockNumber, timestamp, positionInTheBlock);
+        } else if (TransactionType.equalsIgnoreCase(ChangeEarlyWithdrawPenaltyProposalTransaction.type)) {
+            return new ChangeEarlyWithdrawPenaltyProposalTransaction(json, blockNumber, timestamp, positionInTheBlock);
+        } else if (TransactionType.equalsIgnoreCase(ChangeFeePerByteProposalTransaction.type)) {
+            return new ChangeFeePerByteProposalTransaction(json, blockNumber, timestamp, positionInTheBlock);
+        } else if (TransactionType.equalsIgnoreCase(ChangeMaxBlockSizeProposalTranscation.type)) {
+            return new ChangeMaxBlockSizeProposalTranscation(json, blockNumber, timestamp, positionInTheBlock);
+        } else if (TransactionType.equalsIgnoreCase(ChangeMaxTxnSizeProposalTransaction.type)) {
+            return new ChangeMaxTxnSizeProposalTransaction(json, blockNumber, timestamp, positionInTheBlock);
+        } else if (TransactionType.equalsIgnoreCase(ChangeOverallBurnPercentageProposalTransaction.type)) {
+            return new ChangeOverallBurnPercentageProposalTransaction(json, blockNumber, timestamp, positionInTheBlock);
+        } else if (TransactionType.equalsIgnoreCase(ChangeRewardPerYearProposalTransaction.type)) {
+            return new ChangeRewardPerYearProposalTransaction(json, blockNumber, timestamp, positionInTheBlock);
+        } else if (TransactionType.equalsIgnoreCase(ChangeValidatorCountLimitProposalTransaction.type)) {
+            return new ChangeValidatorCountLimitProposalTransaction(json, blockNumber, timestamp, positionInTheBlock);
+        } else if (TransactionType.equalsIgnoreCase(ChangeValidatorJoiningFeeProposalTranscation.type)) {
+            return new ChangeValidatorJoiningFeeProposalTranscation(json, blockNumber, timestamp, positionInTheBlock);
+        } else if (TransactionType.equalsIgnoreCase(ChangeVmIdClaimingFeeProposalTransaction.type)) {
+            return new ChangeVmIdClaimingFeeProposalTransaction(json, blockNumber, timestamp, positionInTheBlock);
+        } else if (TransactionType.equalsIgnoreCase(ChangeVmOwnerTxnFeeShareProposalTransaction.type)) {
+            return new ChangeVmOwnerTxnFeeShareProposalTransaction(json, blockNumber, timestamp, positionInTheBlock);
         } else if (TransactionType.equalsIgnoreCase(OtherProposalTxn.type)) {
             return new OtherProposalTxn(json, blockNumber, timestamp, positionInTheBlock);
         } else if (TransactionType.equalsIgnoreCase(VoteOnProposalTxn.type)) {

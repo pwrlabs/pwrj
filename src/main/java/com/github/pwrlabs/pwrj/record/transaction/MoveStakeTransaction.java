@@ -22,10 +22,10 @@ public class MoveStakeTransaction extends Transaction {
 
     @Override
     public JSONObject toJSON() {
-        JSONObject Transaction = super.toJSON();
-        Transaction.put("fromValidator", fromValidator);
-        Transaction.put("toValidator", toValidator);
-        Transaction.put("sharesAmount", sharesAmount);
-        return Transaction;
+        JSONObject data = super.toJSON();
+        data.put("fromValidator", fromValidator);
+        data.put("toValidator", toValidator);
+        data.put("sharesAmount", sharesAmount);
+        return data;
     }
 }

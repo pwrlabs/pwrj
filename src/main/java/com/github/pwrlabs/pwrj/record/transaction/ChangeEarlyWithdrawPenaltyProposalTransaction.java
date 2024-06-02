@@ -6,14 +6,14 @@ import org.json.JSONObject;
 
 @SuperBuilder
 @Getter
-public class ChangeEarlyWithdrawPenaltyProposalTxn extends Transaction {
+public class ChangeEarlyWithdrawPenaltyProposalTransaction extends Transaction {
     public static final String type = "Change Early Withdraw Penalty Proposal";
     private long withdrawalPenaltyTime;
     private long withdrawalPenalty;
     private String description;
 
 
-    public ChangeEarlyWithdrawPenaltyProposalTxn(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
+    public ChangeEarlyWithdrawPenaltyProposalTransaction(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
         super(json, blockNumber, timestamp, positionInTheBlock);
         this.withdrawalPenaltyTime = json.optLong("withdrawal_penalty_time" , 8);
         this.withdrawalPenalty = json.optLong("withdrawal_penalty" , 4);
@@ -22,13 +22,14 @@ public class ChangeEarlyWithdrawPenaltyProposalTxn extends Transaction {
 
     @Override
     public JSONObject toJSON() {
-        JSONObject Transaction = super.toJSON();
-        Transaction.put("withdrawal_penalty_time", withdrawalPenaltyTime);
+        JSONObject data = super.toJSON();
+        data.put("type", type);
+        data.put("withdrawal_penalty_time", withdrawalPenaltyTime);
 
-        Transaction.put("withdrawal_penalty", withdrawalPenalty);
+        data.put("withdrawal_penalty", withdrawalPenalty);
 
-        Transaction.put("description", description);
+        data.put("description", description);
 
-        return Transaction;
+        return data;
     }
 }

@@ -6,12 +6,12 @@ import org.json.JSONObject;
 
 @SuperBuilder
 @Getter
-public class ChangeValidatorJoiningFeeProposalTxn extends Transaction {
+public class ChangeValidatorJoiningFeeProposalTranscation extends Transaction {
     public static final String type = "Change Validator Joining Fee Proposal";
     private long joiningFee;
     private String description;
 
-    public ChangeValidatorJoiningFeeProposalTxn(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
+    public ChangeValidatorJoiningFeeProposalTranscation(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
         super(json, blockNumber, timestamp, positionInTheBlock);
         this.joiningFee = json.optLong("joiningFee", 8);
         this.description = json.optString("description", "x");
@@ -19,10 +19,10 @@ public class ChangeValidatorJoiningFeeProposalTxn extends Transaction {
 
     @Override
     public JSONObject toJSON() {
-        JSONObject Transaction = super.toJSON();
-        Transaction.put("joiningFee", joiningFee);
-        Transaction.put("description", description);
+        JSONObject data = super.toJSON();
+        data.put("joiningFee", joiningFee);
+        data.put("description", description);
 
-        return Transaction;
+        return data;
     }
 }

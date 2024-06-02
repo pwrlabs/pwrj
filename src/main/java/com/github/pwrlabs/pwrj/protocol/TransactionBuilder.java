@@ -16,6 +16,8 @@ import java.security.Security;
 import java.time.Instant;
 import java.util.List;
 
+import static com.github.pwrlabs.pwrj.Utils.NewError.errorIf;
+
 public class TransactionBuilder {
 
     /**
@@ -477,14 +479,14 @@ public class TransactionBuilder {
     }
 
 
-    public static byte[] getChangeEarlyWithdrawPenaltyProposalTxn(long withdrawalPenaltyTime, long withdrawalPenalty, String description, int nonce, byte chainId) {
+    public static byte[] getChangeEarlyWithdrawPenaltyProposalTxn(long withdrawalPenaltyTime, int withdrawalPenalty, String description, int nonce, byte chainId) {
         byte[] TransactionBase = getTransactionBase((byte) 17, nonce, chainId);
         byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 16 + descriptionBytea.length);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 12 + descriptionBytea.length);
         buffer.put(TransactionBase);
         buffer.putLong(withdrawalPenaltyTime);
-        buffer.putLong(withdrawalPenalty);
+        buffer.putInt(withdrawalPenalty);
         buffer.put(descriptionBytea);
         return buffer.array();
     }
@@ -553,9 +555,9 @@ public class TransactionBuilder {
         byte[] TransactionBase = getTransactionBase((byte) 23, nonce, chainId);
         byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 8 + descriptionBytea.length);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 4 + descriptionBytea.length);
         buffer.put(TransactionBase);
-        buffer.putLong(validatorCountLimit);
+        buffer.putInt(validatorCountLimit);
         buffer.put(descriptionBytea);
 
         return buffer.array();
@@ -585,13 +587,13 @@ public class TransactionBuilder {
         return buffer.array();
     }
 
-    public static byte[] getChangeVmOwnerTxnFeeShareProposalTxn(long feeShare, String description, int nonce, byte chainId) {
+    public static byte[] getChangeVmOwnerTxnFeeShareProposalTxn(int feeShare, String description, int nonce, byte chainId) {
         byte[] TransactionBase = getTransactionBase((byte) 26, nonce, chainId);
         byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 8 + descriptionBytea.length);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 4 + descriptionBytea.length);
         buffer.put(TransactionBase);
-        buffer.putLong(feeShare);
+        buffer.putInt(feeShare);
         buffer.put(descriptionBytea);
 
         return buffer.array();
@@ -608,13 +610,15 @@ public class TransactionBuilder {
         return buffer.array();
     }
 
-    public static byte[] getVoteOnProposalTxn(int proposalId, int vote, int nonce, byte chainId) {
+    public static byte[] getVoteOnProposalTxn(String proposalHash, byte vote, int nonce, byte chainId) {
         byte[] TransactionBase = getTransactionBase((byte) 28, nonce, chainId);
+        byte[] proposalHashBytes = Hex.decode(proposalHash);
+        errorIf(proposalHashBytes.length != 32, "Invalid proposal hash");
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 8);
+        ByteBuffer buffer = ByteBuffer.allocate(39);
         buffer.put(TransactionBase);
-        buffer.putInt(proposalId);
-        buffer.putInt(vote);
+        buffer.put(proposalHashBytes);
+        buffer.put(vote);
 
         return buffer.array();
     }

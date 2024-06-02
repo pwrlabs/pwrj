@@ -5,12 +5,12 @@ import org.json.JSONObject;
 
 @SuperBuilder
 @Getter
-public class ChangeVmOwnerTxnFeeShareProposalTxn extends Transaction {
+public class ChangeVmOwnerTxnFeeShareProposalTransaction extends Transaction {
     public static final String type = "Change VM Owner Txn Fee Share Proposal";
     private long feeShare;
     private String description;
 
-        public ChangeVmOwnerTxnFeeShareProposalTxn(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
+        public ChangeVmOwnerTxnFeeShareProposalTransaction(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
             super(json, blockNumber, timestamp, positionInTheBlock);
             this.feeShare = json.optLong("feeShare", 8);
             this.description = json.optString("description", "x");
@@ -18,10 +18,11 @@ public class ChangeVmOwnerTxnFeeShareProposalTxn extends Transaction {
 
         @Override
         public JSONObject toJSON() {
-            JSONObject Transaction = super.toJSON();
-            Transaction.put("feeShare", feeShare);
-            Transaction.put("description", description);
+            JSONObject data = super.toJSON();
+            data.put("type", type);
+            data.put("feeShare", feeShare);
+            data.put("description", description);
 
-            return Transaction;
+            return data;
         }
 }

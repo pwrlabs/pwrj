@@ -20,9 +20,9 @@ public class JoinTransaction extends Transaction {
 
     @Override
     public JSONObject toJSON() {
-        JSONObject Transaction = super.toJSON();
-        Transaction.put("validator", validator);
-        Transaction.put("ip", ip);
-        return Transaction;
+        JSONObject data = super.toJSON();
+        data.put("validator", validator);
+        data.put("ip", ip);
+        return data;
     }
 }
