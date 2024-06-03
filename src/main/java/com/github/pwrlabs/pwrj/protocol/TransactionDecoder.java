@@ -98,7 +98,7 @@ public class TransactionDecoder {
         // Layout:
         // Identifier - 1
         // chain id - 1
-        // Nonce - 4
+        // nonce - 4 
         // amount - 8
         // recipient - 20
         // signature - 65
@@ -129,8 +129,8 @@ public class TransactionDecoder {
         /*
          * Identifier - 1
          * chain id - 1
-         * Nonce - 4
-         * ip - X
+         * nonce - 4
+              ip - X
          * signature - 65*/
 
         ByteBuffer buffer = ByteBuffer.wrap(txn);
@@ -155,7 +155,7 @@ public class TransactionDecoder {
         /*
          * Identifier - 1
          * chain id - 1
-         * Nonce - 4
+         * nonce - 4
          * signature - 65
          * */
 
@@ -175,7 +175,7 @@ public class TransactionDecoder {
         /*
          * Identifier - 1
          * chain id - 1
-         * Nonce - 4
+         * nonce - 4           
          * amount - 8
          * validator - 20
          * signature - 65*/
@@ -205,7 +205,7 @@ public class TransactionDecoder {
         /*
          * Identifier - 1
          * chain id - 1
-         * Nonce - 4
+         * nonce - 4           
          * amount - 8
          * validator - 20
          * signature - 65*/
@@ -239,7 +239,7 @@ public class TransactionDecoder {
         /*
          * Identifier - 1
          * chain id - 1
-         * Nonce - 4
+         * nonce - 4           
          * External VM ID - 8
          * Data - x
          * signature - 65
@@ -276,7 +276,7 @@ public class TransactionDecoder {
         /*
          * Identifier - 1
          * chain id - 1
-         * Nonce - 4
+         * nonce - 4           
          * External VM ID - 8
          * signature - 65
          * */
@@ -305,7 +305,7 @@ public class TransactionDecoder {
         /*
          * Identifier - 1
          * chain id - 1
-         * Nonce - 4
+         * nonce - 4           
          * Long - 8
          * address - 20
          * signature - 65
@@ -329,7 +329,7 @@ public class TransactionDecoder {
         /*
          * Identifier - 1
          * chain id - 1
-         * Nonce - 4
+         * nonce - 4           
          * signature - 65
          * */
 
@@ -364,7 +364,7 @@ public class TransactionDecoder {
         /*
          * Identifier - 1
          * chain id - 1
-         * Nonce - 4
+         * nonce - 4           
          * Txn - x
          * signature - 65
          * */
@@ -390,7 +390,7 @@ public class TransactionDecoder {
         /*
          * Identifier - 1
          * chain id - 1
-         * Nonce - 4
+         * nonce - 4           
          * External VM ID - 8
          * Data - x
          * Value: 8
@@ -423,7 +423,7 @@ public class TransactionDecoder {
         /*
          * Identifier - 1
          * chain id - 1
-         * Nonce - 4
+         * nonce - 4           
          * External VM ID - 8 //ID of VM the conduit node is sending the txn on behalf of
          * Wrapped Transaction - x [size identifier - 4 && Txn - y]
          * signature - 65
@@ -464,7 +464,7 @@ public class TransactionDecoder {
         /*
          * Identifier - 1
          * chain id - 1
-         * Nonce - 4
+         * nonce - 4           
          * External VM ID - 8 //ID of VM the conduit node is sending the txn on behalf of
          * Conduits - x [20 - 20 - 20 - etc...]
          * signature - 65
@@ -505,7 +505,7 @@ public class TransactionDecoder {
         /*
          * Identifier - 1
          * chain id - 1
-         * Nonce - 4
+         * nonce - 4           
          * External VM ID - 8 //ID of VM the conduit node is sending the txn on behalf of
          * Conduits - x [20 - 20 - 20 - etc...]
          * */
@@ -538,7 +538,7 @@ public class TransactionDecoder {
         /*
          * Identifier - 1
          * chain id - 1
-         * Nonce - 4
+         * nonce - 4           
          * External VM ID - 8 //ID of VM the conduit node is sending the txn on behalf of
          * Conduits - x [20 - 20 - 20 - etc...]
          * */
@@ -573,7 +573,7 @@ public class TransactionDecoder {
         /*
          * Identifier - 1
          * Chain Id - 1
-         * nonce - 4
+         * nonce - 4           
          * shares amount - 8
          * from validator - 20
          * to validator - 20
@@ -608,6 +608,8 @@ public class TransactionDecoder {
         Identifier - 1
         chain id - 1
         nonce - 4
+        title size identifier - 4
+        title - x
         withdrawal penalty time - 8
         withdrawal penalty - 4
         description - x
@@ -617,9 +619,14 @@ public class TransactionDecoder {
         ByteBuffer buffer = ByteBuffer.wrap(txn);
         buffer.position(6);
 
+        int titleLength = buffer.getInt();
+        byte[] titleBytea = new byte[titleLength];
+        buffer.get(titleBytea);
+        String title = new String(titleBytea, StandardCharsets.UTF_8);
+        
         long earlyWithdrawalTime = buffer.getLong();
         int withdrawalPenalty = buffer.getInt();
-        String description = null;
+        
 
         int descriptionLength;
         if (PWRJ.isVmAddress(Hex.toHexString(sender))) descriptionLength = txn.length - 18;
@@ -627,7 +634,7 @@ public class TransactionDecoder {
 
         byte[] descriptionBytea = new byte[descriptionLength];
         buffer.get(descriptionBytea);
-        description = new String(descriptionBytea, StandardCharsets.UTF_8);
+        String description = new String(descriptionBytea, StandardCharsets.UTF_8);
 
         return ChangeEarlyWithdrawPenaltyProposalTransaction.builder()
                 .sender("0x" + Hex.toHexString(sender))
@@ -636,7 +643,7 @@ public class TransactionDecoder {
                 .extraFee(0)
                 .withdrawalPenaltyTime(earlyWithdrawalTime)
                 .withdrawalPenalty(withdrawalPenalty)
-                .description(description)
+                .description(description).title(title)
                 .rawTransaction(txn)
                 .chainId(txn[1])
                 .build();
@@ -649,6 +656,8 @@ public class TransactionDecoder {
         Identifier - 1
         chain id - 1
         nonce - 4
+        title size identifier - 4
+        title - x
         fee per byte - 8
         description - x
         signature - 65
@@ -657,8 +666,13 @@ public class TransactionDecoder {
         ByteBuffer buffer = ByteBuffer.wrap(txn);
         buffer.position(6);
 
+        int titleLength = buffer.getInt();
+        byte[] titleBytea = new byte[titleLength];
+        buffer.get(titleBytea);
+        String title = new String(titleBytea, StandardCharsets.UTF_8);
+        
         long feePerByte = buffer.getLong();
-        String description = null;
+        
 
         int descriptionLength;
         if (PWRJ.isVmAddress(Hex.toHexString(sender))) descriptionLength = txn.length - 16;
@@ -666,14 +680,14 @@ public class TransactionDecoder {
 
         byte[] descriptionBytea = new byte[descriptionLength];
         buffer.get(descriptionBytea);
-        description = new String(descriptionBytea, StandardCharsets.UTF_8);
+        String description = new String(descriptionBytea, StandardCharsets.UTF_8);
 
         return ChangeFeePerByteProposalTransaction.builder()
                 .sender("0x" + Hex.toHexString(sender))
                 .nonce(nonce)
                 .size(txn.length)
                 .feePerByte(feePerByte)
-                .description(description)
+                .description(description).title(title)
                 .rawTransaction(txn)
                 .chainId(txn[1])
                 .build();
@@ -685,6 +699,8 @@ public class TransactionDecoder {
         Identifier - 1
         chain id - 1
         nonce - 4
+        title size identifier - 4
+        title - x
         max block size - 4
         description - x
         signature - 65
@@ -693,8 +709,13 @@ public class TransactionDecoder {
         ByteBuffer buffer = ByteBuffer.wrap(txn);
         buffer.position(6);
 
+        int titleLength = buffer.getInt();
+        byte[] titleBytea = new byte[titleLength];
+        buffer.get(titleBytea);
+        String title = new String(titleBytea, StandardCharsets.UTF_8);
+        
         int maxBlockSize = buffer.getInt();
-        String description = null;
+        
 
         int descriptionLength;
         if (PWRJ.isVmAddress(Hex.toHexString(sender))) descriptionLength = txn.length - 10;
@@ -702,14 +723,14 @@ public class TransactionDecoder {
 
         byte[] descriptionBytea = new byte[descriptionLength];
         buffer.get(descriptionBytea);
-        description = new String(descriptionBytea, StandardCharsets.UTF_8);
+        String description = new String(descriptionBytea, StandardCharsets.UTF_8);
 
         return ChangeMaxBlockSizeProposalTranscation.builder()
                 .sender("0x" + Hex.toHexString(sender))
                 .nonce(nonce)
                 .size(txn.length)
                 .maxBlockSize(maxBlockSize)
-                .description(description)
+                .description(description).title(title)
                 .rawTransaction(txn)
                 .chainId(txn[1])
                 .build();
@@ -721,6 +742,8 @@ public class TransactionDecoder {
         Identifier - 1
         chain id - 1
         nonce - 4
+        title size identifier - 4
+        title - x
         max txn size - 4
         description - x
         signature - 65
@@ -729,21 +752,26 @@ public class TransactionDecoder {
         ByteBuffer buffer = ByteBuffer.wrap(txn);
         buffer.position(6);
 
+        int titleLength = buffer.getInt();
+        byte[] titleBytea = new byte[titleLength];
+        buffer.get(titleBytea);
+        String title = new String(titleBytea, StandardCharsets.UTF_8);
+        
         int maxTxnSize = buffer.getInt();
-        String description = null;
+        
 
         int descriptionLength = PWRJ.isVmAddress(Hex.toHexString(sender)) ? txn.length - 10 : txn.length - 75;
 
         byte[] descriptionBytea = new byte[descriptionLength];
         buffer.get(descriptionBytea);
-        description = new String(descriptionBytea, StandardCharsets.UTF_8);
+        String description = new String(descriptionBytea, StandardCharsets.UTF_8);
 
         return ChangeMaxTxnSizeProposalTransaction.builder()
                 .sender("0x" + Hex.toHexString(sender))
                 .nonce(nonce)
                 .size(txn.length)
                 .maxTxnSize(maxTxnSize)
-                .description(description)
+                .description(description).title(title)
                 .rawTransaction(txn)
                 .chainId(txn[1])
                 .build();
@@ -755,6 +783,8 @@ public class TransactionDecoder {
         Identifier - 1
         chain id - 1
         nonce - 4
+        title size identifier - 4
+        title - x
         burn percentage - 4
         description - x
         signature - 65
@@ -763,21 +793,26 @@ public class TransactionDecoder {
         ByteBuffer buffer = ByteBuffer.wrap(txn);
         buffer.position(6);
 
+        int titleLength = buffer.getInt();
+        byte[] titleBytea = new byte[titleLength];
+        buffer.get(titleBytea);
+        String title = new String(titleBytea, StandardCharsets.UTF_8);
+        
         int burnPercentage = buffer.getInt();
-        String description = null;
+        
 
         int descriptionLength = PWRJ.isVmAddress(Hex.toHexString(sender)) ? txn.length - 10 : txn.length - 75;
 
         byte[] descriptionBytea = new byte[descriptionLength];
         buffer.get(descriptionBytea);
-        description = new String(descriptionBytea, StandardCharsets.UTF_8);
+        String description = new String(descriptionBytea, StandardCharsets.UTF_8);
 
         return ChangeOverallBurnPercentageProposalTransaction.builder()
                 .sender("0x" + Hex.toHexString(sender))
                 .nonce(nonce)
                 .size(txn.length)
                 .burnPercentage(burnPercentage)
-                .description(description)
+                .description(description).title(title)
                 .rawTransaction(txn)
                 .chainId(txn[1])
                 .build();
@@ -789,6 +824,8 @@ public class TransactionDecoder {
         Identifier - 1
         chain id - 1
         nonce - 4
+        title size identifier - 4
+        title - x
         reward per year - 8
         description - x
         signature - 65
@@ -797,21 +834,26 @@ public class TransactionDecoder {
         ByteBuffer buffer = ByteBuffer.wrap(txn);
         buffer.position(6);
 
+        int titleLength = buffer.getInt();
+        byte[] titleBytea = new byte[titleLength];
+        buffer.get(titleBytea);
+        String title = new String(titleBytea, StandardCharsets.UTF_8);
+        
         long rewardPerYear = buffer.getLong();
-        String description = null;
+        
 
         int descriptionLength = PWRJ.isVmAddress(Hex.toHexString(sender)) ? txn.length - 14 : txn.length - 79;
 
         byte[] descriptionBytea = new byte[descriptionLength];
         buffer.get(descriptionBytea);
-        description = new String(descriptionBytea, StandardCharsets.UTF_8);
+        String description = new String(descriptionBytea, StandardCharsets.UTF_8);
 
         return ChangeRewardPerYearProposalTransaction.builder()
                 .sender("0x" + Hex.toHexString(sender))
                 .nonce(nonce)
                 .size(txn.length)
                 .rewardPerYear(rewardPerYear)
-                .description(description)
+                .description(description).title(title)
                 .rawTransaction(txn)
                 .chainId(txn[1])
                 .build();
@@ -823,6 +865,8 @@ public class TransactionDecoder {
         Identifier - 1
         chain id - 1
         nonce - 4
+        title size identifier - 4
+        title - x
         validator count limit - 4
         description - x
         signature - 65
@@ -831,21 +875,26 @@ public class TransactionDecoder {
         ByteBuffer buffer = ByteBuffer.wrap(txn);
         buffer.position(6);
 
+        int titleLength = buffer.getInt();
+        byte[] titleBytea = new byte[titleLength];
+        buffer.get(titleBytea);
+        String title = new String(titleBytea, StandardCharsets.UTF_8);
+        
         int validatorCountLimit = buffer.getInt();
-        String description = null;
+        
 
         int descriptionLength = PWRJ.isVmAddress(Hex.toHexString(sender)) ? txn.length - 10 : txn.length - 75;
 
         byte[] descriptionBytea = new byte[descriptionLength];
         buffer.get(descriptionBytea);
-        description = new String(descriptionBytea, StandardCharsets.UTF_8);
+        String description = new String(descriptionBytea, StandardCharsets.UTF_8);
 
         return ChangeValidatorCountLimitProposalTransaction.builder()
                 .sender("0x" + Hex.toHexString(sender))
                 .nonce(nonce)
                 .size(txn.length)
                 .validatorCountLimit(validatorCountLimit)
-                .description(description)
+                .description(description).title(title)
                 .rawTransaction(txn)
                 .chainId(txn[1])
                 .build();
@@ -857,6 +906,8 @@ public class TransactionDecoder {
         Identifier - 1
         chain id - 1
         nonce - 4
+        title size identifier - 4
+        title - x
         joining fee - 8
         description - x
         signature - 65
@@ -865,21 +916,26 @@ public class TransactionDecoder {
         ByteBuffer buffer = ByteBuffer.wrap(txn);
         buffer.position(6);
 
+        int titleLength = buffer.getInt();
+        byte[] titleBytea = new byte[titleLength];
+        buffer.get(titleBytea);
+        String title = new String(titleBytea, StandardCharsets.UTF_8);
+        
         long joiningFee = buffer.getLong();
-        String description = null;
+        
 
         int descriptionLength = PWRJ.isVmAddress(Hex.toHexString(sender)) ? txn.length - 14 : txn.length - 79;
 
         byte[] descriptionBytea = new byte[descriptionLength];
         buffer.get(descriptionBytea);
-        description = new String(descriptionBytea, StandardCharsets.UTF_8);
+        String description = new String(descriptionBytea, StandardCharsets.UTF_8);
 
         return ChangeValidatorJoiningFeeProposalTranscation.builder()
                 .sender("0x" + Hex.toHexString(sender))
                 .nonce(nonce)
                 .size(txn.length)
                 .joiningFee(joiningFee)
-                .description(description)
+                .description(description).title(title)
                 .rawTransaction(txn)
                 .chainId(txn[1])
                 .build();
@@ -891,6 +947,8 @@ public class TransactionDecoder {
         Identifier - 1
         chain id - 1
         nonce - 4
+        title size identifier - 4
+        title - x
         vm id claiming fee - 8
         description - x
         signature - 65
@@ -899,8 +957,13 @@ public class TransactionDecoder {
         ByteBuffer buffer = ByteBuffer.wrap(txn);
         buffer.position(6);
 
+        int titleLength = buffer.getInt();
+        byte[] titleBytea = new byte[titleLength];
+        buffer.get(titleBytea);
+        String title = new String(titleBytea, StandardCharsets.UTF_8);
+        
         long vmIdClaimingFee = buffer.getLong();
-        String description = null;
+        
 
         int descriptionLength;
         if (PWRJ.isVmAddress(Hex.toHexString(sender))) descriptionLength = txn.length - 16;
@@ -908,14 +971,14 @@ public class TransactionDecoder {
 
         byte[] descriptionBytea = new byte[descriptionLength];
         buffer.get(descriptionBytea);
-        description = new String(descriptionBytea, StandardCharsets.UTF_8);
+        String description = new String(descriptionBytea, StandardCharsets.UTF_8);
 
         return ChangeVmIdClaimingFeeProposalTransaction.builder()
                 .sender("0x" + Hex.toHexString(sender))
                 .nonce(nonce)
                 .size(txn.length)
                 .claimingFee(vmIdClaimingFee)
-                .description(description)
+                .description(description).title(title)
                 .rawTransaction(txn)
                 .chainId(txn[1])
                 .build();
@@ -928,6 +991,8 @@ public class TransactionDecoder {
         Identifier - 1
         chain id - 1
         nonce - 4
+        title size identifier - 4
+        title - x
         vm owner txn fee share - 4
         description - x
         signature - 65
@@ -936,8 +1001,13 @@ public class TransactionDecoder {
         ByteBuffer buffer = ByteBuffer.wrap(txn);
         buffer.position(6);
 
+        int titleLength = buffer.getInt();
+        byte[] titleBytea = new byte[titleLength];
+        buffer.get(titleBytea);
+        String title = new String(titleBytea, StandardCharsets.UTF_8);
+        
         int vmOwnerTxnFeeShare = buffer.getInt();
-        String description = null;
+        
 
         int descriptionLength;
         if (PWRJ.isVmAddress(Hex.toHexString(sender))) descriptionLength = txn.length - 10;
@@ -945,14 +1015,14 @@ public class TransactionDecoder {
 
         byte[] descriptionBytea = new byte[descriptionLength];
         buffer.get(descriptionBytea);
-        description = new String(descriptionBytea, StandardCharsets.UTF_8);
+        String description = new String(descriptionBytea, StandardCharsets.UTF_8);
 
         return ChangeVmOwnerTxnFeeShareProposalTransaction.builder()
                 .sender("0x" + Hex.toHexString(sender))
                 .nonce(nonce)
                 .size(txn.length)
                 .feeShare(vmOwnerTxnFeeShare)
-                .description(description)
+                .description(description).title(title)
                 .rawTransaction(txn)
                 .chainId(txn[1])
                 .build();
@@ -964,14 +1034,19 @@ public class TransactionDecoder {
         Identifier - 1
         chain id - 1
         nonce - 4
+        title size identifier - 4
+        title - x
         description - x
         signature - 65
         */
 
         ByteBuffer buffer = ByteBuffer.wrap(txn);
         buffer.position(6);
-
-        String description = null;
+        
+        int titleLength = buffer.getInt();
+        byte[] titleBytea = new byte[titleLength];
+        buffer.get(titleBytea);
+        String title = new String(titleBytea, StandardCharsets.UTF_8);
 
         int descriptionLength;
         if (PWRJ.isVmAddress(Hex.toHexString(sender))) descriptionLength = txn.length - 10;
@@ -979,13 +1054,13 @@ public class TransactionDecoder {
 
         byte[] descriptionBytea = new byte[descriptionLength];
         buffer.get(descriptionBytea);
-        description = new String(descriptionBytea, StandardCharsets.UTF_8);
+        String description = new String(descriptionBytea, StandardCharsets.UTF_8);
 
         return OtherProposalTxn.builder()
                 .sender("0x" + Hex.toHexString(sender))
                 .nonce(nonce)
                 .size(txn.length)
-                .description(description)
+                .description(description).title(title)
                 .rawTransaction(txn)
                 .chainId(txn[1])
                 .build();

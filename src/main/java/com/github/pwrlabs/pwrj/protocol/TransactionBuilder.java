@@ -479,132 +479,165 @@ public class TransactionBuilder {
     }
 
 
-    public static byte[] getChangeEarlyWithdrawPenaltyProposalTxn(long withdrawalPenaltyTime, int withdrawalPenalty, String description, int nonce, byte chainId) {
+    public static byte[] getChangeEarlyWithdrawPenaltyProposalTxn(long withdrawalPenaltyTime, int withdrawalPenalty, String title, String description, int nonce, byte chainId) {
         byte[] TransactionBase = getTransactionBase((byte) 17, nonce, chainId);
         byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
+        byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 12 + descriptionBytea.length);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 12 + 4 + titleBytea.length + descriptionBytea.length);
         buffer.put(TransactionBase);
+        buffer.putInt(titleBytea.length);
+        buffer.put(titleBytea);
         buffer.putLong(withdrawalPenaltyTime);
         buffer.putInt(withdrawalPenalty);
         buffer.put(descriptionBytea);
         return buffer.array();
     }
 
-    public static byte[] getChangeFeePerByteProposalTxn(long feePerByte, String description, int nonce, byte chainId) {
+    public static byte[] getChangeFeePerByteProposalTxn(long feePerByte, String title, String description, int nonce, byte chainId) {
         byte[] TransactionBase = getTransactionBase((byte) 18, nonce, chainId);
         byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
+        byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 8 + descriptionBytea.length);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 8 + 4 + titleBytea.length + descriptionBytea.length);
         buffer.put(TransactionBase);
+        buffer.putInt(titleBytea.length);
+        buffer.put(titleBytea);
         buffer.putLong(feePerByte);
         buffer.put(descriptionBytea);
 
         return buffer.array();
     }
 
-    public static byte[] getChangeMaxBlockSizeProposalTxn(int maxBlockSize, String description, int nonce, byte chainId) {
+    public static byte[] getChangeMaxBlockSizeProposalTxn(int maxBlockSize, String title, String description, int nonce, byte chainId) {
         byte[] TransactionBase = getTransactionBase((byte) 19, nonce, chainId);
         byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
+        byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 4 + descriptionBytea.length);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 4 + 4 + titleBytea.length + descriptionBytea.length);
         buffer.put(TransactionBase);
+        buffer.putInt(titleBytea.length);
+        buffer.put(titleBytea);
         buffer.putInt(maxBlockSize);
         buffer.put(descriptionBytea);
 
         return buffer.array();
     }
 
-    public static byte[] getChangeMaxTxnSizeProposalTxn(int maxTxnSize, String description, int nonce, byte chainId) {
+    public static byte[] getChangeMaxTxnSizeProposalTxn(int maxTxnSize, String title, String description, int nonce, byte chainId) {
         byte[] TransactionBase = getTransactionBase((byte) 20, nonce, chainId);
         byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
+        byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 4 + descriptionBytea.length);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 4 + 4 + titleBytea.length + descriptionBytea.length);
         buffer.put(TransactionBase);
+        buffer.putInt(titleBytea.length);
+        buffer.put(titleBytea);
         buffer.putInt(maxTxnSize);
         buffer.put(descriptionBytea);
 
         return buffer.array();
     }
 
-    public static byte[] getChangeOverallBurnPercentageProposalTxn(int burnPercentage, String description, int nonce, byte chainId) {
+    public static byte[] getChangeOverallBurnPercentageProposalTxn(int burnPercentage, String title, String description, int nonce, byte chainId) {
         byte[] TransactionBase = getTransactionBase((byte) 21, nonce, chainId);
         byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
+        byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 4 + descriptionBytea.length);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 4 + 4 + titleBytea.length + descriptionBytea.length);
         buffer.put(TransactionBase);
+        buffer.putInt(titleBytea.length);
+        buffer.put(titleBytea);
         buffer.putInt(burnPercentage);
         buffer.put(descriptionBytea);
 
         return buffer.array();
     }
 
-    public static byte[] getChangeRewardPerYearProposalTxn(long rewardPerYear, String description, int nonce, byte chainId) {
+    public static byte[] getChangeRewardPerYearProposalTxn(long rewardPerYear, String title, String description, int nonce, byte chainId) {
         byte[] TransactionBase = getTransactionBase((byte) 22, nonce, chainId);
         byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
+        byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 8 + descriptionBytea.length);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 8 + 4 + titleBytea.length + descriptionBytea.length);
         buffer.put(TransactionBase);
+        buffer.putInt(titleBytea.length);
+        buffer.put(titleBytea);
         buffer.putLong(rewardPerYear);
         buffer.put(description.getBytes(StandardCharsets.UTF_8));
 
         return buffer.array();
     }
 
-    public static byte[] getChangeValidatorCountLimitProposalTxn(int validatorCountLimit, String description, int nonce, byte chainId) {
+    public static byte[] getChangeValidatorCountLimitProposalTxn(int validatorCountLimit, String title, String description, int nonce, byte chainId) {
         byte[] TransactionBase = getTransactionBase((byte) 23, nonce, chainId);
         byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
+        byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 4 + descriptionBytea.length);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 4 + 4 + titleBytea.length + descriptionBytea.length);
         buffer.put(TransactionBase);
+        buffer.putInt(titleBytea.length);
+        buffer.put(titleBytea);
         buffer.putInt(validatorCountLimit);
         buffer.put(descriptionBytea);
 
         return buffer.array();
     }
 
-    public static byte[] getChangeValidatorJoiningFeeProposalTxn(long joiningFee, String description, int nonce, byte chainId) {
+    public static byte[] getChangeValidatorJoiningFeeProposalTxn(long joiningFee, String title, String description, int nonce, byte chainId) {
         byte[] TransactionBase = getTransactionBase((byte) 24, nonce, chainId);
         byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
+        byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 8 + descriptionBytea.length);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 8 + 4 + titleBytea.length + descriptionBytea.length);
         buffer.put(TransactionBase);
+        buffer.putInt(titleBytea.length);
+        buffer.put(titleBytea);
         buffer.putLong(joiningFee);
         buffer.put(descriptionBytea);
 
         return buffer.array();
     }
 
-    public static byte[] getChangeVmIdClaimingFeeProposalTxn(long claimingFee, String description, int nonce, byte chainId) {
+    public static byte[] getChangeVmIdClaimingFeeProposalTxn(long claimingFee, String title, String description, int nonce, byte chainId) {
         byte[] TransactionBase = getTransactionBase((byte) 25, nonce, chainId);
         byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
+        byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 8 + descriptionBytea.length);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 8 + 4 + titleBytea.length + descriptionBytea.length);
         buffer.put(TransactionBase);
+        buffer.putInt(titleBytea.length);
+        buffer.put(titleBytea);
         buffer.putLong(claimingFee);
         buffer.put(descriptionBytea);
 
         return buffer.array();
     }
 
-    public static byte[] getChangeVmOwnerTxnFeeShareProposalTxn(int feeShare, String description, int nonce, byte chainId) {
+    public static byte[] getChangeVmOwnerTxnFeeShareProposalTxn(int feeShare, String title, String description, int nonce, byte chainId) {
         byte[] TransactionBase = getTransactionBase((byte) 26, nonce, chainId);
         byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
+        byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 4 + descriptionBytea.length);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 4 + 4 + titleBytea.length + descriptionBytea.length);
         buffer.put(TransactionBase);
+        buffer.putInt(titleBytea.length);
+        buffer.put(titleBytea);
         buffer.putInt(feeShare);
         buffer.put(descriptionBytea);
 
         return buffer.array();
     }
 
-    public static byte[] getOtherProposalTxn(String description, int nonce, byte chainId) {
+    public static byte[] getOtherProposalTxn(String title, String description, int nonce, byte chainId) {
         byte[] TransactionBase = getTransactionBase((byte) 27, nonce, chainId);
         byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
+        byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + descriptionBytea.length);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 4 + titleBytea.length + descriptionBytea.length);
         buffer.put(TransactionBase);
+        buffer.putInt(titleBytea.length);
+        buffer.put(titleBytea);
         buffer.put(descriptionBytea);
 
         return buffer.array();

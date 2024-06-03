@@ -10,14 +10,16 @@ public class ChangeEarlyWithdrawPenaltyProposalTransaction extends Transaction {
     public static final String type = "Change Early Withdraw Penalty Proposal";
     private long withdrawalPenaltyTime;
     private long withdrawalPenalty;
+
+    private String title; 
     private String description;
-
-
     public ChangeEarlyWithdrawPenaltyProposalTransaction(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
         super(json, blockNumber, timestamp, positionInTheBlock);
         this.withdrawalPenaltyTime = json.optLong("withdrawal_penalty_time" , 8);
         this.withdrawalPenalty = json.optLong("withdrawal_penalty" , 4);
-        this.description = json.optString("description" , "x");
+        this.description = json.optString("description" , "");
+        this.title = json.optString("title" , "");
+        this.title = json.optString("title" , "");
     }
 
     @Override
@@ -27,8 +29,9 @@ public class ChangeEarlyWithdrawPenaltyProposalTransaction extends Transaction {
         data.put("withdrawal_penalty_time", withdrawalPenaltyTime);
 
         data.put("withdrawal_penalty", withdrawalPenalty);
-
-        data.put("description", description);
+        
+        data.put("description", description); 
+data.put("title", title);
 
         return data;
     }

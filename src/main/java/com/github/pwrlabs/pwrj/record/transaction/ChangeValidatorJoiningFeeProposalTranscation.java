@@ -9,19 +9,22 @@ import org.json.JSONObject;
 public class ChangeValidatorJoiningFeeProposalTranscation extends Transaction {
     public static final String type = "Change Validator Joining Fee Proposal";
     private long joiningFee;
-    private String description;
 
-    public ChangeValidatorJoiningFeeProposalTranscation(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
+    private String title; 
+    private String description;    public ChangeValidatorJoiningFeeProposalTranscation(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
         super(json, blockNumber, timestamp, positionInTheBlock);
         this.joiningFee = json.optLong("joiningFee", 8);
-        this.description = json.optString("description", "x");
+        this.description = json.optString("description" , "");
+        this.title = json.optString("title" , "");
+        
     }
 
     @Override
     public JSONObject toJSON() {
         JSONObject data = super.toJSON();
         data.put("joiningFee", joiningFee);
-        data.put("description", description);
+        data.put("description", description); 
+data.put("title", title);
 
         return data;
     }
