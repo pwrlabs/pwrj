@@ -9,12 +9,13 @@ import org.json.JSONObject;
 public class ChangeMaxBlockSizeProposalTranscation extends Transaction {
     public static final String type = "Change Max Block Size Proposal";
     private int maxBlockSize;
-    private String description;
 
-    public ChangeMaxBlockSizeProposalTranscation(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
+    private String title; 
+    private String description;    public ChangeMaxBlockSizeProposalTranscation(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
         super(json, blockNumber, timestamp, positionInTheBlock);
         this.maxBlockSize = json.optInt("maxBlockSize" , 4);
-        this.description = json.optString("description", "x");
+        this.description = json.optString("description" , "");
+        this.title = json.optString("title" , "");
     }
 
     @Override
@@ -22,7 +23,8 @@ public class ChangeMaxBlockSizeProposalTranscation extends Transaction {
         JSONObject data = super.toJSON();
         data.put("type", type);
         data.put("maxBlockSize", maxBlockSize);
-        data.put("description", description);
+        data.put("description", description); 
+data.put("title", title);
 
         return data;
     }

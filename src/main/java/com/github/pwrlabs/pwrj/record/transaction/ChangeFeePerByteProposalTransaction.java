@@ -9,12 +9,13 @@ import org.json.JSONObject;
 public class ChangeFeePerByteProposalTransaction extends Transaction {
     public static final String type = "Change Fee Per Byte Proposal";
     private long feePerByte;
-    private String description;
 
-    public ChangeFeePerByteProposalTransaction(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
+    private String title; 
+    private String description;    public ChangeFeePerByteProposalTransaction(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
         super(json, blockNumber, timestamp, positionInTheBlock);
         this.feePerByte = json.optLong("feePerByte" , 8);
-        this.description = json.optString("description", "x");
+        this.description = json.optString("description" , "");
+        this.title = json.optString("title" , "");
     }
 
     @Override
@@ -22,7 +23,8 @@ public class ChangeFeePerByteProposalTransaction extends Transaction {
         JSONObject data = super.toJSON();
         data.put("type", type);
         data.put("feePerByte", feePerByte);
-        data.put("description", description);
+        data.put("description", description); 
+data.put("title", title);
 
         return data;
     }

@@ -10,11 +10,12 @@ public class ChangeOverallBurnPercentageProposalTransaction extends Transaction 
     public static final String type = "Change Overall Burn Percentage Proposal";
     private int burnPercentage;
     private String description;
-
+    private String title;
     public ChangeOverallBurnPercentageProposalTransaction(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
         super(json, blockNumber, timestamp, positionInTheBlock);
         this.burnPercentage = json.optInt("burnPercentage", 4);
-        this.description = json.optString("description", "x");
+        this.description = json.optString("description" , "");
+        this.title = json.optString("title" , "");
     }
 
     @Override
@@ -22,7 +23,8 @@ public class ChangeOverallBurnPercentageProposalTransaction extends Transaction 
         JSONObject data = super.toJSON();
         data.put("type", type);
         data.put("burnPercentage", burnPercentage);
-        data.put("description", description);
+        data.put("description", description); 
+data.put("title", title);
 
         return data;
 
