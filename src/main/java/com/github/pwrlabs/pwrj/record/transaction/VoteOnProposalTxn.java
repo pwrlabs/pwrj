@@ -10,11 +10,13 @@ public class VoteOnProposalTxn extends Transaction {
     public static final String type = "Vote On Proposal";
     private String proposalHash;
     private int vote;
+    private String proposalStatus;
 
     public VoteOnProposalTxn(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
         super(json, blockNumber, timestamp, positionInTheBlock);
         this.proposalHash = json.optString("proposalHash", "0x");
         this.vote = json.optInt("vote", 0);
+        this.proposalStatus = json.optString("proposalStatus", "ongoing");
     }
 
     @Override
