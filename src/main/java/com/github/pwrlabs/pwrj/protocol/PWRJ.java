@@ -141,22 +141,26 @@ public class PWRJ {
     }
 
     public static boolean isVmAddress(String address) {
-        if (address == null || (address.length() != 40 && address.length() != 42)) return false;
-        if(address.startsWith("0x")) address = address.substring(2);
-        if(!address.startsWith("0") && !address.startsWith("1")) return false;
+        try {
+            if (address == null || (address.length() != 40 && address.length() != 42)) return false;
+            if (address.startsWith("0x")) address = address.substring(2);
+            if (!address.startsWith("0") && !address.startsWith("1")) return false;
 
-        boolean negative = address.startsWith("0");
-        if(!negative) address = address.substring(1);
+            boolean negative = address.startsWith("0");
+            if (!negative) address = address.substring(1);
 
-        BigInteger maxLong = BigInteger.valueOf(Long.MAX_VALUE);
-        BigInteger minLong = BigInteger.valueOf(Long.MIN_VALUE);
+            BigInteger maxLong = BigInteger.valueOf(Long.MAX_VALUE);
+            BigInteger minLong = BigInteger.valueOf(Long.MIN_VALUE);
 
-        BigInteger vmId = new BigInteger(address);
-        if(negative) vmId = vmId.negate();
+            BigInteger vmId = new BigInteger(address);
+            if (negative) vmId = vmId.negate();
 
-        if(vmId.compareTo(maxLong) > 0 || vmId.compareTo(minLong) < 0) return false;
+            if (vmId.compareTo(maxLong) > 0 || vmId.compareTo(minLong) < 0) return false;
 
-        return true;
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     /**
