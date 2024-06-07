@@ -15,8 +15,8 @@ public class ChangeEarlyWithdrawPenaltyProposalTransaction extends Transaction {
     private String description;
     public ChangeEarlyWithdrawPenaltyProposalTransaction(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
         super(json, blockNumber, timestamp, positionInTheBlock);
-        this.withdrawalPenaltyTime = json.optLong("withdrawal_penalty_time" , 8);
-        this.withdrawalPenalty = json.optLong("withdrawal_penalty" , 4);
+        this.withdrawalPenaltyTime = json.optLong("earlyWithdrawTime" , 8);
+        this.withdrawalPenalty = json.optLong("earlyWithdrawPenalty" , 4);
         this.description = json.optString("description" , "");
         this.title = json.optString("title" , "");
         this.title = json.optString("title" , "");
