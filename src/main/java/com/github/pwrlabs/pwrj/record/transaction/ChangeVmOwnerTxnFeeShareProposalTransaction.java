@@ -15,7 +15,7 @@ public class ChangeVmOwnerTxnFeeShareProposalTransaction extends Transaction {
 
     public ChangeVmOwnerTxnFeeShareProposalTransaction(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
         super(json, blockNumber, timestamp, positionInTheBlock);
-        this.feeShare = json.optLong("feeShare", 8);
+        this.feeShare = json.optLong("vmOwnerTxnFeeShare", 8);
         this.description = json.optString("description", "");
         this.title = json.optString("title", "");
     }
