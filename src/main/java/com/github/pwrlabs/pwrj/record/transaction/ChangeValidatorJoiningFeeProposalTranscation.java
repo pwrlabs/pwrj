@@ -13,7 +13,7 @@ public class ChangeValidatorJoiningFeeProposalTranscation extends Transaction {
     private String title; 
     private String description;    public ChangeValidatorJoiningFeeProposalTranscation(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
         super(json, blockNumber, timestamp, positionInTheBlock);
-        this.joiningFee = json.optLong("joiningFee", 8);
+        this.joiningFee = json.optLong("validatorJoiningFee", 8);
         this.description = json.optString("description" , "");
         this.title = json.optString("title" , "");
         

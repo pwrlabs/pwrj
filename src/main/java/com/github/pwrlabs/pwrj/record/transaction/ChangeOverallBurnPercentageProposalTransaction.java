@@ -13,7 +13,7 @@ public class ChangeOverallBurnPercentageProposalTransaction extends Transaction 
     private String title;
     public ChangeOverallBurnPercentageProposalTransaction(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
         super(json, blockNumber, timestamp, positionInTheBlock);
-        this.burnPercentage = json.optInt("burnPercentage", 4);
+        this.burnPercentage = json.optInt("overallBurnPercentage", 4);
         this.description = json.optString("description" , "");
         this.title = json.optString("title" , "");
     }

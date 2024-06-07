@@ -13,7 +13,7 @@ public class ChangeVmIdClaimingFeeProposalTransaction extends Transaction {
     private String title; 
     private String description;    public ChangeVmIdClaimingFeeProposalTransaction(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
         super(json, blockNumber, timestamp, positionInTheBlock);
-        this.claimingFee = json.optLong("claimingFee", 8);
+        this.claimingFee = json.optLong("vmIdClaimingFee", 8);
         this.description = json.optString("description" , "");
         this.title = json.optString("title" , "");
     }
