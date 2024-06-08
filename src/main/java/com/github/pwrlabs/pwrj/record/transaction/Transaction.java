@@ -31,7 +31,7 @@ public class Transaction {
         this.rawTransaction = Hex.decode(json.optString("rawTransaction", ""));
         this.chainId = (byte) json.optInt("chainId", 0);
         this.hasError = !json.optBoolean("success", true);
-        this.errorMessage = json.optString("errorMessage", null);
+        this.errorMessage = json.optString("errorMessage", "");
     }
 
     public boolean hasError() {
