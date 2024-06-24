@@ -357,6 +357,16 @@ public class PWRJ {
         return new Block(httpGet(rpcNodeUrl + "/block/?blockNumber=" + blockNumber).getJSONObject("block"));
     }
 
+    public Transaction getTransactionByHash(String hash) throws IOException {
+        JSONObject object = httpGet(rpcNodeUrl + "/transactionByHash/?transactionHash=" + hash).getJSONObject("transaction");
+        return Transaction.fromJSON(object, object.getLong("blockNumber"), object.getLong("timestamp"), object.getInt("positionInTheBlock"));
+    }
+
+    public JSONObject getTransactionExplorerInfo(String hash) throws IOException {
+        JSONObject object = httpGet(rpcNodeUrl + "/transactionExplorerInfo/?transactionHash=" + hash).getJSONObject("transaction");
+        return object;
+    }
+
     public VmDataTransaction[] getVMDataTransactions(long startingBlock, long endingBlock, long vmId) throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/getVmTransactions/?startingBlock=" + startingBlock + "&endingBlock=" + endingBlock + "&vmId=" + vmId);
 
