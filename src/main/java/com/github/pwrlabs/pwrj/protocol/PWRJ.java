@@ -362,6 +362,10 @@ public class PWRJ {
         return Transaction.fromJSON(object, object.getLong("blockNumber"), object.getLong("timestamp"), object.getInt("positionInTheBlock"));
     }
 
+    public String getProposalStatus(String proposalHash) throws IOException {
+        return httpGet(rpcNodeUrl + "/proposalStatus/?proposalHash=" + proposalHash).getString("status");
+    }
+
     public JSONObject getTransactionExplorerInfo(String hash) throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/transactionExplorerInfo/?transactionHash=" + hash).getJSONObject("transaction");
         return object;
