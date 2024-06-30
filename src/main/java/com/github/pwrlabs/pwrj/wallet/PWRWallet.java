@@ -670,6 +670,14 @@ public class PWRWallet {
         return pwrj.broadcastTransaction(getSignedVoteOnProposalTxn(proposalHash, vote, nonce));
     }
 
+    public byte[] getSignedChangeIpTransaction(String newIp, int nonce) {
+        return getSignedTransaction(TransactionBuilder.getChangeIpTxn(newIp, nonce, pwrj.getChainId()));
+    }
+
+    public Response changeIp(String newIp, int nonce) {
+        return pwrj.broadcastTransaction(getSignedChangeIpTransaction(newIp, nonce));
+    }
+
 
 
     /**

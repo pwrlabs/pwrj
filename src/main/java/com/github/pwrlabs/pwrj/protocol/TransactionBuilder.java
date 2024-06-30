@@ -656,4 +656,16 @@ public class TransactionBuilder {
         return buffer.array();
     }
 
+    public static byte[] getChangeIpTxn(String newIp, int nonce, byte chainId) {
+        errorIf(newIp == null || newIp.isEmpty() || newIp.length() < 7 || newIp.length() > 15, "Invalid IP address");
+
+        byte[] TransactionBase = getTransactionBase((byte) 29, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + newIp.length());
+        buffer.put(TransactionBase);
+        buffer.put(newIp.getBytes(StandardCharsets.UTF_8));
+
+        return buffer.array();
+    }
+
+
 }
