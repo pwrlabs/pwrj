@@ -83,6 +83,8 @@ public class TransactionDecoder {
                 return decodeOtherProposalTxn(txn, sender, nonce);
             case 28:
                 return decodeVoteOnProposalTxn(txn, sender, nonce);
+            case 29:
+                return decodeChangeIpTxn(txn, sender, nonce);
 
             default: {
                 throw new RuntimeException("Invalid txn identifier: " + txn[0]);
@@ -1089,6 +1091,35 @@ public class TransactionDecoder {
                 .size(txn.length)
                 .proposalHash("0x" + Hex.toHexString(proposalHash))
                 .vote(vote)
+                .rawTransaction(txn)
+                .chainId(txn[1])
+                .build();
+    }
+
+    public static Transaction decodeChangeIpTxn(byte[] txn, byte[] sender, int nonce) {
+        if (txn.length < 78 || txn.length > 86) {
+            throw new RuntimeException("Invalid length for change ip txn");
+        }
+
+        /*
+         * Identifier - 1
+         * chain id - 1
+         * nonce - 4
+         * ip - X
+         * signature - 65
+         * */
+
+        ByteBuffer buffer = ByteBuffer.wrap(txn);
+        buffer.position(6);
+
+        byte[] ipByteArray = new byte[txn.length - 71];
+        buffer.get(ipByteArray);
+
+        return ChangeIpTransaction.builder()
+                .sender("0x" + Hex.toHexString(sender))
+                .nonce(nonce)
+                .size(txn.length)
+                .newIp(new String(ipByteArray, StandardCharsets.UTF_8))
                 .rawTransaction(txn)
                 .chainId(txn[1])
                 .build();
