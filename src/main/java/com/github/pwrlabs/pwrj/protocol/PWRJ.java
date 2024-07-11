@@ -684,6 +684,18 @@ public class PWRJ {
         return validator;
     }
 
+    public Map<String /*Validator address*/, Long /*Reward*/> getValidatorsReward(long blockNumber) throws IOException {
+        JSONObject object = httpGet(rpcNodeUrl + "/validatorsBlockRewards/?blockNumber=" + blockNumber);
+        JSONObject rewards = object.getJSONObject("rewards");
+        Map<String, Long> rewardsMap = new HashMap<>();
+
+        for(String address: rewards.keySet()) {
+            rewardsMap.put(address, rewards.getLong(address));
+        }
+
+        return rewardsMap;
+    }
+
     public static void main(String[] args) throws IOException {
         PWRJ pwrj = new PWRJ("https://pwrrpc.pwrlabs.io/");
         pwrj.getValidator("0x0x7111434F00E6C66616fc25cff3Fa080cdb95562B");
@@ -809,14 +821,15 @@ public class PWRJ {
                 //System.out.println("Status code: " + response.getStatusLine().getStatusCode());
                 return new Response(true, "0x" + Hex.toHexString(Hash.sha3(transaction)), null);
             } else if (response.getStatusLine().getStatusCode() == 400) {
-               // System.out.println("Status code: " + response.getStatusLine().getStatusCode());
+               System.out.println("Status code: " + response.getStatusLine().getStatusCode());
                 JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                //System.out.println("broadcast response:" + object.toString());
+                System.out.println("broadcast response:" + object.toString());
                 return new Response(false, null, object.optString("message", ""));
             } else {
                 throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode() + " " + EntityUtils.toString(response.getEntity()));
             }
         } catch (Exception e) {
+            e.printStackTrace();
             return new Response(false, null, e.getMessage());
         }
     }

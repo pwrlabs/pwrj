@@ -1,0 +1,60 @@
+{
+  "block": {
+    "processedWithoutCriticalErrors": true,
+    "blockHash": "0xecfa6d16ef9e00034096cd34a1ecdc13f03a253ebbeeb98bb33d576456a0b75d",
+    "networkVotingPower": 1188683026301084,
+    "blockNumber": 1000,
+    "blockReward": 0,
+    "transactionCount": 3,
+    "transactions": [
+      {
+        "data": "0x00000191f9018e820b93843b9aca00830493e0942c86e018e43fe1effa7f43b7c128ee29a0e8685303b90122ef0fefefef9ffeeffbefefefeffcf30feffceffcefeffaefefefefefefefeff3efefefefefefefefefef9deff8efefef0fefefefefefefefefefefefefefefefefefefefefefefefefefdfefefefefef6fefef4fefefefefefefefefefefefefefefefdfefefefcffaefefefefefefefefeff7efefcfefefefefefefef6fefefafefefefefefefeffaefefefeffdf7efffefefefefffefefefefefefefefefefefefefefefefefefefefefefefefefefffefefefefefeff4efefefbfefefefefefefefefef5fefef06ff8f9fffefefefefefefefefefefefefefef0fefefefefefefefefefefefefefefbfefefefeffeefefeff3efefefefefefefefefefef9fefcfefefefefcfefefefefeffbefefefefefeff0effef1efefefef0fefefeffaefef840280dea6a095178deb748fbcc6fc1ecedf7794862d421e1fcd30944caa8b4d0f7dfe221695a0698d98f77057449bb00b5aca0ced1207ffe7225d917dbb1121175964e9ada96c",
+        "receiver": "21000001",
+        "vmId": 21000001,
+        "fee": 58400,
+        "type": "VM Data",
+        "nonce": 5467,
+        "positionInTheBlock": 0,
+        "size": 484,
+        "sender": "0xC261052770048F189B3FD6462F8BC9927785EA87",
+        "success": true,
+        "paid": false,
+        "extraFee": 0,
+        "hash": "0x7b8aa46a2370c5c44134f1ecddc3bc8bbd78a867cde4a6519c4d51b01c11e5ab"
+      },
+      {
+        "data": "0x0000015df9015a820b94843b9aca00830493e0942c86e018e43fe1effa7f43b7c128ee29a0e8685303b8efffeffcf7efefefefefefefefefefef7fefefbfefefefefefefefefffefefefefefefeff2efefeffeefefefefefefffefefefeff3efefefefefdfeff3efefeffaefefefefeff0effcefefefefefefefefefffefefefefefefefeffcefefefefefefefefeffeffefaffbefefefefefefefeffafdefeffcefefefefbfefefefefefefefefffefefefefefefef6fefefefefefef1fefefefefef6befefefeff7efef9fefefefefefefefefefefefefefefefef7f9fefef3fefefefefbfefefefefefefefefefefefefefeff6efefefefefefeffeeff0efdfefefefefefef4cdfeffcefefefefefefefefef2fefefefeffb840280dea6a08124234d17be771bba0cfd019719c07e31f5036244450957c15a920f00f58dffa00718f12a082fdee87b9ad2fc7efa40e084519bcc6da175ceaddc3cfe9cb5d79a",
+        "receiver": "21000001",
+        "vmId": 21000001,
+        "fee": 53200,
+        "type": "VM Data",
+        "nonce": 5468,
+        "positionInTheBlock": 1,
+        "size": 432,
+        "sender": "0xC261052770048F189B3FD6462F8BC9927785EA87",
+        "success": true,
+        "paid": false,
+        "extraFee": 0,
+        "hash": "0x703228bf543f05edec84ff4a5331b1519f7d0f2f8a276793117afb04e00dd647"
+      },
+      {
+        "data": "0x00000168f90165820b95843b9aca00830493e0942c86e018e43fe1effa7f43b7c128ee29a0e8685303b8faffefbfefefefefefefffefeffaefefeff4efefefbfefbfefefdfeff7efefefefefefefefefefefefefefefefefefefefefeffcbfefefefefefeffbeffbefcff2f8efefefef0fefefefefefefefefcfcfeff7efefefefefefef0fef3fefef4fcfefefefefefefefefefefefefefefefefefefefefeffbeff8efcfefefefefefefefefefefefefefefefefefefefefefefef0fefefefefefefefefeff2effcf6cfefbfefef6ff66ffbefbfffefefeffcefefefefefefefefefffefefefefefefefefefefefefefefefefeff7efeffeefeff2efefafefefef6fefefcfefefefeff8efeff7efbfefef0fefefefefefefefefefefefefefefefefefef840280dea6a0a446cb32b7d77cc332837bc4bf8772647c478df19287092c2a08f60be3ae2ef9a02d516acce7c114485bd1536cd9a2164ec75597b3f2480a7a87b24f2ab73f8402",
+        "receiver": "21000001",
+        "vmId": 21000001,
+        "fee": 54300,
+        "type": "VM Data",
+        "nonce": 5469,
+        "positionInTheBlock": 2,
+        "size": 443,
+        "sender": "0xC261052770048F189B3FD6462F8BC9927785EA87",
+        "success": true,
+        "paid": false,
+        "extraFee": 0,
+        "hash": "0x3e9b38a5445f1ed785cab9313d50f96c461ed5600d6a1ee88eb280f7537800f1"
+      }
+    ],
+    "blockSubmitter": "0x84514871F6FE37D30C801E61E156B348865149FC",
+    "blockSize": 1496,
+    "timestamp": 1716813804
+  }
+}
