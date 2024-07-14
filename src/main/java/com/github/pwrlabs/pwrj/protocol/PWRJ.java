@@ -9,6 +9,8 @@ import com.github.pwrlabs.pwrj.record.transaction.Transaction;
 import com.github.pwrlabs.pwrj.record.transaction.VmDataTransaction;
 import com.github.pwrlabs.pwrj.Utils.Hash;
 import com.github.pwrlabs.pwrj.record.validator.Validator;
+import lombok.Getter;
+import lombok.Setter;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.*;
 import org.bouncycastle.util.encoders.Hex;
@@ -32,6 +34,8 @@ import org.apache.http.entity.StringEntity;
 import java.util.*;
 
 public class PWRJ {
+    @Getter @Setter
+    private int soTimeout = 20000, connectionTimeout = 20000;
 
     public PWRJ(String rpcNodeUrl) {
         this.rpcNodeUrl = rpcNodeUrl;
@@ -47,15 +51,11 @@ public class PWRJ {
     private final byte chainId;
     private long ecdsaVerificationFee = 10000;
 
-    public static JSONObject httpGet(String url) throws IOException {
-        // Set timeouts
-        int connectionTimeout = 5 * 1000; // 5 seconds
-        int socketTimeout = 5 * 1000; // 5 seconds
-
+    public JSONObject httpGet(String url) throws IOException {
         // Create custom request configuration
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(connectionTimeout)
-                .setSocketTimeout(socketTimeout)
+                .setSocketTimeout(soTimeout)
                 .build();
 
         // Use custom configuration
@@ -78,15 +78,11 @@ public class PWRJ {
         }
     }
 
-    public static JSONObject httpPost(String url, JSONObject body) throws IOException {
-        // Set timeouts
-        int connectionTimeout = 5 * 1000; // 5 seconds
-        int socketTimeout = 5 * 1000; // 5 seconds
-
+    public JSONObject httpPost(String url, JSONObject body) throws IOException {
         // Create custom request configuration
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(connectionTimeout)
-                .setSocketTimeout(socketTimeout)
+                .setSocketTimeout(soTimeout)
                 .build();
 
         // Use custom configuration
