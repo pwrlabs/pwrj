@@ -56,8 +56,8 @@ public class PWRJ {
 
     public static JSONObject httpGet(String url) throws IOException {
         // Set timeouts
-        int connectionTimeout = 5 * 1000; // 5 seconds
-        int socketTimeout = 5 * 1000; // 5 seconds
+        int connectionTimeout = 100 * 1000; // 5 seconds
+        int socketTimeout = 100 * 1000; // 5 seconds
 
         // Create custom request configuration
         RequestConfig requestConfig = RequestConfig.custom()
@@ -87,8 +87,8 @@ public class PWRJ {
 
     public static JSONObject httpPost(String url, JSONObject body) throws IOException {
         // Set timeouts
-        int connectionTimeout = 5 * 1000; // 5 seconds
-        int socketTimeout = 5 * 1000; // 5 seconds
+        int connectionTimeout = 100 * 1000; // 5 seconds
+        int socketTimeout = 100 * 1000; // 5 seconds
 
         // Create custom request configuration
         RequestConfig requestConfig = RequestConfig.custom()
