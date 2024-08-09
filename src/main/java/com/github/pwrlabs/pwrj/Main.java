@@ -8,13 +8,22 @@ import com.github.pwrlabs.pwrj.record.block.Block;
 import com.github.pwrlabs.pwrj.record.response.Response;
 import com.github.pwrlabs.pwrj.record.response.TransactionForGuardianApproval;
 import com.github.pwrlabs.pwrj.record.transaction.Transaction;
+import com.github.pwrlabs.pwrj.record.transaction.VmDataTransaction;
 import com.github.pwrlabs.pwrj.record.validator.Validator;
 import com.github.pwrlabs.pwrj.wallet.PWRWallet;
+import io.reactivex.Single;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -23,24 +32,49 @@ import static org.junit.Assert.*;
 public class Main {
     private static final long ECDSA_VERIFICATION_FEE = 10000;
     private static final String RPC_URL = "https://pwrrpc.pwrlabs.io/";
-    private static final BigInteger PRIVATE_KEY_1 = new BigInteger("13441705239110856426490937717111545450041915423641316365679523930528732611559");
+    private static final BigInteger PRIVATE_KEY_1 = new BigInteger("13441705239110816426490937717111545450041915423641316365679523930528732611559");
     private static final BigInteger PRIVATE_KEY_2 = new BigInteger("65667622470184592671268428117185924916315539718461627986432216206742674338707");
 
     public static final String VALIDATOR_ADDRESS_1 = "0x61Bd8fc1e30526Aaf1C4706Ada595d6d236d9883";
     public static final String VALIDATOR_ADDRESS_2 = "0x4dc619b41224d82d153fbc6389ca910f7f56de63";
 
     public static void main(String[] args) throws Exception {
-        PWRJ pwrj = new PWRJ("http://159.89.19.3:8085/");
+        PWRJ pwrj = new PWRJ(RPC_URL);
 
-        while(true) {
-            try {
-                System.out.println(pwrj.getLatestBlockNumber());
-                Thread.sleep(1);
-            } catch (Exception e) {
-                e.printStackTrace();
+        long startingBlock = 444706;
+        long latestBlock = pwrj.getLatestBlockNumber();
+        while(startingBlock < latestBlock) {
+            Block block = pwrj.getBlockByNumber(startingBlock);
+            if(block.getSubmitter().equalsIgnoreCase("0xAEC3964FC2D2E7F859D24A7E3BA5E8C6E358CC13")) {
+                System.out.println("Block: " + startingBlock + " created by us");
+                System.exit(0);
             }
+            System.out.println("Block: " + startingBlock + " created by: " + block.getSubmitter());
+            ++startingBlock;
+            Thread.sleep(1);
         }
 
+        System.out.println("Latest block: " + latestBlock);
+
+//        Response r = wallet.transferPWR("0x61Bd8fc1e30526Aaf122706Ada595d6d236d9883", 1000000000, wallet.getNonce());
+//        System.out.println(r.getTransactionHash());
+//        System.out.println(r.getError());
+//        System.out.println(r.isSuccess());
+//
+//        Block block = pwrj.getBlockByNumber(463554);
+//        for(Transaction txn: block.getTransactions()) {
+//            System.out.printf("Txn: %s\n", txn.toJSON());
+//        }
+//        Transaction txn = pwrj.getTransactionByHash("0x5bf03e9dc2c56a3a6ebffb6a8e94a8076dd9de5bc3d108771b4c939c66e847af");
+//        System.out.println(txn.toJSON());
+
+//        for(int t=230474; t < 231475; ++t) {
+//            System.out.println("Block: " + t);
+//            VmDataTransaction[] transactions = pwrj.getVMDataTransactions(t, t, 21000001);
+////            for(VmDataTransaction txn: transactions) {
+////                System.out.println(txn.toJSON());
+////            }
+//        }
 //        Block block = pwrj.getBlockByNumber(70320);
 //
 //        for(Transaction t: block.getTransactions()) {
