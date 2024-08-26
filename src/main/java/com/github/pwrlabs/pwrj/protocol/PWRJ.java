@@ -353,6 +353,10 @@ public class PWRJ {
         return new Block(httpGet(rpcNodeUrl + "/block/?blockNumber=" + blockNumber).getJSONObject("block"));
     }
 
+    public Block getBlockByNumberExcludingDataAndExtraData(long blockNumber) throws IOException {
+        return new Block(httpGet(rpcNodeUrl + "/blockExcludingDataAndExtraData/?blockNumber=" + blockNumber).getJSONObject("block"));
+    }
+
     public Transaction getTransactionByHash(String hash) throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/transactionByHash/?transactionHash=" + hash).getJSONObject("transaction");
         return Transaction.fromJSON(object, object.getLong("blockNumber"), object.getLong("timestamp"), object.getInt("positionInTheBlock"));
