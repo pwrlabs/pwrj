@@ -1,6 +1,7 @@
 package com.github.pwrlabs.pwrj.protocol;
 
 import com.github.pwrlabs.pwrj.record.block.Block;
+import com.github.pwrlabs.pwrj.record.response.EarlyWithdrawPenaltyResponse;
 import com.github.pwrlabs.pwrj.record.response.Response;
 import com.github.pwrlabs.pwrj.record.response.TransactionForGuardianApproval;
 import com.github.pwrlabs.pwrj.record.transaction.GuardianApprovalTransaction;
@@ -33,8 +34,7 @@ import org.apache.http.entity.StringEntity;
 import java.util.*;
 
 public class PWRJ {
-    @Getter
-    @Setter
+    @Getter @Setter
     private int soTimeout = 20000, connectionTimeout = 20000;
 
     public PWRJ(String rpcNodeUrl) {
@@ -46,17 +46,9 @@ public class PWRJ {
         } catch (Exception e) {
             throw new RuntimeException("Failed to get chain ID from the RPC node: " + e.getMessage());
         }
-
-        try {
-            JSONObject object = httpGet(rpcNodeUrl + "/feePerByte/");
-            feePerByte = object.getLong("feePerByte");
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to get fee per byte from the RPC node: " + e.getMessage());
-        }
     }
     private String rpcNodeUrl;
     private final byte chainId;
-    private long feePerByte = 0;
     private long ecdsaVerificationFee = 10000;
 
     public JSONObject httpGet(String url) throws IOException {
@@ -118,7 +110,8 @@ public class PWRJ {
         }
     }
 
-    public long getFee(byte[] txn) {
+    public long getFee(byte[] txn) throws IOException {
+        long feePerByte = getFeePerByte();
         Transaction transaction = TransactionDecoder.decode(txn);
         if(transaction instanceof GuardianApprovalTransaction) {
             GuardianApprovalTransaction guardianApprovalTransaction = (GuardianApprovalTransaction) transaction;
@@ -144,22 +137,26 @@ public class PWRJ {
     }
 
     public static boolean isVmAddress(String address) {
-        if (address == null || (address.length() != 40 && address.length() != 42)) return false;
-        if(address.startsWith("0x")) address = address.substring(2);
-        if(!address.startsWith("0") && !address.startsWith("1")) return false;
+        try {
+            if (address == null || (address.length() != 40 && address.length() != 42)) return false;
+            if (address.startsWith("0x")) address = address.substring(2);
+            if (!address.startsWith("0") && !address.startsWith("1")) return false;
 
-        boolean negative = address.startsWith("0");
-        if(!negative) address = address.substring(1);
+            boolean negative = address.startsWith("0");
+            if (!negative) address = address.substring(1);
 
-        BigInteger maxLong = BigInteger.valueOf(Long.MAX_VALUE);
-        BigInteger minLong = BigInteger.valueOf(Long.MIN_VALUE);
+            BigInteger maxLong = BigInteger.valueOf(Long.MAX_VALUE);
+            BigInteger minLong = BigInteger.valueOf(Long.MIN_VALUE);
 
-        BigInteger vmId = new BigInteger(address);
-        if(negative) vmId = vmId.negate();
+            BigInteger vmId = new BigInteger(address);
+            if (negative) vmId = vmId.negate();
 
-        if(vmId.compareTo(maxLong) > 0 || vmId.compareTo(minLong) < 0) return false;
+            if (vmId.compareTo(maxLong) > 0 || vmId.compareTo(minLong) < 0) return false;
 
-        return true;
+            return true;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
     /**
@@ -181,7 +178,7 @@ public class PWRJ {
      * @return The fee-per-byte rate.
      */
     public long getFeePerByte() throws IOException {
-        return feePerByte;
+        return httpGet(rpcNodeUrl + "/feePerByte/").getLong("feePerByte");
     }
 
     public short getBlockchainVersion() throws IOException {
@@ -249,6 +246,82 @@ public class PWRJ {
         return httpGet(rpcNodeUrl + "/blocksCount/").getLong("blocksCount");
     }
 
+    public int getMaxBlockSize() throws IOException {
+        return httpGet(rpcNodeUrl + "/maxBlockSize/").getInt("maxBlockSize");
+    }
+
+    public int getMaxTransactionSize() throws IOException {
+        return httpGet(rpcNodeUrl + "/maxTransactionSize/").getInt("maxTransactionSize");
+    }
+
+    public int getValidatorCountLimit() throws IOException {
+        return httpGet(rpcNodeUrl + "/validatorCountLimit/").getInt("validatorCountLimit");
+    }
+
+    public int getValidatorSlashingFee() throws IOException {
+        return httpGet(rpcNodeUrl + "/validatorSlashingFee/").getInt("validatorSlashingFee");
+    }
+
+    public int getVmOwnerTransactionFeeShare() throws IOException {
+        return httpGet(rpcNodeUrl + "/vmOwnerTransactionFeeShare/").getInt("vmOwnerTransactionFeeShare");
+    }
+
+    public int getBurnPercentage() throws IOException {
+        return httpGet(rpcNodeUrl + "/burnPercentage/").getInt("burnPercentage");
+    }
+
+    public int getValidatorOperationalFee() throws IOException {
+        return httpGet(rpcNodeUrl + "/validatorOperationalFee/").getInt("validatorOperationalFee");
+    }
+
+    public long getBlockNumber() throws IOException {
+        return httpGet(rpcNodeUrl + "/blockNumber/").getLong("blockNumber");
+    }
+
+    public long getBlockTimestamp() throws IOException {
+        return httpGet(rpcNodeUrl + "/blockTimestamp/").getLong("blockTimestamp");
+    }
+
+    public long getTotalVotingPower() throws IOException {
+        return httpGet(rpcNodeUrl + "/totalVotingPower/").getLong("totalVotingPower");
+    }
+
+    public long getPwrRewardsPerYear() throws IOException {
+        return httpGet(rpcNodeUrl + "/pwrRewardsPerYear/").getLong("pwrRewardsPerYear");
+    }
+
+    public long getWithdrawalLockTime() throws IOException {
+        return httpGet(rpcNodeUrl + "/withdrawalLockTime/").getLong("withdrawalLockTime");
+    }
+
+    public long getValidatorJoiningFee() throws IOException {
+        return httpGet(rpcNodeUrl + "/validatorJoiningFee/").getLong("validatorJoiningFee");
+    }
+
+    public long getMaxGuardianTime() throws IOException {
+        return httpGet(rpcNodeUrl + "/maxGuardianTime/").getLong("maxGuardianTime");
+    }
+
+    public long getVmIdClaimingFee() throws IOException {
+        return httpGet(rpcNodeUrl + "/vmIdClaimingFee/").getLong("vmIdClaimingFee");
+    }
+
+    public long getProposalFee() throws IOException {
+        return httpGet(rpcNodeUrl + "/proposalFee/").getLong("proposalFee");
+    }
+
+    public long getProposalValidityTime() throws IOException {
+        return httpGet(rpcNodeUrl + "/proposalValidityTime/").getLong("proposalValidityTime");
+    }
+
+    public long getMinimumDelegatingAmount() throws IOException {
+        return httpGet(rpcNodeUrl + "/minimumDelegatingAmount/").getLong("minimumDelegatingAmount");
+    }
+
+    public long getEcdsaVerificationFee() throws IOException {
+        return httpGet(rpcNodeUrl + "/ecdsaVerificationFee/").getLong("ecdsaVerificationFee");
+    }
+
     /**
      * Retrieves the number of the latest block from the RPC node.
      *
@@ -278,6 +351,24 @@ public class PWRJ {
      */
     public Block getBlockByNumber(long blockNumber) throws IOException {
         return new Block(httpGet(rpcNodeUrl + "/block/?blockNumber=" + blockNumber).getJSONObject("block"));
+    }
+
+    public Block getBlockByNumberExcludingDataAndExtraData(long blockNumber) throws IOException {
+        return new Block(httpGet(rpcNodeUrl + "/blockExcludingDataAndExtraData/?blockNumber=" + blockNumber).getJSONObject("block"));
+    }
+
+    public Transaction getTransactionByHash(String hash) throws IOException {
+        JSONObject object = httpGet(rpcNodeUrl + "/transactionByHash/?transactionHash=" + hash).getJSONObject("transaction");
+        return Transaction.fromJSON(object, object.getLong("blockNumber"), object.getLong("timestamp"), object.getInt("positionInTheBlock"));
+    }
+
+    public String getProposalStatus(String proposalHash) throws IOException {
+        return httpGet(rpcNodeUrl + "/proposalStatus/?proposalHash=" + proposalHash).getString("status");
+    }
+
+    public JSONObject getTransactionExplorerInfo(String hash) throws IOException {
+        JSONObject object = httpGet(rpcNodeUrl + "/transactionExplorerInfo/?transactionHash=" + hash).getJSONObject("transaction");
+        return object;
     }
 
     public VmDataTransaction[] getVMDataTransactions(long startingBlock, long endingBlock, long vmId) throws IOException {
@@ -593,6 +684,18 @@ public class PWRJ {
         return validator;
     }
 
+    public Map<String /*Validator address*/, Long /*Reward*/> getValidatorsReward(long blockNumber) throws IOException {
+        JSONObject object = httpGet(rpcNodeUrl + "/validatorsBlockRewards/?blockNumber=" + blockNumber);
+        JSONObject rewards = object.getJSONObject("rewards");
+        Map<String, Long> rewardsMap = new HashMap<>();
+
+        for(String address: rewards.keySet()) {
+            rewardsMap.put(address, rewards.getLong(address));
+        }
+
+        return rewardsMap;
+    }
+
     public static void main(String[] args) throws IOException {
         PWRJ pwrj = new PWRJ("https://pwrrpc.pwrlabs.io/");
         pwrj.getValidator("0x0x7111434F00E6C66616fc25cff3Fa080cdb95562B");
@@ -649,26 +752,28 @@ public class PWRJ {
         }
     }
 
+    public EarlyWithdrawPenaltyResponse getEarlyWithdrawPenalty(long withdrawTime) throws IOException {
+        JSONObject response = httpGet(rpcNodeUrl + "/earlyWithdrawPenalty/?withdrawTime=" + withdrawTime);
 
+        boolean earlyWithdrawAvailable = response.getBoolean("earlyWithdrawAvailable");
+        long penalty = earlyWithdrawAvailable ? response.getLong("penalty") : 0;
 
+        return new EarlyWithdrawPenaltyResponse(earlyWithdrawAvailable, penalty);
+    }
 
-    /**
-     * Fetches and updates the current fee per byte from the RPC node.
-     *
-     * <p>The PWR Chain determines transaction fees based on the transaction size in bytes.
-     * This method queries the RPC node for the latest fee-per-byte rate and updates
-     * the local {@code feePerByte} variable.</p>
-     *
-     * <p>If the RPC node returns an unsuccessful status or if there is any network error,
-     * appropriate exceptions will be thrown. Ensure error handling is implemented when calling
-     * this method.</p>
-     *
-     * @throws IOException If there's an issue with the network or stream handling.
-     * @throws InterruptedException If the request is interrupted.
-     * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
-     */
-    public void updateFeePerByte() throws IOException {
-        feePerByte = httpGet(rpcNodeUrl + "/feePerByte/").getLong("feePerByte");
+    public Map<Long, Long> getAllEarlyWithdrawPenalties() throws IOException {
+        JSONObject response = httpGet(rpcNodeUrl + "/allEarlyWithdrawPenalties/");
+
+        JSONObject penaltiesObj = response.getJSONObject("earlyWithdrawPenalties");
+        Map<Long, Long> penalties = new HashMap<>();
+
+        for (String key : penaltiesObj.keySet()) {
+            long withdrawTime = Long.parseLong(key);
+            long penalty = penaltiesObj.getLong(key);
+            penalties.put(withdrawTime, penalty);
+        }
+
+        return penalties;
     }
 
     /**
@@ -713,10 +818,10 @@ public class PWRJ {
             HttpResponse response = client.execute(postRequest);
 
             if (response.getStatusLine().getStatusCode() == 200) {
-                System.out.println("Status code: " + response.getStatusLine().getStatusCode());
+                //System.out.println("Status code: " + response.getStatusLine().getStatusCode());
                 return new Response(true, "0x" + Hex.toHexString(Hash.sha3(transaction)), null);
             } else if (response.getStatusLine().getStatusCode() == 400) {
-                System.out.println("Status code: " + response.getStatusLine().getStatusCode());
+               System.out.println("Status code: " + response.getStatusLine().getStatusCode());
                 JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
                 System.out.println("broadcast response:" + object.toString());
                 return new Response(false, null, object.optString("message", ""));
@@ -724,6 +829,7 @@ public class PWRJ {
                 throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode() + " " + EntityUtils.toString(response.getEntity()));
             }
         } catch (Exception e) {
+            e.printStackTrace();
             return new Response(false, null, e.getMessage());
         }
     }

@@ -15,15 +15,15 @@ public class VmDataTransaction extends Transaction {
     public VmDataTransaction(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
         super(json, blockNumber, timestamp, positionInTheBlock);
         this.vmId = json.getLong("vmId");
-        this.data = json.getString("data");
+        this.data = json.optString("data", "");
     }
 
     @Override
     public JSONObject toJSON() {
-        JSONObject Transaction = super.toJSON();
-        Transaction.put("vmId", vmId);
-        Transaction.put("data", data);
-        Transaction.put("type", "VM Data");
-        return Transaction;
+        JSONObject data = super.toJSON();
+        data.put("vmId", vmId);
+        data.put("data", this.data);
+        data.put("type", "VM Data");
+        return data;
     }
 }

@@ -9,7 +9,6 @@ import org.bouncycastle.math.ec.FixedPointCombMultiplier;
 import com.github.pwrlabs.pwrj.protocol.Signature;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.http.HttpClient;
 import java.nio.ByteBuffer;
@@ -17,9 +16,7 @@ import java.nio.ByteBuffer;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.math.ec.ECPoint;
 
-import java.nio.charset.StandardCharsets;
 import java.security.*;
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 
@@ -563,6 +560,122 @@ public class PWRWallet {
      */
     public Response moveStake(long sharesAmount, String fromValidator, String toValidator, int nonce) {
         return pwrj.broadcastTransaction(getSignedMoveStakeTransaction(sharesAmount, fromValidator, toValidator, nonce));
+    }
+
+    //
+    public byte[] getSignedChangeEarlyWithdrawPenaltyProposalTxn(long withdrawalPenaltyTime, int withdrawalPenalty, String title, String description, int nonce) {
+        return getSignedTransaction(TransactionBuilder.getChangeEarlyWithdrawPenaltyProposalTxn(withdrawalPenaltyTime, withdrawalPenalty, title, description, nonce, pwrj.getChainId()));
+    }
+
+    public Response createProposal_ChangeEarlyWithdrawalPenalty(long withdrawalPenaltyTime, int withdrawalPenalty, String title, String description, int nonce) {
+        return pwrj.broadcastTransaction(getSignedChangeEarlyWithdrawPenaltyProposalTxn(withdrawalPenaltyTime, withdrawalPenalty, title, description, nonce));
+    }
+
+    //
+    public byte[] getSignedChangeFeePerByteProposalTxn(long feePerByte, String title, String description, int nonce) {
+        return getSignedTransaction(TransactionBuilder.getChangeFeePerByteProposalTxn(feePerByte, title, description, nonce, pwrj.getChainId()));
+    }
+
+    public Response createProposal_ChangeFeePerByte(long feePerByte, String title, String description, int nonce) {
+        return pwrj.broadcastTransaction(getSignedChangeFeePerByteProposalTxn(feePerByte, title, description, nonce));
+    }
+
+    //
+    public byte[] getSignedChangeMaxBlockSizeProposalTxn(int maxBlockSize, String title, String description, int nonce) {
+        return getSignedTransaction(TransactionBuilder.getChangeMaxBlockSizeProposalTxn(maxBlockSize, title, description, nonce, pwrj.getChainId()));
+    }
+
+    public Response createProposal_ChangeMaxBlockSize(int maxBlockSize, String title, String description, int nonce) {
+        return pwrj.broadcastTransaction(getSignedChangeMaxBlockSizeProposalTxn(maxBlockSize, title, description, nonce));
+    }
+
+    //
+    public byte[] getSignedChangeMaxTxnProposalTxn(int maxTxnSize, String title, String description, int nonce) {
+        return getSignedTransaction(TransactionBuilder.getChangeMaxTxnSizeProposalTxn(maxTxnSize, title, description, nonce, pwrj.getChainId()));
+    }
+
+    public Response createProposal_ChangeMaxTxnSizeSize(int maxTxnSize, String title, String description, int nonce) {
+        return pwrj.broadcastTransaction(getSignedChangeMaxTxnProposalTxn(maxTxnSize, title, description, nonce));
+    }
+
+    //
+    public byte[] getSignedChangeOverallBurnPercentageProposalTxn(int burnPercentage, String title, String description, int nonce) {
+        return getSignedTransaction(TransactionBuilder.getChangeOverallBurnPercentageProposalTxn(burnPercentage, title, description, nonce, pwrj.getChainId()));
+    }
+
+    public Response createProposal_ChangeOverallBurnPercentage(int burnPercentage, String title, String description, int nonce) {
+        return pwrj.broadcastTransaction(getSignedChangeOverallBurnPercentageProposalTxn(burnPercentage, title, description, nonce));
+    }
+
+    //
+    public byte[] getSignedChangeRewardPerYearProposalTxn(long rewardPerYear, String title, String description, int nonce) {
+        return getSignedTransaction(TransactionBuilder.getChangeRewardPerYearProposalTxn(rewardPerYear, title, description, nonce, pwrj.getChainId()));
+    }
+
+    public Response createProposal_ChangeRewardPerYear(long rewardPerYear, String title, String description, int nonce) {
+        return pwrj.broadcastTransaction(getSignedChangeRewardPerYearProposalTxn(rewardPerYear, title, description, nonce));
+    }
+
+    //
+    public byte[] getSignedChangeValidatorCountLimitProposalTxn(int validatorCountLimit, String title, String description, int nonce) {
+        return getSignedTransaction(TransactionBuilder.getChangeValidatorCountLimitProposalTxn(validatorCountLimit, title, description, nonce, pwrj.getChainId()));
+    }
+
+    public Response createProposal_ChangeValidatorCountLimit(int validatorCountLimit, String title, String description, int nonce) {
+        return pwrj.broadcastTransaction(getSignedChangeValidatorCountLimitProposalTxn(validatorCountLimit, title, description, nonce));
+    }
+
+    //
+    public byte[] getSignedChangeValidatorJoiningFeeProposalTxn(long joiningFee, String title, String description, int nonce) {
+        return getSignedTransaction(TransactionBuilder.getChangeValidatorJoiningFeeProposalTxn(joiningFee, title, description, nonce, pwrj.getChainId()));
+    }
+
+    public Response createProposal_ChangeValidatorJoiningFee(long joiningFee, String title, String description, int nonce) {
+        return pwrj.broadcastTransaction(getSignedChangeValidatorJoiningFeeProposalTxn(joiningFee, title, description, nonce));
+    }
+
+    //
+    public byte[] getSignedChangeVmIdClaimingFeeProposalTxn(long claimingFee, String title, String description, int nonce) {
+        return getSignedTransaction(TransactionBuilder.getChangeVmIdClaimingFeeProposalTxn(claimingFee, title, description, nonce, pwrj.getChainId()));
+    }
+
+    public Response createProposal_ChangeVmIdClaimingFee(long claimingFee, String title, String description, int nonce) {
+        return pwrj.broadcastTransaction(getSignedChangeVmIdClaimingFeeProposalTxn(claimingFee, title, description, nonce));
+    }
+
+    //
+    public byte[] getSignedChangeVmOwnerTxnFeeShareProposalTxn(int feeShare, String title, String description, int nonce) {
+        return getSignedTransaction(TransactionBuilder.getChangeVmOwnerTxnFeeShareProposalTxn(feeShare, title, description, nonce, pwrj.getChainId()));
+    }
+
+    public Response createProposal_ChangeVmOwnerTxnFeeShare(int feeShare, String title, String description, int nonce) {
+        return pwrj.broadcastTransaction(getSignedChangeVmOwnerTxnFeeShareProposalTxn(feeShare, title, description, nonce));
+    }
+
+    //
+    public byte[] getSignedOtherProposalTxn(String title, String description, int nonce) {
+        return getSignedTransaction(TransactionBuilder.getOtherProposalTxn(title, description, nonce, pwrj.getChainId()));
+    }
+
+    public Response createProposal_OtherProposal(String title, String description, int nonce) {
+        return pwrj.broadcastTransaction(getSignedOtherProposalTxn(title, description, nonce));
+    }
+
+    //
+    public byte[] getSignedVoteOnProposalTxn(String proposalHash, byte vote, int nonce) {
+        return getSignedTransaction(TransactionBuilder.getVoteOnProposalTxn(proposalHash, vote, nonce, pwrj.getChainId()));
+    }
+
+    public Response voteOnProposal(String proposalHash, byte vote, int nonce) {
+        return pwrj.broadcastTransaction(getSignedVoteOnProposalTxn(proposalHash, vote, nonce));
+    }
+
+    public byte[] getSignedChangeIpTransaction(String newIp, int nonce) {
+        return getSignedTransaction(TransactionBuilder.getChangeIpTxn(newIp, nonce, pwrj.getChainId()));
+    }
+
+    public Response changeIp(String newIp, int nonce) {
+        return pwrj.broadcastTransaction(getSignedChangeIpTransaction(newIp, nonce));
     }
 
 

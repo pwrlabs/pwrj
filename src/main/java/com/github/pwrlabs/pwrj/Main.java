@@ -1,15 +1,29 @@
 package com.github.pwrlabs.pwrj;
 
+import com.github.pwrlabs.pwrj.Utils.Hash;
 import com.github.pwrlabs.pwrj.Utils.Hex;
 import com.github.pwrlabs.pwrj.protocol.PWRJ;
 import com.github.pwrlabs.pwrj.protocol.TransactionBuilder;
+import com.github.pwrlabs.pwrj.record.block.Block;
 import com.github.pwrlabs.pwrj.record.response.Response;
+import com.github.pwrlabs.pwrj.record.response.TransactionForGuardianApproval;
+import com.github.pwrlabs.pwrj.record.transaction.Transaction;
+import com.github.pwrlabs.pwrj.record.transaction.VmDataTransaction;
 import com.github.pwrlabs.pwrj.record.validator.Validator;
 import com.github.pwrlabs.pwrj.wallet.PWRWallet;
+import io.reactivex.Single;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -17,28 +31,87 @@ import static org.junit.Assert.*;
 
 public class Main {
     private static final long ECDSA_VERIFICATION_FEE = 10000;
-    private static final String RPC_URL = "http://localhost:8085/";
-    private static final BigInteger PRIVATE_KEY_1 = new BigInteger("13441705239710856426490937717111545450041915423641316365679523930528732611559");
-    private static final BigInteger PRIVATE_KEY_2 = new BigInteger("65667622470184592671268428677185924916315539718461627986432216206742674338707");
+    private static final String RPC_URL = "https://pwrrpc.pwrlabs.io/";
+    private static final BigInteger PRIVATE_KEY_1 = new BigInteger("13441705239110816426490937717111545450041915423641316365679523930528732611559");
+    private static final BigInteger PRIVATE_KEY_2 = new BigInteger("65667622470184592671268428117185924916315539718461627986432216206742674338707");
 
     public static final String VALIDATOR_ADDRESS_1 = "0x61Bd8fc1e30526Aaf1C4706Ada595d6d236d9883";
     public static final String VALIDATOR_ADDRESS_2 = "0x4dc619b41224d82d153fbc6389ca910f7f56de63";
 
     public static void main(String[] args) throws Exception {
-        System.out.println(Long.MAX_VALUE);
-        System.out.println(Long.MIN_VALUE);
-        System.exit(0);
-        removeValidator("0x995e5b77e3cdc413bb5562f24abceb725a6f92b8");
-        Thread.sleep(1000);
-        System.exit(0);
         PWRJ pwrj = new PWRJ(RPC_URL);
-        PWRWallet wallet1 = new PWRWallet(PRIVATE_KEY_1, pwrj);
-        PWRWallet wallet2 = new PWRWallet(PRIVATE_KEY_2, pwrj);
 
-        System.out.println("Wallet 1 address: " + wallet1.getAddress());
-        System.out.println("Wallet 2 address: " + wallet2.getAddress());
+        long startingBlock = 444706;
+        long latestBlock = pwrj.getLatestBlockNumber();
+        while(startingBlock < latestBlock) {
+            Block block = pwrj.getBlockByNumber(startingBlock);
+            if(block.getSubmitter().equalsIgnoreCase("0xAEC3964FC2D2E7F859D24A7E3BA5E8C6E358CC13")) {
+                System.out.println("Block: " + startingBlock + " created by us");
+                System.exit(0);
+            }
+            System.out.println("Block: " + startingBlock + " created by: " + block.getSubmitter());
+            ++startingBlock;
+            Thread.sleep(1);
+        }
 
-       // System.exit(0);
+        System.out.println("Latest block: " + latestBlock);
+
+//        Response r = wallet.transferPWR("0x61Bd8fc1e30526Aaf122706Ada595d6d236d9883", 1000000000, wallet.getNonce());
+//        System.out.println(r.getTransactionHash());
+//        System.out.println(r.getError());
+//        System.out.println(r.isSuccess());
+//
+//        Block block = pwrj.getBlockByNumber(463554);
+//        for(Transaction txn: block.getTransactions()) {
+//            System.out.printf("Txn: %s\n", txn.toJSON());
+//        }
+//        Transaction txn = pwrj.getTransactionByHash("0x5bf03e9dc2c56a3a6ebffb6a8e94a8076dd9de5bc3d108771b4c939c66e847af");
+//        System.out.println(txn.toJSON());
+
+//        for(int t=230474; t < 231475; ++t) {
+//            System.out.println("Block: " + t);
+//            VmDataTransaction[] transactions = pwrj.getVMDataTransactions(t, t, 21000001);
+////            for(VmDataTransaction txn: transactions) {
+////                System.out.println(txn.toJSON());
+////            }
+//        }
+//        Block block = pwrj.getBlockByNumber(70320);
+//
+//        for(Transaction t: block.getTransactions()) {
+//            System.out.println(t.toJSON());
+//        }
+
+
+//        PWRWallet wallet1 = new PWRWallet(PRIVATE_KEY_1, pwrj);
+//        Response r = wallet1.transferPWR();
+//        if(r.isSuccess()) {
+//            System.out.println("Transfer successful: " + r.getTransactionHash());
+//        } else {
+//            System.out.println("Transfer failed: " + r.getError());
+//        }
+//        System.out.println(r.getTransactionHash());
+//        Block block = pwrj.getBlockByNumber(100);
+//        for(Transaction t: block.getTransactions()) {
+//            System.out.println(t.toJSON());
+//        }
+        //removeValidator("0x1EefcCF7869a290a01B7DEF0399B8b7B9dd4f548");
+//        System.exit(0);
+//        for(Validator v: pwrj.getActiveValidators()) {
+//            System.out.println(v.getAddress());
+//        }
+//        System.exit(0);
+//
+//        System.out.println(pwrj.getActiveValidatorsCount());
+//
+//        PWRWallet wallet1 = new PWRWallet(PRIVATE_KEY_1, pwrj);
+//        PWRWallet wallet2 = new PWRWallet(PRIVATE_KEY_2, pwrj);
+//
+//        System.out.println("Wallet 1 address: " + wallet1.getAddress());
+//        System.out.println("Wallet 2 address: " + wallet2.getAddress());
+
+//        byte[] txn = wallet1.getSignedTransferPWRTransaction(wallet2.getAddress(), 1000000000, wallet1.getNonce());
+//        System.out.println(Hex.toHexString(txn));
+
         //testTransferPWR(wallet1, wallet2, pwrj);
         //testDelegateAndWithdraw(wallet1, pwrj);
         //testClaimAndSendVmData(wallet1, pwrj);
@@ -47,7 +120,19 @@ public class Main {
        // testValidatorTransactions(wallet1, wallet2, pwrj);
         //testPayableVmDataTransaction(wallet1, wallet2, pwrj);
        // testConduitTransactions(wallet1, wallet2, pwrj);
-        testTransferPWRFromVM(wallet1, wallet2, pwrj);
+       // testTransferPWRFromVM(wallet1, wallet2, pwrj);
+    }
+
+    public static byte[] ecdsaPrivateKeyToRsaPrivateKey(byte[] pk) {
+        ByteBuffer rsaPrivateKeyBuffer = ByteBuffer.allocate(256);
+
+        for(int t=0; t < 8; ++t) {
+            BigInteger bi = new BigInteger(pk).add(BigInteger.valueOf(t));
+            byte[] hash = Hash.sha3(bi.toByteArray());
+            rsaPrivateKeyBuffer.put(hash);
+        }
+
+        return rsaPrivateKeyBuffer.array();
     }
 
     public static void removeValidator(String address) throws Exception {

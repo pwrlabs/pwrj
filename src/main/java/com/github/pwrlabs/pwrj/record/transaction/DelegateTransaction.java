@@ -18,8 +18,8 @@ public class DelegateTransaction extends Transaction {
 
     @Override
     public JSONObject toJSON() {
-        JSONObject Transaction = super.toJSON();
-        Transaction.put("validator", validator);
-        return Transaction;
+        JSONObject data = super.toJSON();
+        data.put("validator", validator);
+        return data;
     }
 }
