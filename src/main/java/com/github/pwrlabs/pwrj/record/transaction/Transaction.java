@@ -14,6 +14,7 @@ public class Transaction {
     private final String type, sender, receiver, hash, errorMessage;
     private final long timestamp, value, blockNumber, fee, extraFee;
     private final byte[] rawTransaction;
+    private final JSONObject extraData;
 
     public Transaction(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
         this.size = json.optInt("size", 0);
@@ -32,6 +33,7 @@ public class Transaction {
         this.chainId = (byte) json.optInt("chainId", 0);
         this.hasError = !json.optBoolean("success", true);
         this.errorMessage = json.optString("errorMessage", "");
+        this.extraData = json.optJSONObject("extraData", null);
     }
 
     public boolean hasError() {

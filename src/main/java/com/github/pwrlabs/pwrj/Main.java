@@ -39,23 +39,7 @@ public class Main {
     public static final String VALIDATOR_ADDRESS_2 = "0x4dc619b41224d82d153fbc6389ca910f7f56de63";
 
     public static void main(String[] args) throws Exception {
-        PWRJ pwrj = new PWRJ(RPC_URL);
-
-        long startingBlock = 444706;
-        long latestBlock = pwrj.getLatestBlockNumber();
-        while(startingBlock < latestBlock) {
-            Block block = pwrj.getBlockByNumber(startingBlock);
-            if(block.getSubmitter().equalsIgnoreCase("0xAEC3964FC2D2E7F859D24A7E3BA5E8C6E358CC13")) {
-                System.out.println("Block: " + startingBlock + " created by us");
-                System.exit(0);
-            }
-            System.out.println("Block: " + startingBlock + " created by: " + block.getSubmitter());
-            ++startingBlock;
-            Thread.sleep(1);
-        }
-
-        System.out.println("Latest block: " + latestBlock);
-
+        removeValidator("0x977E28e65F5b9b8Fd8226d2D2ef4307f1066423C");
 //        Response r = wallet.transferPWR("0x61Bd8fc1e30526Aaf122706Ada595d6d236d9883", 1000000000, wallet.getNonce());
 //        System.out.println(r.getTransactionHash());
 //        System.out.println(r.getError());
