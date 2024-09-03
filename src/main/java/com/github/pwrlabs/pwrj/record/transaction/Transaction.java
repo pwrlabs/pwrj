@@ -33,7 +33,7 @@ public class Transaction {
         this.chainId = (byte) json.optInt("chainId", 0);
         this.hasError = !json.optBoolean("success", true);
         this.errorMessage = json.optString("errorMessage", "");
-        this.extraData = json.optJSONObject("extraData", null);
+        this.extraData = json.has("extraData") ? json.getJSONObject("extraData") : null;
     }
 
     public boolean hasError() {
