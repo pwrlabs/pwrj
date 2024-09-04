@@ -19,7 +19,7 @@ public class Block {
 
     public Block(JSONObject blockJson) {
         transactionCount = blockJson.optInt("transactionCount", 0);
-        size = blockJson.optInt("blockSize", 0);
+        size = blockJson.optInt("size", 0);
         number = blockJson.optLong("blockNumber", 0);
         reward = blockJson.optLong("blockReward", 0);
         timestamp = blockJson.optLong("timestamp", 0);
