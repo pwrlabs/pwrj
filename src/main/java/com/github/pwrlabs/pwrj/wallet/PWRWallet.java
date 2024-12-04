@@ -29,7 +29,6 @@ public class PWRWallet {
         }
     }
 
-    private static HttpClient client = HttpClient.newHttpClient();
     private final BigInteger privateKey;
     private PWRJ pwrj;
 

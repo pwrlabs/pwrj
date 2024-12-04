@@ -29,9 +29,9 @@ public class TransactionBuilder {
      * @return The base transaction bytes.
      * @throws IOException If an I/O error occurs.
      */
-    private static byte[] getTransactionBase(byte identifier, int nonce, byte chainId) {
-        ByteBuffer buffer = ByteBuffer.allocate(6);
-        buffer.put(identifier);
+    private static byte[] getTransactionBase(int identifier, int nonce, byte chainId) {
+        ByteBuffer buffer = ByteBuffer.allocate(9);
+        buffer.putInt(identifier);
         buffer.put(chainId);
         buffer.putInt(nonce);
         return buffer.array();
@@ -42,6 +42,7 @@ public class TransactionBuilder {
             throw new RuntimeException("Invalid address");
     }
 
+    //region - ECDSA Transactions
     /**
      * Returns the transaction of transferring PWR tokens to a specified address.
      *
@@ -667,5 +668,8 @@ public class TransactionBuilder {
         return buffer.array();
     }
 
+    //endregion
 
+    //region - Falcon Transactions
+    //endregion
 }

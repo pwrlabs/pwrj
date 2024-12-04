@@ -14,6 +14,7 @@ import lombok.Setter;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.*;
 import org.bouncycastle.util.encoders.Hex;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -78,7 +79,7 @@ public class PWRJ {
         }
     }
 
-    public JSONObject httpPost(String url, JSONObject body) throws IOException {
+    public JSONObject httpPost(String url, @NotNull JSONObject body) throws IOException {
         // Create custom request configuration
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(connectionTimeout)
