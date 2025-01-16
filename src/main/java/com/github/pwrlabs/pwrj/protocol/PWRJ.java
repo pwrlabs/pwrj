@@ -7,7 +7,6 @@ import com.github.pwrlabs.pwrj.record.response.TransactionForGuardianApproval;
 import com.github.pwrlabs.pwrj.record.transaction.GuardianApprovalTransaction;
 import com.github.pwrlabs.pwrj.record.transaction.Transaction;
 import com.github.pwrlabs.pwrj.record.transaction.VmDataTransaction;
-import com.github.pwrlabs.pwrj.Utils.Hash;
 import com.github.pwrlabs.pwrj.record.validator.Validator;
 import lombok.Getter;
 import lombok.Setter;
@@ -31,6 +30,7 @@ import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
+import org.web3j.crypto.Hash;
 
 import java.util.*;
 
@@ -40,16 +40,11 @@ public class PWRJ {
 
     public PWRJ(String rpcNodeUrl) {
         this.rpcNodeUrl = rpcNodeUrl;
-
-        try {
-            JSONObject object = httpGet(rpcNodeUrl + "/chainId/");
-            chainId = (byte) object.getInt("chainId");
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to get chain ID from the RPC node: " + e.getMessage());
-        }
     }
+
+
     private String rpcNodeUrl;
-    private final byte chainId;
+    private byte chainId = (byte) -1;
     private long ecdsaVerificationFee = 10000;
 
     public JSONObject httpGet(String url) throws IOException {
@@ -170,7 +165,20 @@ public class PWRJ {
     }
 
     public byte getChainId() {
+        if(chainId == (byte)-1) {
+            try {
+                JSONObject object = httpGet(rpcNodeUrl + "/chainId/");
+                chainId = (byte) object.getInt("chainId");
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to get chain ID from the RPC node: " + e.getMessage());
+            }
+        }
+
         return chainId;
+    }
+
+    public void setChainId(byte id) {
+        chainId = id;
     }
 
     /**

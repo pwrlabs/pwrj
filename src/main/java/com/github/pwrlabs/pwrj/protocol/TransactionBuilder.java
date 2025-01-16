@@ -1,8 +1,11 @@
 package com.github.pwrlabs.pwrj.protocol;
 
+import com.github.pwrlabs.pwrj.Utils.Falcon;
 import com.github.pwrlabs.pwrj.Utils.Hex;
+import com.github.pwrlabs.pwrj.Utils.ValidationException;
 import org.bouncycastle.jcajce.provider.digest.Keccak;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.provider.PEMUtil;
 import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.math.ec.FixedPointCombMultiplier;
 
@@ -37,12 +40,23 @@ public class TransactionBuilder {
         return buffer.array();
     }
 
+    private static byte[] getFalconTransactionBase(int identifier, int nonce, byte chainId, long feePerByte, byte[] sender) {
+        ByteBuffer buffer = ByteBuffer.allocate(37);
+        buffer.putInt(identifier);
+        buffer.put(chainId);
+        buffer.putInt(nonce);
+        buffer.putLong(feePerByte);
+        buffer.put(sender);
+        return buffer.array();
+    }
+
     private static void assetAddressValidity(String address) {
         if (address == null || (address.length() != 40 && address.length() != 42))
             throw new RuntimeException("Invalid address");
     }
 
     //region - ECDSA Transactions
+
     /**
      * Returns the transaction of transferring PWR tokens to a specified address.
      *
@@ -63,9 +77,9 @@ public class TransactionBuilder {
             throw new RuntimeException("Nonce cannot be negative");
         }
 
-        byte[] TransactionBase = getTransactionBase((byte) 0, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 8 + 20);
-        buffer.put(TransactionBase);
+        byte[] transactionBase = getTransactionBase( 0, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 20);
+        buffer.put(transactionBase);
         buffer.putLong(amount);
         buffer.put(Hex.decode(to));
 
@@ -81,11 +95,11 @@ public class TransactionBuilder {
      * @return A byte array that represents the transaction of this method.
      */
     public static byte[] getJoinTransaction(String ip, int nonce, byte chainId) {
-        byte[] TransactionBase = getTransactionBase((byte) 1, nonce, chainId);
+        byte[] transactionBase = getTransactionBase( 1, nonce, chainId);
         byte[] ipBytes = ip.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + ipBytes.length);
-        buffer.put(TransactionBase);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + ipBytes.length);
+        buffer.put(transactionBase);
         buffer.put(ip.getBytes(StandardCharsets.UTF_8));
 
         return buffer.array();
@@ -99,9 +113,9 @@ public class TransactionBuilder {
      * @return A byte array that represents a signed transaction of the method.
      */
     public static byte[] getClaimActiveNodeSpotTransaction(int nonce, byte chainId) {
-        byte[] TransactionBase = getTransactionBase((byte) 2, nonce, chainId);
+        byte[] transactionBase = getTransactionBase( 2, nonce, chainId);
 
-        return TransactionBase;
+        return transactionBase;
     }
 
     /**
@@ -123,9 +137,9 @@ public class TransactionBuilder {
             throw new RuntimeException("Nonce cannot be negative");
         }
 
-        byte[] TransactionBase = getTransactionBase((byte) 3, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 28);
-        buffer.put(TransactionBase);
+        byte[] transactionBase = getTransactionBase( 3, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 28);
+        buffer.put(transactionBase);
         buffer.putLong(amount);
         buffer.put(Hex.decode(validator));
 
@@ -151,9 +165,9 @@ public class TransactionBuilder {
             throw new RuntimeException("Nonce cannot be negative");
         }
 
-        byte[] TransactionBase = getTransactionBase((byte) 4, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 28);
-        buffer.put(TransactionBase);
+        byte[] transactionBase = getTransactionBase( 4, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 28);
+        buffer.put(transactionBase);
         buffer.putLong(sharesAmount);
         buffer.put(Hex.decode(validator));
 
@@ -175,9 +189,9 @@ public class TransactionBuilder {
             throw new RuntimeException("Nonce cannot be negative");
         }
 
-        byte[] TransactionBase = getTransactionBase((byte) 5, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 8 + data.length);
-        buffer.put(TransactionBase);
+        byte[] transactionBase = getTransactionBase( 5, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + data.length);
+        buffer.put(transactionBase);
         buffer.putLong(vmId);
         buffer.put(data);
 
@@ -193,9 +207,9 @@ public class TransactionBuilder {
      * @return A byte array that represents the transaction of this method.
      */
     public static byte[] getClaimVmIdTransaction(long vmId, int nonce, byte chainId) {
-        byte[] TransactionBase = getTransactionBase((byte) 6, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 8);
-        buffer.put(TransactionBase);
+        byte[] transactionBase = getTransactionBase( 6, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8);
+        buffer.put(transactionBase);
         buffer.putLong(vmId);
 
         return buffer.array();
@@ -224,9 +238,9 @@ public class TransactionBuilder {
             throw new RuntimeException("Expiry date cannot be in the past");
         }
 
-        byte[] TransactionBase = getTransactionBase((byte) 8, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 20 + 8);
-        buffer.put(TransactionBase);
+        byte[] transactionBase = getTransactionBase( 8, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 20 + 8);
+        buffer.put(transactionBase);
         buffer.putLong(expiryDate);
         buffer.put(Hex.decode(guardian));
 
@@ -241,9 +255,9 @@ public class TransactionBuilder {
      * @return A byte array with the outcome of the transaction.
      */
     public static byte[] getRemoveGuardianTransaction(int nonce, byte chainId) {
-        byte[] TransactionBase = getTransactionBase((byte) 9, nonce, chainId);
+        byte[] transactionBase = getTransactionBase( 9, nonce, chainId);
 
-        return TransactionBase;
+        return transactionBase;
     }
 
     /**
@@ -260,9 +274,9 @@ public class TransactionBuilder {
             totalLength += Transaction.length;
         }
 
-        byte[] TransactionBase = getTransactionBase((byte) 10, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + (transactions.size() * 4) + totalLength);
-        buffer.put(TransactionBase);
+        byte[] transactionBase = getTransactionBase( 10, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + (transactions.size() * 4) + totalLength);
+        buffer.put(transactionBase);
 
         for (byte[] Transaction : transactions) {
             buffer.putInt(Transaction.length);
@@ -288,9 +302,9 @@ public class TransactionBuilder {
             throw new RuntimeException("Nonce cannot be negative");
         }
 
-        byte[] TransactionBase = getTransactionBase((byte) 11, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 16 + data.length);
-        buffer.put(TransactionBase);
+        byte[] transactionBase = getTransactionBase( 11, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 16 + data.length);
+        buffer.put(transactionBase);
         buffer.putLong(vmId);
         buffer.put(data);
         buffer.putLong(value);
@@ -315,9 +329,9 @@ public class TransactionBuilder {
             throw new RuntimeException("Nonce cannot be negative");
         }
 
-        byte[] TransactionBase = getTransactionBase((byte) 7, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 20);
-        buffer.put(TransactionBase);
+        byte[] transactionBase = getTransactionBase( 7, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 20);
+        buffer.put(transactionBase);
         buffer.put(Hex.decode(validator));
 
         return buffer.array();
@@ -346,9 +360,9 @@ public class TransactionBuilder {
             totalTransactionsLength += Transaction.length;
         }
 
-        byte[] TransactionBase = getTransactionBase((byte) 12, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 8 + (transactions.size() * 4) + totalTransactionsLength);
-        buffer.put(TransactionBase);
+        byte[] transactionBase = getTransactionBase( 12, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + (transactions.size() * 4) + totalTransactionsLength);
+        buffer.put(transactionBase);
         buffer.putLong(vmId);
 
         for (byte[] Transaction : transactions) {
@@ -382,9 +396,9 @@ public class TransactionBuilder {
             totalConduitLength += conduit.length;
         }
 
-        byte[] TransactionBase = getTransactionBase((byte) 13, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 8 + (conduits.size() * 4) + totalConduitLength);
-        buffer.put(TransactionBase);
+        byte[] transactionBase = getTransactionBase( 13, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + (conduits.size() * 4) + totalConduitLength);
+        buffer.put(transactionBase);
         buffer.putLong(vmId);
 
         for (byte[] conduit : conduits) {
@@ -413,9 +427,9 @@ public class TransactionBuilder {
             throw new RuntimeException("No conduits provided");
         }
 
-        byte[] TransactionBase = getTransactionBase((byte) 14, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 8 + (conduits.size() * 20));
-        buffer.put(TransactionBase);
+        byte[] transactionBase = getTransactionBase( 14, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + (conduits.size() * 20));
+        buffer.put(transactionBase);
         buffer.putLong(vmId);
 
         for (byte[] conduit : conduits) {
@@ -443,9 +457,9 @@ public class TransactionBuilder {
             throw new RuntimeException("No conduits provided");
         }
 
-        byte[] TransactionBase = getTransactionBase((byte) 15, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 8 + (conduits.size() * 20));
-        buffer.put(TransactionBase);
+        byte[] transactionBase = getTransactionBase( 15, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + (conduits.size() * 20));
+        buffer.put(transactionBase);
         buffer.putLong(vmId);
 
         for (byte[] conduit : conduits) {
@@ -469,9 +483,9 @@ public class TransactionBuilder {
         assetAddressValidity(fromValidator);
         assetAddressValidity(toValidator);
 
-        byte[] TransactionBase = getTransactionBase((byte) 16, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 48);
-        buffer.put(TransactionBase);
+        byte[] transactionBase = getTransactionBase( 16, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 48);
+        buffer.put(transactionBase);
         buffer.putLong(sharesAmount);
         buffer.put(Hex.decode(fromValidator));
         buffer.put(Hex.decode(toValidator));
@@ -481,12 +495,12 @@ public class TransactionBuilder {
 
 
     public static byte[] getChangeEarlyWithdrawPenaltyProposalTxn(long withdrawalPenaltyTime, int withdrawalPenalty, String title, String description, int nonce, byte chainId) {
-        byte[] TransactionBase = getTransactionBase((byte) 17, nonce, chainId);
+        byte[] transactionBase = getTransactionBase( 17, nonce, chainId);
         byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
         byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 12 + 4 + titleBytea.length + descriptionBytea.length);
-        buffer.put(TransactionBase);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 12 + 4 + titleBytea.length + descriptionBytea.length);
+        buffer.put(transactionBase);
         buffer.putInt(titleBytea.length);
         buffer.put(titleBytea);
         buffer.putLong(withdrawalPenaltyTime);
@@ -496,12 +510,12 @@ public class TransactionBuilder {
     }
 
     public static byte[] getChangeFeePerByteProposalTxn(long feePerByte, String title, String description, int nonce, byte chainId) {
-        byte[] TransactionBase = getTransactionBase((byte) 18, nonce, chainId);
+        byte[] transactionBase = getTransactionBase( 18, nonce, chainId);
         byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
         byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 8 + 4 + titleBytea.length + descriptionBytea.length);
-        buffer.put(TransactionBase);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 4 + titleBytea.length + descriptionBytea.length);
+        buffer.put(transactionBase);
         buffer.putInt(titleBytea.length);
         buffer.put(titleBytea);
         buffer.putLong(feePerByte);
@@ -511,12 +525,12 @@ public class TransactionBuilder {
     }
 
     public static byte[] getChangeMaxBlockSizeProposalTxn(int maxBlockSize, String title, String description, int nonce, byte chainId) {
-        byte[] TransactionBase = getTransactionBase((byte) 19, nonce, chainId);
+        byte[] transactionBase = getTransactionBase( 19, nonce, chainId);
         byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
         byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 4 + 4 + titleBytea.length + descriptionBytea.length);
-        buffer.put(TransactionBase);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 4 + 4 + titleBytea.length + descriptionBytea.length);
+        buffer.put(transactionBase);
         buffer.putInt(titleBytea.length);
         buffer.put(titleBytea);
         buffer.putInt(maxBlockSize);
@@ -526,12 +540,12 @@ public class TransactionBuilder {
     }
 
     public static byte[] getChangeMaxTxnSizeProposalTxn(int maxTxnSize, String title, String description, int nonce, byte chainId) {
-        byte[] TransactionBase = getTransactionBase((byte) 20, nonce, chainId);
+        byte[] transactionBase = getTransactionBase( 20, nonce, chainId);
         byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
         byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 4 + 4 + titleBytea.length + descriptionBytea.length);
-        buffer.put(TransactionBase);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 4 + 4 + titleBytea.length + descriptionBytea.length);
+        buffer.put(transactionBase);
         buffer.putInt(titleBytea.length);
         buffer.put(titleBytea);
         buffer.putInt(maxTxnSize);
@@ -541,12 +555,12 @@ public class TransactionBuilder {
     }
 
     public static byte[] getChangeOverallBurnPercentageProposalTxn(int burnPercentage, String title, String description, int nonce, byte chainId) {
-        byte[] TransactionBase = getTransactionBase((byte) 21, nonce, chainId);
+        byte[] transactionBase = getTransactionBase( 21, nonce, chainId);
         byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
         byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 4 + 4 + titleBytea.length + descriptionBytea.length);
-        buffer.put(TransactionBase);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 4 + 4 + titleBytea.length + descriptionBytea.length);
+        buffer.put(transactionBase);
         buffer.putInt(titleBytea.length);
         buffer.put(titleBytea);
         buffer.putInt(burnPercentage);
@@ -556,12 +570,12 @@ public class TransactionBuilder {
     }
 
     public static byte[] getChangeRewardPerYearProposalTxn(long rewardPerYear, String title, String description, int nonce, byte chainId) {
-        byte[] TransactionBase = getTransactionBase((byte) 22, nonce, chainId);
+        byte[] transactionBase = getTransactionBase( 22, nonce, chainId);
         byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
         byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 8 + 4 + titleBytea.length + descriptionBytea.length);
-        buffer.put(TransactionBase);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 4 + titleBytea.length + descriptionBytea.length);
+        buffer.put(transactionBase);
         buffer.putInt(titleBytea.length);
         buffer.put(titleBytea);
         buffer.putLong(rewardPerYear);
@@ -571,12 +585,12 @@ public class TransactionBuilder {
     }
 
     public static byte[] getChangeValidatorCountLimitProposalTxn(int validatorCountLimit, String title, String description, int nonce, byte chainId) {
-        byte[] TransactionBase = getTransactionBase((byte) 23, nonce, chainId);
+        byte[] transactionBase = getTransactionBase( 23, nonce, chainId);
         byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
         byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 4 + 4 + titleBytea.length + descriptionBytea.length);
-        buffer.put(TransactionBase);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 4 + 4 + titleBytea.length + descriptionBytea.length);
+        buffer.put(transactionBase);
         buffer.putInt(titleBytea.length);
         buffer.put(titleBytea);
         buffer.putInt(validatorCountLimit);
@@ -586,12 +600,12 @@ public class TransactionBuilder {
     }
 
     public static byte[] getChangeValidatorJoiningFeeProposalTxn(long joiningFee, String title, String description, int nonce, byte chainId) {
-        byte[] TransactionBase = getTransactionBase((byte) 24, nonce, chainId);
+        byte[] transactionBase = getTransactionBase( 24, nonce, chainId);
         byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
         byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 8 + 4 + titleBytea.length + descriptionBytea.length);
-        buffer.put(TransactionBase);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 4 + titleBytea.length + descriptionBytea.length);
+        buffer.put(transactionBase);
         buffer.putInt(titleBytea.length);
         buffer.put(titleBytea);
         buffer.putLong(joiningFee);
@@ -601,12 +615,12 @@ public class TransactionBuilder {
     }
 
     public static byte[] getChangeVmIdClaimingFeeProposalTxn(long claimingFee, String title, String description, int nonce, byte chainId) {
-        byte[] TransactionBase = getTransactionBase((byte) 25, nonce, chainId);
+        byte[] transactionBase = getTransactionBase( 25, nonce, chainId);
         byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
         byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 8 + 4 + titleBytea.length + descriptionBytea.length);
-        buffer.put(TransactionBase);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 4 + titleBytea.length + descriptionBytea.length);
+        buffer.put(transactionBase);
         buffer.putInt(titleBytea.length);
         buffer.put(titleBytea);
         buffer.putLong(claimingFee);
@@ -616,12 +630,12 @@ public class TransactionBuilder {
     }
 
     public static byte[] getChangeVmOwnerTxnFeeShareProposalTxn(int feeShare, String title, String description, int nonce, byte chainId) {
-        byte[] TransactionBase = getTransactionBase((byte) 26, nonce, chainId);
+        byte[] transactionBase = getTransactionBase( 26, nonce, chainId);
         byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
         byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 4 + 4 + titleBytea.length + descriptionBytea.length);
-        buffer.put(TransactionBase);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 4 + 4 + titleBytea.length + descriptionBytea.length);
+        buffer.put(transactionBase);
         buffer.putInt(titleBytea.length);
         buffer.put(titleBytea);
         buffer.putInt(feeShare);
@@ -631,12 +645,12 @@ public class TransactionBuilder {
     }
 
     public static byte[] getOtherProposalTxn(String title, String description, int nonce, byte chainId) {
-        byte[] TransactionBase = getTransactionBase((byte) 27, nonce, chainId);
+        byte[] transactionBase = getTransactionBase( 27, nonce, chainId);
         byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
         byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
 
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + 4 + titleBytea.length + descriptionBytea.length);
-        buffer.put(TransactionBase);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 4 + titleBytea.length + descriptionBytea.length);
+        buffer.put(transactionBase);
         buffer.putInt(titleBytea.length);
         buffer.put(titleBytea);
         buffer.put(descriptionBytea);
@@ -645,12 +659,12 @@ public class TransactionBuilder {
     }
 
     public static byte[] getVoteOnProposalTxn(String proposalHash, byte vote, int nonce, byte chainId) {
-        byte[] TransactionBase = getTransactionBase((byte) 28, nonce, chainId);
+        byte[] transactionBase = getTransactionBase( 28, nonce, chainId);
         byte[] proposalHashBytes = Hex.decode(proposalHash);
         errorIf(proposalHashBytes.length != 32, "Invalid proposal hash");
 
         ByteBuffer buffer = ByteBuffer.allocate(39);
-        buffer.put(TransactionBase);
+        buffer.put(transactionBase);
         buffer.put(proposalHashBytes);
         buffer.put(vote);
 
@@ -660,9 +674,9 @@ public class TransactionBuilder {
     public static byte[] getChangeIpTxn(String newIp, int nonce, byte chainId) {
         errorIf(newIp == null || newIp.isEmpty() || newIp.length() < 7 || newIp.length() > 15, "Invalid IP address");
 
-        byte[] TransactionBase = getTransactionBase((byte) 29, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(TransactionBase.length + newIp.length());
-        buffer.put(TransactionBase);
+        byte[] transactionBase = getTransactionBase( 29, nonce, chainId);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + newIp.length());
+        buffer.put(transactionBase);
         buffer.put(newIp.getBytes(StandardCharsets.UTF_8));
 
         return buffer.array();
@@ -671,5 +685,74 @@ public class TransactionBuilder {
     //endregion
 
     //region - Falcon Transactions
+    public static byte[] getSetPublicKeyTransaction(long feePerByte, byte[] publicKey, byte[] sender, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(1001, nonce, chainId, feePerByte, sender);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 2 + publicKey.length);
+        buffer.put(transactionBase);
+        buffer.putShort((short) publicKey.length);
+        buffer.put(publicKey);
+
+        return buffer.array();
+    }
+
+    public static byte[] getFalconJoinAsValidatorTransaction(long feePerByte, byte[] sender, String ip, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(1002, nonce, chainId, feePerByte, sender);
+        byte[] ipBytes = ip.getBytes(StandardCharsets.UTF_8);
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 2 + ipBytes.length);
+        buffer.put(transactionBase);
+        buffer.putShort((short) ipBytes.length);
+        buffer.put(ipBytes);
+
+        return buffer.array();
+    }
+
+    public static byte[] getFalconDelegateTransaction(long feePerByte, byte[] sender, byte[] validator, long pwrAmount, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(1003, nonce, chainId, feePerByte, sender);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 20 + 8);
+        buffer.put(transactionBase);
+        buffer.put(validator);
+        buffer.putLong(pwrAmount);
+
+        return buffer.array();
+    }
+
+    public static byte[] getFalconChangeIpTransaction(long feePerByte, byte[] sender, String newIp, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(1004, nonce, chainId, feePerByte, sender);
+        byte[] ipBytes = newIp.getBytes(StandardCharsets.UTF_8);
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 2 + ipBytes.length);
+        buffer.put(transactionBase);
+        buffer.putShort((short) ipBytes.length);
+        buffer.put(ipBytes);
+
+        return buffer.array();
+    }
+
+    public static byte[] getFalconClaimActiveNodeSpotTransaction(long feePerByte, byte[] sender, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(1005, nonce, chainId, feePerByte, sender);
+        return transactionBase;
+    }
+
+    public static byte[] getFalconTransferTransaction(long feePerByte, byte[] sender, byte[] receiver, long amount, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(1006, nonce, chainId, feePerByte, sender);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 20 + 8);
+        buffer.put(transactionBase);
+        buffer.put(receiver);
+        buffer.putLong(amount);
+
+        return buffer.array();
+    }
+
+    public static byte[] getFalconVmDataTransaction(long feePerByte, byte[] sender, long vmId, byte[] data, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(1007, nonce, chainId, feePerByte, sender);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 4 + data.length);
+        buffer.put(transactionBase);
+        buffer.putLong(vmId);
+        buffer.putInt(data.length);
+        buffer.put(data);
+
+        return buffer.array();
+    }
     //endregion
 }
