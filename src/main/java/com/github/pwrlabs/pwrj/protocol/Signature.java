@@ -1,5 +1,6 @@
 package com.github.pwrlabs.pwrj.protocol;
 
+import com.github.pwrlabs.pwrj.Utils.PWRHash;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.asn1.x9.X9IntegerConverter;
 import org.bouncycastle.crypto.digests.SHA256Digest;
@@ -44,7 +45,7 @@ public class Signature {
 
 	public static byte[] signMessage(byte[] message, BigInteger privateKey) {
 		BigInteger publicKey = publicKeyFromPrivate(privateKey);
-		byte[] messageHash = Hash.sha3(message);
+		byte[] messageHash = PWRHash.hash256(message);
 
 		ECDSASignature sig = sign(privateKey, messageHash);
 		int recId = -1;

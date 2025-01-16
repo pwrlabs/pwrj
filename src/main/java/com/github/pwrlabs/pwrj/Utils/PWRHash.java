@@ -5,7 +5,6 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import java.security.Security;
 
-import static Utils.NewError.errorIf;
 import static com.github.pwrlabs.pwrj.Utils.NewError.errorIf;
 
 public class PWRHash {
