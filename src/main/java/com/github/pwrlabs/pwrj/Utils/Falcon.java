@@ -21,7 +21,7 @@ public class Falcon {
         return keyPairGen.generateKeyPair();
     }
 
-    public static AsymmetricCipherKeyPair generateKeyPair1024() {
+    public static  AsymmetricCipherKeyPair generateKeyPair1024() {
         FalconKeyPairGenerator keyPairGen = new FalconKeyPairGenerator();
         FalconKeyGenerationParameters keyGenParams = new FalconKeyGenerationParameters(new SecureRandom(), params1024);
         keyPairGen.init(keyGenParams);

@@ -15,8 +15,7 @@ import org.bouncycastle.crypto.util.PrivateKeyFactory;
 import org.bouncycastle.crypto.util.PrivateKeyInfoFactory;
 import org.bouncycastle.crypto.util.PublicKeyFactory;
 import org.bouncycastle.crypto.util.SubjectPublicKeyInfoFactory;
-import org.bouncycastle.pqc.crypto.falcon.FalconPrivateKeyParameters;
-import org.bouncycastle.pqc.crypto.falcon.FalconPublicKeyParameters;
+import org.bouncycastle.pqc.crypto.falcon.*;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.bouncycastle.util.io.pem.PemWriter;
@@ -35,6 +34,22 @@ import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 
 import static com.github.pwrlabs.pwrj.Utils.NewError.errorIf;
+
+import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
+import org.bouncycastle.crypto.util.PrivateKeyFactory;
+import org.bouncycastle.crypto.util.PrivateKeyInfoFactory;
+import org.bouncycastle.crypto.util.PublicKeyFactory;
+import org.bouncycastle.crypto.util.SubjectPublicKeyInfoFactory;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemReader;
+import org.bouncycastle.util.io.pem.PemWriter;
+import org.bouncycastle.pqc.crypto.falcon.FalconPrivateKeyParameters;
+import org.bouncycastle.pqc.crypto.falcon.FalconPublicKeyParameters;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemWriter;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 public class PWRFalcon512Wallet {
 
@@ -60,35 +75,72 @@ public class PWRFalcon512Wallet {
         address = Arrays.copyOfRange(hash, 0, 20);
     }
 
-    public void saveKeyPairToDisk(String privateKeyPath, String publicKeyPath) throws IOException {
-        try (FileOutputStream privateOut = new FileOutputStream(privateKeyPath);
-             FileOutputStream publicOut = new FileOutputStream(publicKeyPath)) {
+    /**
+     * Stores the wallet's key pair to disk in PEM format.
+     *
+     * @param filePath Path to the file where the wallet will be stored.
+     * @throws IOException if there's an error writing to the file.
+     */
+    public void storeWallet(String filePath) throws IOException {
+        // Cast to FalconPrivateKeyParameters and FalconPublicKeyParameters
+        FalconPrivateKeyParameters falconPrivKey = (FalconPrivateKeyParameters) keyPair.getPrivate();
+        FalconPublicKeyParameters falconPubKey = (FalconPublicKeyParameters) keyPair.getPublic();
 
-            // Save private key
-            FalconPrivateKeyParameters privateKey = (FalconPrivateKeyParameters) keyPair.getPrivate();
-            privateOut.write(privateKey.getEncoded());
+        byte[] g = falconPrivKey.getG();
+        byte[] f = falconPrivKey.getSpolyf();
+        byte[] F = falconPrivKey.getSpolyF();
+        byte[] publicKeyBytes = falconPrivKey.getPublicKey();
 
-            // Save public key
-            FalconPublicKeyParameters publicKey = (FalconPublicKeyParameters) keyPair.getPublic();
-            publicOut.write(publicKey.getEncoded());
-        }
+        ByteBuffer buffer = ByteBuffer.allocate(4 + g.length + 4 + f.length + 4 + F.length + 4 + publicKeyBytes.length);
+        buffer.putInt((short) g.length);
+        buffer.put(g);
+        buffer.putInt((short) f.length);
+        buffer.put(f);
+        buffer.putInt((short) F.length);
+        buffer.put(F);
+        buffer.putInt((short) publicKeyBytes.length);
+        buffer.put(publicKeyBytes);
+
+        Files.write(Paths.get(filePath), buffer.array());
     }
 
-    public static AsymmetricCipherKeyPair loadKeyPairFromDisk(String privateKeyPath, String publicKeyPath) throws IOException {
-        try (FileInputStream privateIn = new FileInputStream(privateKeyPath);
-             FileInputStream publicIn = new FileInputStream(publicKeyPath)) {
+    /**
+     * Loads a Falcon wallet (private/public key pair) from a PEM file on disk.
+     *
+     * @param pwrj     The PWRJ instance to use for the wallet.
+     * @param filePath Path to the PEM file that contains the private/public keys.
+     * @return a new PWRFalcon512Wallet with the loaded key pair.
+     * @throws IOException if there's an error reading the file or parsing the keys.
+     */
+    public static PWRFalcon512Wallet loadWallet(PWRJ pwrj, String filePath) throws IOException {
+        byte[] data = Files.readAllBytes(Paths.get(filePath));
+        if(data == null) throw new IOException("File is empty");
 
-            // Read private key
-            byte[] privateKeyBytes = privateIn.readAllBytes();
-            FalconPrivateKeyParameters privateKey = new FalconPrivateKeyParameters(privateKeyBytes);
+        ByteBuffer buffer = ByteBuffer.wrap(data);
+        int gLength = buffer.getInt();
+        byte[] g = new byte[gLength];
+        buffer.get(g);
 
-            // Read public key
-            byte[] publicKeyBytes = publicIn.readAllBytes();
-            FalconPublicKeyParameters publicKey = new FalconPublicKeyParameters(publicKeyBytes);
+        int fLength = buffer.getInt();
+        byte[] f = new byte[fLength];
+        buffer.get(f);
 
-            return new AsymmetricCipherKeyPair(publicKey, privateKey);
-        }
+        int FLength = buffer.getInt();
+        byte[] F = new byte[FLength];
+        buffer.get(F);
+
+        int publicKeyLength = buffer.getInt();
+        byte[] publicKeyBytes = new byte[publicKeyLength];
+        buffer.get(publicKeyBytes);
+
+        FalconParameters p = FalconParameters.falcon_512;
+        FalconPrivateKeyParameters falconPrivKey = new FalconPrivateKeyParameters(p, f, g, F, publicKeyBytes);
+        FalconPublicKeyParameters falconPubKey = new FalconPublicKeyParameters(p, publicKeyBytes);
+        AsymmetricCipherKeyPair keyPair = new AsymmetricCipherKeyPair(falconPubKey, falconPrivKey);
+
+        return new PWRFalcon512Wallet(pwrj, keyPair);
     }
+
 
     public String getAddress() {
         return "0x" + Hex.toHexString(address);
@@ -179,40 +231,53 @@ public class PWRFalcon512Wallet {
     }
 
     public Response transferPWR(byte[] receiver, long amount, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
         return pwrj.broadcastTransaction(getSignedTransferTransaction(receiver, amount, feePerByte));
     }
 
     public Response joinAsValidator(long feePerByte, String ip) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
         return pwrj.broadcastTransaction(getSignedJoinAsValidatorTransaction(feePerByte, ip));
     }
 
     public Response delegate(byte[] validator, long pwrAmount, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
         return pwrj.broadcastTransaction(getSignedDelegateTransaction(validator, pwrAmount, feePerByte));
     }
 
     public Response changeIp(String newIp, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
         return pwrj.broadcastTransaction(getSignedChangeIpTransaction(newIp, feePerByte));
     }
 
     public Response claimActiveNodeSpot(Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
         return pwrj.broadcastTransaction(getSignedClaimActiveNodeSpotTransaction(feePerByte));
     }
 
     public Response submitVmData(long vmId, byte[] data, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
         return pwrj.broadcastTransaction(getSignedSubmitVmDataTransaction(vmId, data, feePerByte));
     }
 
-    public static void main(String[] args) throws Exception {
-        //save keypair to disk and load keypair from disk
-
-        PWRFalcon512Wallet wallet = new PWRFalcon512Wallet(new PWRJ("http://localhost:8080"));
-        wallet.saveKeyPairToDisk("private.pem", "public.pem");
-
-        AsymmetricCipherKeyPair keyPair = loadKeyPairFromDisk("private.pem", "public.pem");
-        PWRFalcon512Wallet wallet2 = new PWRFalcon512Wallet(new PWRJ("http://localhost:8080"), keyPair);
-
-        System.out.println(wallet.getAddress());
-        System.out.println(wallet2.getAddress());
-
+    private Response makeSurePublicKeyIsSet(long feePerByte) throws IOException {
+        if(pwrj.getNonceOfAddress(getAddress()) == 0) {
+            return setPublicKey(feePerByte);
+        } else {
+            return null;
+        }
     }
+
 }
