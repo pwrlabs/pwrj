@@ -1,7 +1,8 @@
 package com.github.pwrlabs.pwrj.protocol;
 
 import com.github.pwrlabs.pwrj.Utils.Hex;
-import com.github.pwrlabs.pwrj.record.transaction.*;
+import com.github.pwrlabs.pwrj.record.transaction.Interface.Transaction;
+import com.github.pwrlabs.pwrj.record.transaction.ecdsa.*;
 import org.web3j.crypto.Keys;
 import org.web3j.crypto.Sign;
 

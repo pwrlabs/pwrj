@@ -4,9 +4,9 @@ import com.github.pwrlabs.pwrj.record.block.Block;
 import com.github.pwrlabs.pwrj.record.response.EarlyWithdrawPenaltyResponse;
 import com.github.pwrlabs.pwrj.record.response.Response;
 import com.github.pwrlabs.pwrj.record.response.TransactionForGuardianApproval;
-import com.github.pwrlabs.pwrj.record.transaction.GuardianApprovalTransaction;
-import com.github.pwrlabs.pwrj.record.transaction.Transaction;
-import com.github.pwrlabs.pwrj.record.transaction.VmDataTransaction;
+import com.github.pwrlabs.pwrj.record.transaction.ecdsa.GuardianApprovalTransaction;
+import com.github.pwrlabs.pwrj.record.transaction.Interface.Transaction;
+import com.github.pwrlabs.pwrj.record.transaction.ecdsa.VmDataTransaction;
 import com.github.pwrlabs.pwrj.record.validator.Validator;
 import lombok.Getter;
 import lombok.Setter;
@@ -358,15 +358,15 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public Block getBlockByNumber(long blockNumber) throws IOException {
+    public Block getBlockByNumber(long blockNumber) throws Exception {
         return new Block(httpGet(rpcNodeUrl + "/block/?blockNumber=" + blockNumber).getJSONObject("block"));
     }
 
-    public Block getBlockByNumberExcludingDataAndExtraData(long blockNumber) throws IOException {
+    public Block getBlockByNumberExcludingDataAndExtraData(long blockNumber) throws Exception {
         return new Block(httpGet(rpcNodeUrl + "/blockExcludingDataAndExtraData/?blockNumber=" + blockNumber).getJSONObject("block"));
     }
 
-    public Transaction getTransactionByHash(String hash) throws IOException {
+    public Transaction getTransactionByHash(String hash) throws Exception {
         JSONObject object = httpGet(rpcNodeUrl + "/transactionByHash/?transactionHash=" + hash).getJSONObject("transaction");
         return Transaction.fromJSON(object, object.getLong("blockNumber"), object.getLong("timestamp"), object.getInt("positionInTheBlock"));
     }
@@ -410,7 +410,7 @@ public class PWRJ {
         return TransactionsArray;
     }
 
-    public TransactionForGuardianApproval isTransactionValidForGuardianApproval(String transaction) throws IOException {
+    public TransactionForGuardianApproval isTransactionValidForGuardianApproval(String transaction) throws Exception {
         JSONObject object = httpPost(rpcNodeUrl + "/isTransactionValidForGuardianApproval/", new JSONObject().put("transaction", transaction));
 
         boolean valid = object.getBoolean("valid");
@@ -429,7 +429,7 @@ public class PWRJ {
                     .build();
         }
     }
-    public TransactionForGuardianApproval isTransactionValidForGuardianApproval(byte[] Transaction) throws IOException {
+    public TransactionForGuardianApproval isTransactionValidForGuardianApproval(byte[] Transaction) throws Exception {
         return isTransactionValidForGuardianApproval(Hex.toHexString(Transaction));
     }
     public long getActiveVotingPower() throws IOException {

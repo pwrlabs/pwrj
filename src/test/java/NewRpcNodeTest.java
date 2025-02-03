@@ -1,8 +1,7 @@
 import com.github.pwrlabs.pwrj.protocol.PWRJ;
-import com.github.pwrlabs.pwrj.record.block.Block;
-import com.github.pwrlabs.pwrj.record.transaction.PayableVmDataTransaction;
-import com.github.pwrlabs.pwrj.record.transaction.Transaction;
-import com.github.pwrlabs.pwrj.record.transaction.VmDataTransaction;
+import com.github.pwrlabs.pwrj.record.transaction.ecdsa.PayableVmDataTransaction;
+import com.github.pwrlabs.pwrj.record.transaction.Interface.Transaction;
+import com.github.pwrlabs.pwrj.record.transaction.ecdsa.VmDataTransaction;
 
 public class NewRpcNodeTest {
 

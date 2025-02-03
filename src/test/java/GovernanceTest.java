@@ -1,7 +1,7 @@
 import com.github.pwrlabs.pwrj.protocol.PWRJ;
 import com.github.pwrlabs.pwrj.record.response.EarlyWithdrawPenaltyResponse;
 import com.github.pwrlabs.pwrj.record.response.Response;
-import com.github.pwrlabs.pwrj.record.transaction.Transaction;
+import com.github.pwrlabs.pwrj.record.transaction.Interface.Transaction;
 import com.github.pwrlabs.pwrj.wallet.PWRWallet;
 
 import java.math.BigInteger;

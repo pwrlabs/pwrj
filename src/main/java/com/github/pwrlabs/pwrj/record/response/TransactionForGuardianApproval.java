@@ -1,6 +1,6 @@
 package com.github.pwrlabs.pwrj.record.response;
 
-import com.github.pwrlabs.pwrj.record.transaction.Transaction;
+import com.github.pwrlabs.pwrj.record.transaction.Interface.Transaction;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 

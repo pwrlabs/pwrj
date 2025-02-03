@@ -146,6 +146,9 @@ public class PWRFalcon512Wallet {
         return "0x" + Hex.toHexString(address);
     }
 
+    public byte[] sign(byte[] data) {
+        return Falcon.sign(data, keyPair);
+    }
     public byte[] getSignedTransaction(byte[] transaction) {
         byte[] signature = Falcon.sign(transaction, keyPair);
 

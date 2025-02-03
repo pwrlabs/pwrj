@@ -1,6 +1,6 @@
 package com.github.pwrlabs.pwrj.record.block;
 
-import com.github.pwrlabs.pwrj.record.transaction.Transaction;
+import com.github.pwrlabs.pwrj.record.transaction.Interface.Transaction;
 import lombok.Getter;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -17,7 +17,7 @@ public class Block {
     private final boolean processedWithoutCriticalErrors;
     private final Transaction[] transactions;
 
-    public Block(JSONObject blockJson) {
+    public Block(JSONObject blockJson) throws Exception {
         transactionCount = blockJson.optInt("transactionCount", 0);
         size = blockJson.optInt("size", 0);
         number = blockJson.optLong("blockNumber", 0);
