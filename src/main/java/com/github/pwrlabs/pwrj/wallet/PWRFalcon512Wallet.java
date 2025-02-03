@@ -155,11 +155,6 @@ public class PWRFalcon512Wallet {
         return Falcon.sign(data, keyPair);
     }
 
-    public byte[] getPublicKey() {
-        FalconPublicKeyParameters publicKey = (FalconPublicKeyParameters) keyPair.getPublic();
-        return publicKey.getH();
-    }
-
     public byte[] getSignedTransaction(byte[] transaction) {
         byte[] signature = Falcon.sign(transaction, keyPair);
 
