@@ -146,6 +146,11 @@ public class PWRFalcon512Wallet {
         return "0x" + Hex.toHexString(address);
     }
 
+    public byte[] getPublicKey() {
+        FalconPublicKeyParameters publicKey = (FalconPublicKeyParameters) keyPair.getPublic();
+        return publicKey.getH();
+    }
+
     public byte[] sign(byte[] data) {
         return Falcon.sign(data, keyPair);
     }
