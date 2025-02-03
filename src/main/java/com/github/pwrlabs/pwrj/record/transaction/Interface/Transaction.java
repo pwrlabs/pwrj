@@ -1,5 +1,6 @@
 package com.github.pwrlabs.pwrj.record.transaction.Interface;
 
+import com.github.pwrlabs.pwrj.protocol.PWRJ;
 import org.reflections.Reflections;
 import com.github.pwrlabs.pwrj.Utils.Hex;
 import com.github.pwrlabs.pwrj.record.transaction.ecdsa.*;
@@ -71,9 +72,11 @@ public abstract class Transaction {
 
     public static Transaction fromJSON(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) throws Exception {
         String transactionType = json.optString("type", "Unknown");
+        System.out.println("Transaction type: " + transactionType);
 
-        Reflections reflections = new Reflections(Transaction.class.getPackageName());
+        Reflections reflections = new Reflections("com.github.pwrlabs.pwrj.record.transaction");
         Set<Class<? extends Transaction>> subclasses = reflections.getSubTypesOf(Transaction.class);
+        System.out.println("Sub classes size: " + subclasses.size());
 
         for (Class<? extends Transaction> subclass : subclasses) {
             try {
@@ -82,9 +85,7 @@ public abstract class Transaction {
                 if (transactionType.equalsIgnoreCase(instance.getType())) {
                     return instance;
                 }
-            } catch (Exception e) {
-                throw e;
-            }
+            } catch (Exception e) {}
         }
 
         throw new IllegalArgumentException("Unknown transaction type: " + transactionType);
