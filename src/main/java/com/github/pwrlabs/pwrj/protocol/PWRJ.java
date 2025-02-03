@@ -366,6 +366,10 @@ public class PWRJ {
         return new Block(httpGet(rpcNodeUrl + "/blockExcludingDataAndExtraData/?blockNumber=" + blockNumber).getJSONObject("block"));
     }
 
+    public Block getBlockWithVmDataTransactionsOnly(long blockNumber, long vmId) throws Exception {
+        return new Block(httpGet(rpcNodeUrl + "/blockWithVmDataTransactionsOnly/?blockNumber=" + blockNumber + "&vmId=" + vmId).getJSONObject("block"));
+    }
+
     public Transaction getTransactionByHash(String hash) throws Exception {
         JSONObject object = httpGet(rpcNodeUrl + "/transactionByHash/?transactionHash=" + hash).getJSONObject("transaction");
         return Transaction.fromJSON(object, object.getLong("blockNumber"), object.getLong("timestamp"), object.getInt("positionInTheBlock"));
