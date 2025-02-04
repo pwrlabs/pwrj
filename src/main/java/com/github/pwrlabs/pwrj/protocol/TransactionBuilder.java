@@ -190,9 +190,10 @@ public class TransactionBuilder {
         }
 
         byte[] transactionBase = getTransactionBase( 5, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + data.length);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 4 + data.length);
         buffer.put(transactionBase);
         buffer.putLong(vmId);
+        buffer.putInt(data.length);
         buffer.put(data);
 
         return buffer.array();
@@ -303,9 +304,10 @@ public class TransactionBuilder {
         }
 
         byte[] transactionBase = getTransactionBase( 11, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 16 + data.length);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 16 + 4 + data.length);
         buffer.put(transactionBase);
         buffer.putLong(vmId);
+        buffer.putInt(data.length);
         buffer.put(data);
         buffer.putLong(value);
 
