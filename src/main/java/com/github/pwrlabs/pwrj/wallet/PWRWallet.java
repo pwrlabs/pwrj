@@ -5,6 +5,7 @@ import com.github.pwrlabs.pwrj.Utils.Hex;
 import com.github.pwrlabs.pwrj.protocol.PWRJ;
 import com.github.pwrlabs.pwrj.protocol.TransactionBuilder;
 import com.github.pwrlabs.pwrj.record.response.Response;
+import com.github.pwrlabs.pwrj.record.transaction.ecdsa.VmDataTransaction;
 import org.bouncycastle.jcajce.provider.digest.Keccak;
 import org.bouncycastle.math.ec.FixedPointCombMultiplier;
 import com.github.pwrlabs.pwrj.protocol.Signature;
@@ -16,7 +17,9 @@ import java.nio.ByteBuffer;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.math.ec.ECPoint;
+import org.json.JSONObject;
 
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.*;
@@ -723,6 +726,56 @@ public class PWRWallet {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+//    public static void main(String[] args) {
+//        PWRJ pwrj = new PWRJ("https://pwrrpc.pwrlabs.io/");
+//        long ivaId = 9;
+//
+//        //generate and save wallet
+//        PWRWallet wallet = new PWRWallet(pwrj);
+//        System.out.println("Address: " + wallet.getAddress());
+//        wallet.storeWallet("wallet.dat", "password");
+//
+//        //load wallet
+//        PWRWallet loadedWallet = PWRWallet.loadWallet("wallet.dat", "password", pwrj);
+//        System.out.println("Address: " + loadedWallet.getAddress());
+//
+//        //Write transaction data
+//        JSONObject jsonObject = new JSONObject();
+//        jsonObject.put("action", "sendMessage");
+//        jsonObject.put("message", "Hello World!");
+//        byte[] data = jsonObject.toString().getBytes(StandardCharsets.UTF_8);
+//
+//        //Send transaction
+//        Response response = wallet.sendVmDataTransaction(ivaId, data, loadedWallet.getNonce());
+//        if(response.isSuccess()) System.out.println("Transaction sent successfully!");
+//        else System.out.println("Transaction failed: " + response.getError());
+//    }
+
+    public static void processTransaction(VmDataTransaction transaction) {
+        String sender = transaction.getSender();
+        String hexData = transaction.getData();
+        long timestampMs = transaction.getTimestamp();
+        String humanReadableTimestamp = new java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new java.util.Date(timestampMs));
+
+        // Convert hex data to byte array
+        byte[] data = Hex.decode(hexData.substring(2)); //Remove the 0x prefix
+
+        //Convert to JSON Object
+        JSONObject jsonObject = new JSONObject(new String(data, StandardCharsets.UTF_8));
+
+        //Check actions
+        for (String action: jsonObject.keySet()) {
+            if(action.equalsIgnoreCase("sendMessage")) {
+                String message = jsonObject.getString("sendMessage");
+
+                //Output time of message and message
+                System.out.println(humanReadableTimestamp + ": Message from " + sender + ": " + message);
+            } else {
+                //Unknown action... Ignore
+            }
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.github.pwrlabs.pwrj.protocol;
 
+import com.github.pwrlabs.pwrj.interfaces.IvaTransactionHandler;
 import com.github.pwrlabs.pwrj.record.block.Block;
 import com.github.pwrlabs.pwrj.record.response.EarlyWithdrawPenaltyResponse;
 import com.github.pwrlabs.pwrj.record.response.Response;
@@ -17,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 //import java.net.http.HttpClient;
@@ -30,11 +32,15 @@ import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.web3j.crypto.Hash;
 
+import java.nio.file.Files;
 import java.util.*;
 
 public class PWRJ {
+    private static final Logger logger = LoggerFactory.getLogger(PWRJ.class);
     @Getter @Setter
     private int soTimeout = 20000, connectionTimeout = 20000;
 
@@ -681,6 +687,7 @@ public class PWRJ {
         }
         return validatorsList;
     }
+
     public Validator getValidator(String validatorAddress) throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/validator/?validatorAddress=" + validatorAddress);
         JSONObject validatorObject = object.getJSONObject("validator");
@@ -709,10 +716,6 @@ public class PWRJ {
         return rewardsMap;
     }
 
-    public static void main(String[] args) throws IOException {
-        PWRJ pwrj = new PWRJ("https://pwrrpc.pwrlabs.io/");
-        pwrj.getValidator("0x0x7111434F00E6C66616fc25cff3Fa080cdb95562B");
-    }
     public long getDelegatedPWR(String delegatorAddress, String validatorAddress) throws IOException {
         return httpGet(rpcNodeUrl + "/validator/delegator/delegatedPWROfAddress/?userAddress=" + delegatorAddress + "&validatorAddress=" + validatorAddress).getLong("delegatedPWR");
     }
@@ -720,6 +723,7 @@ public class PWRJ {
     public long getSharesOfDelegator(String delegatorAddress, String validatorAddress) throws IOException {
         return httpGet(rpcNodeUrl + "/validator/delegator/sharesOfAddress/?userAddress=" + delegatorAddress + "&validatorAddress=" + validatorAddress).getLong("shares");
     }
+
     public BigDecimal getShareValue(String validator) throws IOException {
         return httpGet(rpcNodeUrl + "/validator/shareValue/?validatorAddress=" + validator).getBigDecimal("shareValue");
     }
@@ -847,8 +851,18 @@ public class PWRJ {
         }
     }
 
-
     public Object getOrDefault(JSONObject jsonObject, String key, Object defaultValue) {
         return jsonObject.has(key) ? jsonObject.get(key) : defaultValue;
     }
+
+    public IvaTransactionSubscription subscribeToIvaTransactions(PWRJ pwrj, long vmId, long startingBlock, IvaTransactionHandler handler, long pollInterval) throws IOException {
+        IvaTransactionSubscription i = new IvaTransactionSubscription(pwrj, vmId, startingBlock, handler, pollInterval);
+        i.start();
+        return i;
+    }
+
+    public IvaTransactionSubscription subscribeToIvaTransactions(PWRJ pwrj, long vmId, long startingBlock, IvaTransactionHandler handler) throws IOException {
+        return subscribeToIvaTransactions(pwrj, vmId, startingBlock, handler, 100);
+    }
+
 }
