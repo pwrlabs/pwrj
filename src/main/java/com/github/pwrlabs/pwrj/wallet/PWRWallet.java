@@ -1,5 +1,6 @@
 package com.github.pwrlabs.pwrj.wallet;
 
+import com.github.pwrlabs.pwrj.Utils.AES256;
 import com.github.pwrlabs.pwrj.Utils.Hex;
 import com.github.pwrlabs.pwrj.protocol.PWRJ;
 import com.github.pwrlabs.pwrj.protocol.TransactionBuilder;
@@ -16,6 +17,8 @@ import java.nio.ByteBuffer;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.math.ec.ECPoint;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.*;
 import java.util.Arrays;
 import java.util.List;
@@ -82,6 +85,13 @@ public class PWRWallet {
         //Generate random private key
         this.privateKey = new BigInteger(256, new SecureRandom());
         this.pwrj = pwrj;
+    }
+
+    public void storeWallet(String path, String password) throws Exception {
+        byte[] privateKeyBytes = privateKey.toByteArray();
+        byte[] encryptedPrivateKey = AES256.encrypt(privateKeyBytes, password);
+
+        Files.write(Path.of(path), encryptedPrivateKey);
     }
 
     public BigInteger getPublicKey() {
@@ -703,5 +713,16 @@ public class PWRWallet {
         }
 
         return (new FixedPointCombMultiplier()).multiply(Signature.CURVE.getG(), privKey);
+    }
+
+    public static PWRWallet loadWallet(String path, String password, PWRJ pwrj) {
+        try {
+            byte[] encryptedPrivateKey = Files.readAllBytes(Path.of(path));
+            byte[] privateKeyBytes = AES256.decrypt(encryptedPrivateKey, password);
+            return new PWRWallet(privateKeyBytes, pwrj);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
