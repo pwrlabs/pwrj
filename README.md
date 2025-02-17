@@ -33,7 +33,7 @@ PWRJ is available on Maven Central. Add this dependency to your `pom.xml`:
         <dependency>
             <groupId>com.github.pwrlabs</groupId>
             <artifactId>pwrj</artifactId>
-            <version>1.0.6</version>
+            <version>8.6.0</version>
         </dependency>
     </dependencies>
 ```
