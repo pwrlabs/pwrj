@@ -729,31 +729,6 @@ public class PWRWallet {
         }
     }
 
-//    public static void main(String[] args) {
-//        PWRJ pwrj = new PWRJ("https://pwrrpc.pwrlabs.io/");
-//        long ivaId = 9;
-//
-//        //generate and save wallet
-//        PWRWallet wallet = new PWRWallet(pwrj);
-//        System.out.println("Address: " + wallet.getAddress());
-//        wallet.storeWallet("wallet.dat", "password");
-//
-//        //load wallet
-//        PWRWallet loadedWallet = PWRWallet.loadWallet("wallet.dat", "password", pwrj);
-//        System.out.println("Address: " + loadedWallet.getAddress());
-//
-//        //Write transaction data
-//        JSONObject jsonObject = new JSONObject();
-//        jsonObject.put("action", "sendMessage");
-//        jsonObject.put("message", "Hello World!");
-//        byte[] data = jsonObject.toString().getBytes(StandardCharsets.UTF_8);
-//
-//        //Send transaction
-//        Response response = wallet.sendVmDataTransaction(ivaId, data, loadedWallet.getNonce());
-//        if(response.isSuccess()) System.out.println("Transaction sent successfully!");
-//        else System.out.println("Transaction failed: " + response.getError());
-//    }
-
     public static void processTransaction(VmDataTransaction transaction) {
         String sender = transaction.getSender();
         String hexData = transaction.getData();
