@@ -1,292 +1,378 @@
-package com.github.pwrlabs.pwrj.wallet;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.17;
 
-import com.github.pwrlabs.pwrj.Utils.Falcon;
-import com.github.pwrlabs.pwrj.Utils.Hex;
-import com.github.pwrlabs.pwrj.Utils.PWRHash;
-import com.github.pwrlabs.pwrj.protocol.PWRJ;
-import com.github.pwrlabs.pwrj.protocol.Signature;
-import com.github.pwrlabs.pwrj.protocol.TransactionBuilder;
-import com.github.pwrlabs.pwrj.record.response.Response;
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
-import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
-import org.bouncycastle.crypto.util.PrivateKeyFactory;
-import org.bouncycastle.crypto.util.PrivateKeyInfoFactory;
-import org.bouncycastle.crypto.util.PublicKeyFactory;
-import org.bouncycastle.crypto.util.SubjectPublicKeyInfoFactory;
-import org.bouncycastle.pqc.crypto.falcon.*;
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemReader;
-import org.bouncycastle.util.io.pem.PemWriter;
+/**
+ * @title TimelockMultisigWallet
+ * @dev A multisignature wallet with a timelock feature for added security.
+ * Supports both ETH and ERC20 token transfers with a 48-hour cooldown period.
+ */
+interface IERC20 {
+    function transfer(address to, uint256 amount) external returns (bool);
+    function balanceOf(address account) external view returns (uint256);
+    function transferFrom(address sender, address recipient, uint256 amount) external returns (bool);
+}
 
-import java.io.*;
-import java.math.BigInteger;
-import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.Arrays;
+contract TimelockMultisigWallet {
+    // Events
+    event OwnerAdded(address indexed owner);
+    event OwnerRemoved(address indexed owner);
+    event ThresholdChanged(uint256 newThreshold);
+    event TransactionCreated(uint256 indexed txId, address indexed to, uint256 value, bytes data, address tokenAddress);
+    event TransactionApprovalVote(uint256 indexed txId, address indexed owner);
+    event TransactionApproved(uint256 indexed txId);
+    event TransactionCancelled(uint256 indexed txId);
+    event TransactionCancellationVote(uint256 indexed txId, address indexed owner);
+    event TransactionExecuted(uint256 indexed txId);
+    event Deposit(address indexed sender, uint256 amount);
+    event ERC20Deposited(address indexed token, address indexed sender, uint256 amount);
 
-import static com.github.pwrlabs.pwrj.Utils.NewError.errorIf;
-
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
-import org.bouncycastle.crypto.util.PrivateKeyFactory;
-import org.bouncycastle.crypto.util.PrivateKeyInfoFactory;
-import org.bouncycastle.crypto.util.PublicKeyFactory;
-import org.bouncycastle.crypto.util.SubjectPublicKeyInfoFactory;
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemReader;
-import org.bouncycastle.util.io.pem.PemWriter;
-import org.bouncycastle.pqc.crypto.falcon.FalconPrivateKeyParameters;
-import org.bouncycastle.pqc.crypto.falcon.FalconPublicKeyParameters;
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemWriter;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-
-public class PWRFalcon512Wallet {
-
-    private final AsymmetricCipherKeyPair keyPair;
-    private PWRJ pwrj;
-    private byte[] address;
-
-    public PWRFalcon512Wallet(PWRJ pwrj) {
-        this.pwrj = pwrj;
-        this.keyPair = Falcon.generateKeyPair512();
-
-        FalconPublicKeyParameters publicKey = (FalconPublicKeyParameters) keyPair.getPublic();
-        byte[] hash = PWRHash.hash224(publicKey.getH());
-        address = Arrays.copyOfRange(hash, 0, 20);
+    // Transaction structure
+    struct Transaction {
+        address to;
+        uint256 value;
+        bytes data;
+        bool executed;
+        bool cancelled;
+        uint256 approvalCount;
+        uint256 cancellationCount;
+        uint256 timestamp;
+        address tokenAddress; // address(0) for ETH, otherwise the ERC20 token address
+        uint256 amount;      // Amount of token to send
     }
 
-    public PWRFalcon512Wallet(PWRJ pwrj, AsymmetricCipherKeyPair keyPair) {
-        this.pwrj = pwrj;
-        this.keyPair = keyPair;
+    // Constants
+    uint256 public constant TIMELOCK_DURATION = 48 hours;
 
-        FalconPublicKeyParameters publicKey = (FalconPublicKeyParameters) keyPair.getPublic();
-        byte[] hash = PWRHash.hash224(publicKey.getH());
-        address = Arrays.copyOfRange(hash, 0, 20);
+    // State variables
+    address[] public owners;
+    mapping(address => bool) public isOwner;
+    uint256 public threshold;
+    Transaction[] public transactions;
+    mapping(uint256 => mapping(address => bool)) public approved;
+    mapping(uint256 => mapping(address => bool)) public cancelRequested;
+
+    // Modifiers
+    modifier onlyOwner() {
+        require(isOwner[msg.sender], "Not an owner");
+        _;
     }
 
-    /**
-     * Stores the wallet's key pair to disk in PEM format.
-     *
-     * @param filePath Path to the file where the wallet will be stored.
-     * @throws IOException if there's an error writing to the file.
-     */
-    public void storeWallet(String filePath) throws IOException {
-        // Cast to FalconPrivateKeyParameters and FalconPublicKeyParameters
-        FalconPrivateKeyParameters falconPrivKey = (FalconPrivateKeyParameters) keyPair.getPrivate();
-        FalconPublicKeyParameters falconPubKey = (FalconPublicKeyParameters) keyPair.getPublic();
+    modifier txExists(uint256 _txId) {
+        require(_txId < transactions.length, "Transaction does not exist");
+        _;
+    }
 
-        byte[] g = falconPrivKey.getG();
-        byte[] f = falconPrivKey.getSpolyf();
-        byte[] F = falconPrivKey.getSpolyF();
-        byte[] publicKeyBytes = falconPrivKey.getPublicKey();
+    modifier notExecuted(uint256 _txId) {
+        require(!transactions[_txId].executed, "Transaction already executed");
+        _;
+    }
 
-        ByteBuffer buffer = ByteBuffer.allocate(4 + g.length + 4 + f.length + 4 + F.length + 4 + publicKeyBytes.length);
-        buffer.putInt((short) g.length);
-        buffer.put(g);
-        buffer.putInt((short) f.length);
-        buffer.put(f);
-        buffer.putInt((short) F.length);
-        buffer.put(F);
-        buffer.putInt((short) publicKeyBytes.length);
-        buffer.put(publicKeyBytes);
+    modifier notCancelled(uint256 _txId) {
+        require(!transactions[_txId].cancelled, "Transaction already cancelled");
+        _;
+    }
 
-        Files.write(Paths.get(filePath), buffer.array());
+    modifier canExecute(uint256 _txId) {
+        require(transactions[_txId].approvalCount >= threshold, "Not enough approvals");
+        require(block.timestamp >= transactions[_txId].timestamp + TIMELOCK_DURATION, "Timelock period not passed");
+        _;
+    }
+
+    modifier validThreshold(uint256 _threshold, uint256 _ownerCount) {
+        require(_threshold > 0, "Threshold must be greater than 0");
+        require(_threshold <= _ownerCount, "Threshold must be less than or equal to owner count");
+        _;
     }
 
     /**
-     * Loads a Falcon wallet (private/public key pair) from a PEM file on disk.
-     *
-     * @param pwrj     The PWRJ instance to use for the wallet.
-     * @param filePath Path to the PEM file that contains the private/public keys.
-     * @return a new PWRFalcon512Wallet with the loaded key pair.
-     * @throws IOException if there's an error reading the file or parsing the keys.
+     * @dev Constructor to initialize the multisig wallet
+     * @param _owners Array of initial owner addresses
+     * @param _threshold Number of required confirmations for a transaction
      */
-    public static PWRFalcon512Wallet loadWallet(PWRJ pwrj, String filePath) throws IOException {
-        byte[] data = Files.readAllBytes(Paths.get(filePath));
-        if(data == null) throw new IOException("File is empty");
-
-        ByteBuffer buffer = ByteBuffer.wrap(data);
-        int gLength = buffer.getInt();
-        byte[] g = new byte[gLength];
-        buffer.get(g);
-
-        int fLength = buffer.getInt();
-        byte[] f = new byte[fLength];
-        buffer.get(f);
-
-        int FLength = buffer.getInt();
-        byte[] F = new byte[FLength];
-        buffer.get(F);
-
-        int publicKeyLength = buffer.getInt();
-        byte[] publicKeyBytes = new byte[publicKeyLength];
-        buffer.get(publicKeyBytes);
-
-        FalconParameters p = FalconParameters.falcon_512;
-        FalconPrivateKeyParameters falconPrivKey = new FalconPrivateKeyParameters(p, f, g, F, publicKeyBytes);
-        FalconPublicKeyParameters falconPubKey = new FalconPublicKeyParameters(p, publicKeyBytes);
-        AsymmetricCipherKeyPair keyPair = new AsymmetricCipherKeyPair(falconPubKey, falconPrivKey);
-
-        return new PWRFalcon512Wallet(pwrj, keyPair);
+    constructor(address[] memory _owners, uint256 _threshold) validThreshold(_threshold, _owners.length) {
+        require(_owners.length > 0, "Owners required");
+        
+        for (uint256 i = 0; i < _owners.length; i++) {
+            address owner = _owners[i];
+            
+            require(owner != address(0), "Invalid owner");
+            require(!isOwner[owner], "Owner not unique");
+            
+            isOwner[owner] = true;
+            owners.push(owner);
+            
+            emit OwnerAdded(owner);
+        }
+        
+        threshold = _threshold;
+        emit ThresholdChanged(_threshold);
     }
 
-
-    public String getAddress() {
-        return "0x" + Hex.toHexString(address);
+    // Receive function to accept ETH
+    receive() external payable {
+        emit Deposit(msg.sender, msg.value);
     }
 
-    public byte[] getPublicKey() {
-        FalconPublicKeyParameters publicKey = (FalconPublicKeyParameters) keyPair.getPublic();
-        return publicKey.getH();
+    /**
+     * @dev Allows an owner to submit a new ETH transaction
+     * @param _to Destination address
+     * @param _value Amount of ETH to send
+     * @param _data Transaction data payload
+     * @return Returns transaction ID
+     */
+    function submitTransaction(address _to, uint256 _value, bytes memory _data) 
+        public 
+        onlyOwner 
+        returns (uint256) 
+    {
+        uint256 txId = transactions.length;
+        
+        transactions.push(Transaction({
+            to: _to,
+            value: _value,
+            data: _data,
+            executed: false,
+            cancelled: false,
+            approvalCount: 0,
+            cancellationCount: 0,
+            timestamp: 0, // Will be set when approved
+            tokenAddress: address(0), // ETH transaction
+            amount: _value
+        }));
+        
+        emit TransactionCreated(txId, _to, _value, _data, address(0));
+        
+        // Auto-approve by submitter
+        approveTransaction(txId);
+        
+        return txId;
     }
 
-    public byte[] sign(byte[] data) {
-        return Falcon.sign(data, keyPair);
+    /**
+     * @dev Allows an owner to submit a new ERC20 token transaction
+     * @param _token Address of the ERC20 token
+     * @param _to Recipient address
+     * @param _amount Amount of tokens to transfer
+     * @return Returns transaction ID
+     */
+    function submitERC20Transaction(address _token, address _to, uint256 _amount) 
+        public 
+        onlyOwner 
+        returns (uint256) 
+    {
+        require(_token != address(0), "Invalid token address");
+        
+        uint256 txId = transactions.length;
+        
+        // Create the data for the transfer function call
+        bytes memory data = abi.encodeWithSignature("transfer(address,uint256)", _to, _amount);
+        
+        transactions.push(Transaction({
+            to: _token,
+            value: 0, // No ETH is sent for token transfers
+            data: data,
+            executed: false,
+            cancelled: false,
+            approvalCount: 0,
+            cancellationCount: 0,
+            timestamp: 0, // Will be set when approved
+            tokenAddress: _token,
+            amount: _amount
+        }));
+        
+        emit TransactionCreated(txId, _to, 0, data, _token);
+        
+        // Auto-approve by submitter
+        approveTransaction(txId);
+        
+        return txId;
     }
 
-    public byte[] getSignedTransaction(byte[] transaction) {
-        byte[] signature = Falcon.sign(transaction, keyPair);
-
-        ByteBuffer buffer = ByteBuffer.allocate(2 + signature.length + transaction.length);
-        buffer.put(transaction);
-        buffer.putShort((short) signature.length);
-        buffer.put(signature);
-
-        return buffer.array();
-    }
-
-    public byte[] getSignedSetPublicKeyTransaction(Long feePerByte) throws IOException {
-        long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
-        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
-
-        FalconPublicKeyParameters publicKey = (FalconPublicKeyParameters) keyPair.getPublic();
-        byte[] transaction = TransactionBuilder.getSetPublicKeyTransaction(feePerByte, publicKey.getH(), address, pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
-        return getSignedTransaction(transaction);
-    }
-
-    public byte[] getSignedTransferTransaction(byte[] receiver, long amount, Long feePerByte) throws IOException {
-        errorIf(receiver.length != 20, "Receiver address must be 20 bytes long");
-        long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
-        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
-
-        byte[] transaction = TransactionBuilder.getFalconTransferTransaction(feePerByte, address, receiver, amount, pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
-        return getSignedTransaction(transaction);
-    }
-
-    public byte[] getSignedJoinAsValidatorTransaction(long feePerByte, String ip) throws IOException {
-        long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == 0) feePerByte = baseFeePerByte;
-        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
-
-        byte[] transaction = TransactionBuilder.getFalconJoinAsValidatorTransaction(feePerByte, address, ip, pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
-        return getSignedTransaction(transaction);
-    }
-
-    public byte[] getSignedDelegateTransaction(byte[] validator, long pwrAmount, Long feePerByte) throws IOException {
-        errorIf(validator.length != 20, "Validator address must be 20 bytes long");
-        long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
-        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
-
-        byte[] transaction = TransactionBuilder.getFalconDelegateTransaction(feePerByte, address, validator, pwrAmount, pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
-        return getSignedTransaction(transaction);
-    }
-
-    public byte[] getSignedChangeIpTransaction(String newIp, Long feePerByte) throws IOException {
-        errorIf(newIp == null || newIp.isEmpty() || newIp.length() < 7 || newIp.length() > 15, "Invalid IP address");
-        long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
-        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
-
-        byte[] transaction = TransactionBuilder.getFalconChangeIpTransaction(feePerByte, address, newIp, pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
-        return getSignedTransaction(transaction);
-    }
-
-    public byte[] getSignedClaimActiveNodeSpotTransaction(Long feePerByte) throws IOException {
-        long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
-        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
-
-        byte[] transaction = TransactionBuilder.getFalconClaimActiveNodeSpotTransaction(feePerByte, address, pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
-        return getSignedTransaction(transaction);
-    }
-
-    public byte[] getSignedSubmitVmDataTransaction(long vmId, byte[] data, Long feePerByte) throws IOException {
-        errorIf(data == null || data.length == 0, "Data cannot be empty");
-        long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
-        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
-
-        byte[] transaction = TransactionBuilder.getFalconVmDataTransaction(feePerByte, address, vmId, data, pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
-        return getSignedTransaction(transaction);
-    }
-
-    // Action methods that use the getSigned...Transaction methods
-    public Response setPublicKey(Long feePerByte) throws IOException {
-        return pwrj.broadcastTransaction(getSignedSetPublicKeyTransaction(feePerByte));
-    }
-
-    public Response transferPWR(byte[] receiver, long amount, Long feePerByte) throws IOException {
-        Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
-
-        return pwrj.broadcastTransaction(getSignedTransferTransaction(receiver, amount, feePerByte));
-    }
-
-    public Response joinAsValidator(long feePerByte, String ip) throws IOException {
-        Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
-
-        return pwrj.broadcastTransaction(getSignedJoinAsValidatorTransaction(feePerByte, ip));
-    }
-
-    public Response delegate(byte[] validator, long pwrAmount, Long feePerByte) throws IOException {
-        Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
-
-        return pwrj.broadcastTransaction(getSignedDelegateTransaction(validator, pwrAmount, feePerByte));
-    }
-
-    public Response changeIp(String newIp, Long feePerByte) throws IOException {
-        Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
-
-        return pwrj.broadcastTransaction(getSignedChangeIpTransaction(newIp, feePerByte));
-    }
-
-    public Response claimActiveNodeSpot(Long feePerByte) throws IOException {
-        Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
-
-        return pwrj.broadcastTransaction(getSignedClaimActiveNodeSpotTransaction(feePerByte));
-    }
-
-    public Response submitVmData(long vmId, byte[] data, Long feePerByte) throws IOException {
-        Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
-
-        return pwrj.broadcastTransaction(getSignedSubmitVmDataTransaction(vmId, data, feePerByte));
-    }
-
-    private Response makeSurePublicKeyIsSet(long feePerByte) throws IOException {
-        if(pwrj.getNonceOfAddress(getAddress()) == 0) {
-            return setPublicKey(feePerByte);
-        } else {
-            return null;
+    /**
+     * @dev Allows an owner to approve a transaction
+     * @param _txId Transaction ID to approve
+     */
+    function approveTransaction(uint256 _txId) 
+        public 
+        onlyOwner 
+        txExists(_txId) 
+        notExecuted(_txId) 
+        notCancelled(_txId) 
+    {
+        require(!approved[_txId][msg.sender], "Transaction already approved");
+        
+        approved[_txId][msg.sender] = true;
+        transactions[_txId].approvalCount += 1;
+        
+        emit TransactionApprovalVote(_txId, msg.sender);
+        
+        // Set the timestamp when threshold is reached
+        if (transactions[_txId].approvalCount == threshold && transactions[_txId].timestamp == 0) {
+            transactions[_txId].timestamp = block.timestamp;
+            emit TransactionApproved(_txId);
         }
     }
 
+    /**
+     * @dev Allows an owner to request cancellation of an approved but not yet executed transaction
+     * @param _txId Transaction ID to cancel
+     */
+    function requestCancellation(uint256 _txId) 
+        public 
+        onlyOwner 
+        txExists(_txId) 
+        notExecuted(_txId) 
+        notCancelled(_txId) 
+    {
+        require(!cancelRequested[_txId][msg.sender], "Cancellation already requested");
+        require(transactions[_txId].timestamp > 0, "Transaction not approved yet");
+        require(block.timestamp < transactions[_txId].timestamp + TIMELOCK_DURATION, "Timelock period passed");
+        
+        cancelRequested[_txId][msg.sender] = true;
+        transactions[_txId].cancellationCount += 1;
+        
+        emit TransactionCancellationVote(_txId, msg.sender);
+        
+        // If cancellation threshold reached, cancel the transaction
+        if (transactions[_txId].cancellationCount >= threshold) {
+            transactions[_txId].cancelled = true;
+            emit TransactionCancelled(_txId);
+        }
+    }
+
+    /**
+     * @dev Allows anyone to execute an approved transaction after the timelock period
+     * @param _txId Transaction ID to execute
+     */
+    function executeTransaction(uint256 _txId) 
+        public 
+        txExists(_txId) 
+        notExecuted(_txId) 
+        notCancelled(_txId) 
+        canExecute(_txId) 
+    {
+        Transaction storage transaction = transactions[_txId];
+        transaction.executed = true;
+        
+        if (transaction.tokenAddress == address(0)) {
+            // ETH transaction
+            (bool success, ) = transaction.to.call{value: transaction.value}(transaction.data);
+            require(success, "Transaction execution failed");
+        } else {
+            // ERC20 transaction
+            IERC20 token = IERC20(transaction.tokenAddress);
+            bool success = token.transfer(transaction.to, transaction.amount);
+            require(success, "ERC20 transfer failed");
+        }
+        
+        emit TransactionExecuted(_txId);
+    }
+
+    /**
+     * @dev Returns the list of owners
+     * @return Array of owner addresses
+     */
+    function getOwners() public view returns (address[] memory) {
+        return owners;
+    }
+
+    /**
+     * @dev Returns the count of transactions
+     * @return Number of transactions
+     */
+    function getTransactionCount() public view returns (uint256) {
+        return transactions.length;
+    }
+
+    /**
+     * @dev Returns transaction details
+     * @param _txId Transaction ID
+     * @return to Destination address
+     * @return value ETH value
+     * @return data Transaction data
+     * @return executed Whether the transaction was executed
+     * @return cancelled Whether the transaction was cancelled
+     * @return approvalCount Number of approvals
+     * @return timestamp Time when the transaction was approved
+     * @return tokenAddress Address of the token (address(0) for ETH)
+     * @return amount Amount of tokens to transfer
+     */
+    function getTransaction(uint256 _txId) 
+        public 
+        view 
+        txExists(_txId) 
+        returns (
+            address to,
+            uint256 value,
+            bytes memory data,
+            bool executed,
+            bool cancelled,
+            uint256 approvalCount,
+            uint256 timestamp,
+            address tokenAddress,
+            uint256 amount
+        ) 
+    {
+        Transaction storage transaction = transactions[_txId];
+        
+        return (
+            transaction.to,
+            transaction.value,
+            transaction.data,
+            transaction.executed,
+            transaction.cancelled,
+            transaction.approvalCount,
+            transaction.timestamp,
+            transaction.tokenAddress,
+            transaction.amount
+        );
+    }
+
+    /**
+     * @dev Returns the time remaining before a transaction can be executed
+     * @param _txId Transaction ID
+     * @return Time remaining in seconds, 0 if executable
+     */
+    function getTimeRemaining(uint256 _txId) 
+        public 
+        view 
+        txExists(_txId) 
+        returns (uint256) 
+    {
+        Transaction storage transaction = transactions[_txId];
+        
+        if (transaction.executed || transaction.cancelled || transaction.timestamp == 0) {
+            return 0;
+        }
+        
+        uint256 endTime = transaction.timestamp + TIMELOCK_DURATION;
+        
+        if (block.timestamp >= endTime) {
+            return 0;
+        }
+        
+        return endTime - block.timestamp;
+    }
+
+    /**
+     * @dev Checks if a transaction is ready to execute
+     * @param _txId Transaction ID
+     * @return Whether the transaction can be executed
+     */
+    function isTransactionReady(uint256 _txId) 
+        public 
+        view 
+        txExists(_txId) 
+        returns (bool) 
+    {
+        Transaction storage transaction = transactions[_txId];
+        
+        return (
+            !transaction.executed &&
+            !transaction.cancelled &&
+            transaction.approvalCount >= threshold &&
+            transaction.timestamp > 0 &&
+            block.timestamp >= transaction.timestamp + TIMELOCK_DURATION
+        );
+    }
 }
