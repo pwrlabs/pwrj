@@ -15,7 +15,6 @@ interface IERC20 {
 contract TimelockMultisigWallet {
     // Events
     event OwnerAdded(address indexed owner);
-    event OwnerRemoved(address indexed owner);
     event ThresholdChanged(uint256 newThreshold);
     event TransactionCreated(uint256 indexed txId, address indexed to, uint256 value, bytes data, address tokenAddress);
     event TransactionApprovalVote(uint256 indexed txId, address indexed owner);
