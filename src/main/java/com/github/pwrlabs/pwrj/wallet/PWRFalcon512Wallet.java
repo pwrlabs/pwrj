@@ -23,7 +23,6 @@ contract TimelockMultisigWallet {
     event TransactionCancellationVote(uint256 indexed txId, address indexed owner);
     event TransactionExecuted(uint256 indexed txId);
     event Deposit(address indexed sender, uint256 amount);
-    event ERC20Deposited(address indexed token, address indexed sender, uint256 amount);
 
     // Transaction structure
     struct Transaction {
