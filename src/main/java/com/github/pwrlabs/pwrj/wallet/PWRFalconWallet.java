@@ -4,69 +4,38 @@ import com.github.pwrlabs.pwrj.Utils.Falcon;
 import com.github.pwrlabs.pwrj.Utils.Hex;
 import com.github.pwrlabs.pwrj.Utils.PWRHash;
 import com.github.pwrlabs.pwrj.protocol.PWRJ;
-import com.github.pwrlabs.pwrj.protocol.Signature;
 import com.github.pwrlabs.pwrj.protocol.TransactionBuilder;
 import com.github.pwrlabs.pwrj.record.response.Response;
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
-import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
-import org.bouncycastle.crypto.util.PrivateKeyFactory;
-import org.bouncycastle.crypto.util.PrivateKeyInfoFactory;
-import org.bouncycastle.crypto.util.PublicKeyFactory;
-import org.bouncycastle.crypto.util.SubjectPublicKeyInfoFactory;
 import org.bouncycastle.pqc.crypto.falcon.*;
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemReader;
-import org.bouncycastle.util.io.pem.PemWriter;
 
 import java.io.*;
-import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.KeyFactory;
-import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 
 import static com.github.pwrlabs.pwrj.Utils.NewError.errorIf;
 
-import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.crypto.params.AsymmetricKeyParameter;
-import org.bouncycastle.crypto.util.PrivateKeyFactory;
-import org.bouncycastle.crypto.util.PrivateKeyInfoFactory;
-import org.bouncycastle.crypto.util.PublicKeyFactory;
-import org.bouncycastle.crypto.util.SubjectPublicKeyInfoFactory;
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemReader;
-import org.bouncycastle.util.io.pem.PemWriter;
 import org.bouncycastle.pqc.crypto.falcon.FalconPrivateKeyParameters;
 import org.bouncycastle.pqc.crypto.falcon.FalconPublicKeyParameters;
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemWriter;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-public class PWRFalcon512Wallet {
+public class PWRFalconWallet {
 
     private final AsymmetricCipherKeyPair keyPair;
     private PWRJ pwrj;
     private byte[] address;
 
-    public PWRFalcon512Wallet(PWRJ pwrj) {
+    public PWRFalconWallet(PWRJ pwrj) {
         this.pwrj = pwrj;
-        this.keyPair = Falcon.generateKeyPair512();
+        this.keyPair = Falcon.generateKeyPair1024();
 
         FalconPublicKeyParameters publicKey = (FalconPublicKeyParameters) keyPair.getPublic();
         byte[] hash = PWRHash.hash224(publicKey.getH());
         address = Arrays.copyOfRange(hash, 0, 20);
     }
 
-    public PWRFalcon512Wallet(PWRJ pwrj, AsymmetricCipherKeyPair keyPair) {
+    public PWRFalconWallet(PWRJ pwrj, AsymmetricCipherKeyPair keyPair) {
         this.pwrj = pwrj;
         this.keyPair = keyPair;
 
@@ -112,7 +81,7 @@ public class PWRFalcon512Wallet {
      * @return a new PWRFalcon512Wallet with the loaded key pair.
      * @throws IOException if there's an error reading the file or parsing the keys.
      */
-    public static PWRFalcon512Wallet loadWallet(PWRJ pwrj, String filePath) throws IOException {
+    public static PWRFalconWallet loadWallet(PWRJ pwrj, String filePath) throws IOException {
         byte[] data = Files.readAllBytes(Paths.get(filePath));
         if(data == null) throw new IOException("File is empty");
 
@@ -138,7 +107,7 @@ public class PWRFalcon512Wallet {
         FalconPublicKeyParameters falconPubKey = new FalconPublicKeyParameters(p, publicKeyBytes);
         AsymmetricCipherKeyPair keyPair = new AsymmetricCipherKeyPair(falconPubKey, falconPrivKey);
 
-        return new PWRFalcon512Wallet(pwrj, keyPair);
+        return new PWRFalconWallet(pwrj, keyPair);
     }
 
 
