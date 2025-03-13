@@ -78,7 +78,7 @@ public class PWRFalconWallet {
      *
      * @param pwrj     The PWRJ instance to use for the wallet.
      * @param filePath Path to the PEM file that contains the private/public keys.
-     * @return a new PWRFalcon512Wallet with the loaded key pair.
+     * @return a new PWRFalcon1024Wallet with the loaded key pair.
      * @throws IOException if there's an error reading the file or parsing the keys.
      */
     public static PWRFalconWallet loadWallet(PWRJ pwrj, String filePath) throws IOException {
@@ -102,7 +102,7 @@ public class PWRFalconWallet {
         byte[] publicKeyBytes = new byte[publicKeyLength];
         buffer.get(publicKeyBytes);
 
-        FalconParameters p = FalconParameters.falcon_512;
+        FalconParameters p = FalconParameters.falcon_1024;
         FalconPrivateKeyParameters falconPrivKey = new FalconPrivateKeyParameters(p, f, g, F, publicKeyBytes);
         FalconPublicKeyParameters falconPubKey = new FalconPublicKeyParameters(p, publicKeyBytes);
         AsymmetricCipherKeyPair keyPair = new AsymmetricCipherKeyPair(falconPubKey, falconPrivKey);
