@@ -126,7 +126,7 @@ public class PWRFalconWallet {
 
     public byte[] getSignedTransaction(byte[] transaction) {
         byte[] txnHash = PWRHash.hash256(transaction);
-        byte[] signature = Falcon.sign(txnHash, keyPair);
+        byte[] signature = sign(txnHash);
 
         ByteBuffer buffer = ByteBuffer.allocate(2 + signature.length + transaction.length);
         buffer.put(transaction);
@@ -260,6 +260,16 @@ public class PWRFalconWallet {
         } else {
             return null;
         }
+    }
+
+    public static void main(String[] args) {
+        PWRJ pwrj = new PWRJ("https://pwrrpc.pwrlabs.io/");
+        PWRFalconWallet walet = new PWRFalconWallet(pwrj);
+
+        byte[] data = "Hello, World!".getBytes();
+        byte[] signedData = walet.sign(data);
+
+        System.out.println("valid signature: " + Falcon.verify1024(data, signedData, walet.getPublicKey()));
     }
 
 }
