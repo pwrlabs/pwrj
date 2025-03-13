@@ -156,12 +156,12 @@ public class PWRFalcon512Wallet {
     }
 
     public byte[] getSignedTransaction(byte[] transaction) {
-        byte[] signature = Falcon.sign(transaction, keyPair);
+        byte[] signature = Falcon.sign(PWRHash.hash256(transaction), keyPair);
 
         ByteBuffer buffer = ByteBuffer.allocate(2 + signature.length + transaction.length);
         buffer.put(transaction);
-        buffer.putShort((short) signature.length);
         buffer.put(signature);
+        buffer.putShort((short) signature.length);
 
         return buffer.array();
     }
