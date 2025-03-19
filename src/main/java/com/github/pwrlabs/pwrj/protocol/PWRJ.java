@@ -112,18 +112,19 @@ public class PWRJ {
         }
     }
 
-    public long getFee(byte[] txn) throws IOException {
-        long feePerByte = getFeePerByte();
-        Transaction transaction = TransactionDecoder.decode(txn);
-        if(transaction instanceof GuardianApprovalTransaction) {
-            GuardianApprovalTransaction guardianApprovalTransaction = (GuardianApprovalTransaction) transaction;
-            long fee = (txn.length * feePerByte) + ecdsaVerificationFee;
-            fee += guardianApprovalTransaction.getTransactions().size() * ecdsaVerificationFee;
-            return fee;
-        } else {
-            return (txn.length * feePerByte) + ecdsaVerificationFee;
-        }
-    }
+//    public long getFee(byte[] txn) throws IOException {
+//        long feePerByte = getFeePerByte();
+//        Transaction transaction = TransactionDecoder.decode(txn);
+//        if(transaction instanceof GuardianApprovalTransaction) {
+//            GuardianApprovalTransaction guardianApprovalTransaction = (GuardianApprovalTransaction) transaction;
+//            long fee = (txn.length * feePerByte) + ecdsaVerificationFee;
+//            fee += guardianApprovalTransaction.getTransactions().size() * ecdsaVerificationFee;
+//            return fee;
+//        } else {
+//            return (txn.length * feePerByte) + ecdsaVerificationFee;
+//        }
+//    }
+
     public static String getVmIdAddress(long vmId) {
         String hexAddress = vmId >= 0 ? "1" : "0";
         if(vmId < 0) vmId = -vmId;

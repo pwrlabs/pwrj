@@ -18,27 +18,11 @@ import java.security.SecureRandom;
 import java.security.Security;
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 
 import static com.github.pwrlabs.pwrj.Utils.NewError.errorIf;
 
 public class TransactionBuilder {
-
-    /**
-     * Gets the base transaction bytes for a given identifier, nonce, and chainId.
-     *
-     * @param identifier The transaction identifier.
-     * @param nonce      The transaction nonce.
-     * @param chainId    The chain ID.
-     * @return The base transaction bytes.
-     * @throws IOException If an I/O error occurs.
-     */
-    private static byte[] getTransactionBase(int identifier, int nonce, byte chainId) {
-        ByteBuffer buffer = ByteBuffer.allocate(9);
-        buffer.putInt(identifier);
-        buffer.put(chainId);
-        buffer.putInt(nonce);
-        return buffer.array();
-    }
 
     private static byte[] getFalconTransactionBase(int identifier, int nonce, byte chainId, long feePerByte, byte[] sender) {
         ByteBuffer buffer = ByteBuffer.allocate(37);
@@ -50,641 +34,6 @@ public class TransactionBuilder {
         return buffer.array();
     }
 
-    private static void assetAddressValidity(String address) {
-        if (address == null || (address.length() != 40 && address.length() != 42))
-            throw new RuntimeException("Invalid address");
-    }
-
-    //region - ECDSA Transactions
-
-    /**
-     * Returns the transaction of transferring PWR tokens to a specified address.
-     *
-     * @param to      The recipient address.
-     * @param amount  The amount of PWR tokens to be transferred.
-     * @param nonce   The transaction nonce.
-     * @param chainId The chain ID.
-     * @return A byte array that represents the transaction of this method.
-     * @throws RuntimeException For various transaction-related validation issues.
-     */
-    public static byte[] getTransferPWRTransaction(String to, long amount, int nonce, byte chainId) {
-        assetAddressValidity(to);
-
-        if (amount < 0) {
-            throw new RuntimeException("Amount cannot be negative");
-        }
-        if (nonce < 0) {
-            throw new RuntimeException("Nonce cannot be negative");
-        }
-
-        byte[] transactionBase = getTransactionBase( 0, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 20);
-        buffer.put(transactionBase);
-        buffer.putLong(amount);
-        buffer.put(Hex.decode(to));
-
-        return buffer.array();
-    }
-
-    /**
-     * Returns the transaction of joining the PWR network as a standby validator.
-     *
-     * @param ip      The IP address of the validator.
-     * @param nonce   The transaction nonce.
-     * @param chainId The chain ID.
-     * @return A byte array that represents the transaction of this method.
-     */
-    public static byte[] getJoinTransaction(String ip, int nonce, byte chainId) {
-        byte[] transactionBase = getTransactionBase( 1, nonce, chainId);
-        byte[] ipBytes = ip.getBytes(StandardCharsets.UTF_8);
-
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + ipBytes.length);
-        buffer.put(transactionBase);
-        buffer.put(ip.getBytes(StandardCharsets.UTF_8));
-
-        return buffer.array();
-    }
-
-    /**
-     * Returns the transaction of claiming an active node spot on the PWR network.
-     *
-     * @param nonce   The transaction nonce.
-     * @param chainId The chain ID.
-     * @return A byte array that represents a signed transaction of the method.
-     */
-    public static byte[] getClaimActiveNodeSpotTransaction(int nonce, byte chainId) {
-        byte[] transactionBase = getTransactionBase( 2, nonce, chainId);
-
-        return transactionBase;
-    }
-
-    /**
-     * Returns the transaction of delegating PWR tokens to a specified validator.
-     *
-     * @param validator The validator address.
-     * @param amount    The amount of PWR tokens to be delegated.
-     * @param nonce     The transaction nonce.
-     * @param chainId   The chain ID.
-     * @return A byte array that represents the transaction of the method.
-     * @throws RuntimeException For various transaction-related validation issues.
-     */
-    public static byte[] getDelegateTransaction(String validator, long amount, int nonce, byte chainId) {
-        assetAddressValidity(validator);
-        if (amount < 0) {
-            throw new RuntimeException("Amount cannot be negative");
-        }
-        if (nonce < 0) {
-            throw new RuntimeException("Nonce cannot be negative");
-        }
-
-        byte[] transactionBase = getTransactionBase( 3, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 28);
-        buffer.put(transactionBase);
-        buffer.putLong(amount);
-        buffer.put(Hex.decode(validator));
-
-        return buffer.array();
-    }
-
-    /**
-     * Returns the transaction of withdrawing PWR tokens from a specified validator.
-     *
-     * @param validator    The validator address.
-     * @param sharesAmount The amount of shares to be withdrawn.
-     * @param nonce        The transaction nonce.
-     * @param chainId      The chain ID.
-     * @return A byte array that represents the transaction of this method.
-     * @throws RuntimeException For various transaction-related validation issues.
-     */
-    public static byte[] getWithdrawTransaction(String validator, long sharesAmount, int nonce, byte chainId) {
-        assetAddressValidity(validator);
-        if (sharesAmount < 0) {
-            throw new RuntimeException("Shares amount cannot be negative");
-        }
-        if (nonce < 0) {
-            throw new RuntimeException("Nonce cannot be negative");
-        }
-
-        byte[] transactionBase = getTransactionBase( 4, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 28);
-        buffer.put(transactionBase);
-        buffer.putLong(sharesAmount);
-        buffer.put(Hex.decode(validator));
-
-        return buffer.array();
-    }
-
-    /**
-     * Returns the transaction of sending data to a specified VM on the PWR network.
-     *
-     * @param vmId    The ID of the VM.
-     * @param data    The data to be sent.
-     * @param nonce   The transaction nonce.
-     * @param chainId The chain ID.
-     * @return A byte array that represents the transaction of this method.
-     * @throws RuntimeException For various transaction-related validation issues.
-     */
-    public static byte[] getVmDataTransaction(long vmId, byte[] data, int nonce, byte chainId) {
-        if (nonce < 0) {
-            throw new RuntimeException("Nonce cannot be negative");
-        }
-
-        byte[] transactionBase = getTransactionBase( 5, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 4 + data.length);
-        buffer.put(transactionBase);
-        buffer.putLong(vmId);
-        buffer.putInt(data.length);
-        buffer.put(data);
-
-        return buffer.array();
-    }
-
-    /**
-     * Returns the transaction of sending a transaction to claim a Virtual Machine ID on the PWR network, ensuring its owner 15% revenue of all transaction fees paid when transacting with this VM.
-     *
-     * @param vmId    The ID of the VM.
-     * @param nonce   The transaction nonce.
-     * @param chainId The chain ID.
-     * @return A byte array that represents the transaction of this method.
-     */
-    public static byte[] getClaimVmIdTransaction(long vmId, int nonce, byte chainId) {
-        byte[] transactionBase = getTransactionBase( 6, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8);
-        buffer.put(transactionBase);
-        buffer.putLong(vmId);
-
-        return buffer.array();
-    }
-
-    /**
-     * Returns a transaction of setting a guardian.
-     *
-     * @param guardian   The wallet address of the chosen guardian.
-     * @param expiryDate The expiry date after which the guardian will have revoked privileges.
-     * @param nonce      The transaction nonce.
-     * @param chainId    The chain ID.
-     * @return A byte array with the outcome of this transaction.
-     * @throws RuntimeException For various transaction-related validation issues.
-     */
-    public static byte[] getSetGuardianTransaction(String guardian, long expiryDate, int nonce, byte chainId) {
-        assetAddressValidity(guardian);
-
-        if (nonce < 0) {
-            throw new RuntimeException("Nonce cannot be negative");
-        }
-        if (expiryDate < 0) {
-            throw new RuntimeException("Expiry date cannot be negative");
-        }
-        if (expiryDate < Instant.now().getEpochSecond()) {
-            throw new RuntimeException("Expiry date cannot be in the past");
-        }
-
-        byte[] transactionBase = getTransactionBase( 8, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 20 + 8);
-        buffer.put(transactionBase);
-        buffer.putLong(expiryDate);
-        buffer.put(Hex.decode(guardian));
-
-        return buffer.array();
-    }
-
-    /**
-     * Returns the transaction of removing/revoking a guardian wallet.
-     *
-     * @param nonce   The transaction nonce.
-     * @param chainId The chain ID.
-     * @return A byte array with the outcome of the transaction.
-     */
-    public static byte[] getRemoveGuardianTransaction(int nonce, byte chainId) {
-        byte[] transactionBase = getTransactionBase( 9, nonce, chainId);
-
-        return transactionBase;
-    }
-
-    /**
-     * Returns the transaction of approving a set of transactions for a guardian wallet.
-     *
-     * @param transactions The transactions to be approved.
-     * @param nonce        The transaction nonce.
-     * @param chainId      The chain ID.
-     * @return A byte array representing the transaction of this method
-     */
-    public static byte[] getGuardianApprovalTransaction(List<byte[]> transactions, int nonce, byte chainId) {
-        int totalLength = 0;
-        for (byte[] Transaction : transactions) {
-            totalLength += Transaction.length;
-        }
-
-        byte[] transactionBase = getTransactionBase( 10, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + (transactions.size() * 4) + totalLength);
-        buffer.put(transactionBase);
-
-        for (byte[] Transaction : transactions) {
-            buffer.putInt(Transaction.length);
-            buffer.put(Transaction);
-        }
-
-        return buffer.array();
-    }
-
-    /**
-     * Returns the transaction of sending payable data to a specified VM on the PWR network.
-     *
-     * @param vmId    The ID of the VM.
-     * @param value   The amount of PWR tokens to be sent.
-     * @param data    The data to be sent.
-     * @param nonce   The transaction nonce.
-     * @param chainId The chain ID.
-     * @return A byte array that represents the transaction of this method.
-     * @throws RuntimeException For various transaction-related validation issues.
-     */
-    public static byte[] getPayableVmDataTransaction(long vmId, long value, byte[] data, int nonce, byte chainId) {
-        if (nonce < 0) {
-            throw new RuntimeException("Nonce cannot be negative");
-        }
-
-        byte[] transactionBase = getTransactionBase( 11, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 16 + 4 + data.length);
-        buffer.put(transactionBase);
-        buffer.putLong(vmId);
-        buffer.putInt(data.length);
-        buffer.put(data);
-        buffer.putLong(value);
-
-        return buffer.array();
-    }
-
-    /**
-     * Returns the transaction of sending the transaction to remove a validator/**
-     * Returns the transaction of sending the transaction to remove a validator.
-     *
-     * @param validator The address of the validator to be removed.
-     * @param nonce     The transaction nonce.
-     * @param chainId   The chain ID.
-     * @return A byte array representing the transaction of this method.
-     * @throws RuntimeException If the validator address is invalid.
-     */
-    public static byte[] getValidatorRemoveTransaction(String validator, int nonce, byte chainId) {
-        assetAddressValidity(validator);
-
-        if (nonce < 0) {
-            throw new RuntimeException("Nonce cannot be negative");
-        }
-
-        byte[] transactionBase = getTransactionBase( 7, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 20);
-        buffer.put(transactionBase);
-        buffer.put(Hex.decode(validator));
-
-        return buffer.array();
-    }
-
-    /**
-     * Returns the transaction for approving a set of transactions for a specific VM.
-     *
-     * @param vmId         The ID of the VM.
-     * @param transactions The transactions to be approved.
-     * @param nonce        The transaction nonce.
-     * @param chainId      The chain ID.
-     * @return A byte array representing the transaction of this method.
-     * @throws RuntimeException If the nonce is negative or there are no transactions to approve.
-     */
-    public static byte[] getConduitApprovalTransaction(long vmId, List<byte[]> transactions, int nonce, byte chainId) {
-        if (nonce < 0) {
-            throw new RuntimeException("Nonce cannot be negative");
-        }
-        if (transactions.size() == 0) {
-            throw new RuntimeException("No transactions to approve");
-        }
-
-        int totalTransactionsLength = 0;
-        for (byte[] Transaction : transactions) {
-            totalTransactionsLength += Transaction.length;
-        }
-
-        byte[] transactionBase = getTransactionBase( 12, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + (transactions.size() * 4) + totalTransactionsLength);
-        buffer.put(transactionBase);
-        buffer.putLong(vmId);
-
-        for (byte[] Transaction : transactions) {
-            buffer.putInt(Transaction.length);
-            buffer.put(Transaction);
-        }
-
-        return buffer.array();
-    }
-
-    /**
-     * Returns the transaction for setting a list of conduits for a specific VM.
-     *
-     * @param vmId     The ID of the VM.
-     * @param conduits The list of conduits to be set.
-     * @param nonce    The transaction nonce.
-     * @param chainId  The chain ID.
-     * @return A byte array representing the transaction of this method.
-     * @throws RuntimeException If the nonce is negative or there are no conduits to set.
-     */
-    public static byte[] getSetConduitsTransaction(long vmId, List<byte[]> conduits, int nonce, byte chainId) {
-        if (nonce < 0) {
-            throw new RuntimeException("Nonce cannot be negative");
-        }
-        if (conduits.size() == 0) {
-            throw new RuntimeException("No transactions to approve");
-        }
-
-        int totalConduitLength = 0;
-        for (byte[] conduit : conduits) {
-            totalConduitLength += conduit.length;
-        }
-
-        byte[] transactionBase = getTransactionBase( 13, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + (conduits.size() * 4) + totalConduitLength);
-        buffer.put(transactionBase);
-        buffer.putLong(vmId);
-
-        for (byte[] conduit : conduits) {
-            buffer.putInt(conduit.length);
-            buffer.put(conduit);
-        }
-
-        return buffer.array();
-    }
-
-    /**
-     * Returns the transaction for adding a list of conduits to a specific VM.
-     *
-     * @param vmId     The ID of the VM.
-     * @param conduits The list of conduits to be added.
-     * @param nonce    The transaction nonce.
-     * @param chainId  The chain ID.
-     * @return A byte array representing the transaction of this method.
-     * @throws RuntimeException If the nonce is negative or there are no conduits to add.
-     */
-    public static byte[] getAddConduitsTransaction(long vmId, List<byte[]> conduits, int nonce, byte chainId) {
-        if (nonce < 0) {
-            throw new RuntimeException("Nonce cannot be negative");
-        }
-        if (conduits.size() == 0) {
-            throw new RuntimeException("No conduits provided");
-        }
-
-        byte[] transactionBase = getTransactionBase( 14, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + (conduits.size() * 20));
-        buffer.put(transactionBase);
-        buffer.putLong(vmId);
-
-        for (byte[] conduit : conduits) {
-            buffer.put(conduit);
-        }
-
-        return buffer.array();
-    }
-
-    /**
-     * Returns the transaction for removing a list of conduits from a specific VM.
-     *
-     * @param vmId     The ID of the VM.
-     * @param conduits The list of conduits to be removed.
-     * @param nonce    The transaction nonce.
-     * @param chainId  The chain ID.
-     * @return A byte array representing the transaction of this method.
-     * @throws RuntimeException If the nonce is negative or there are no conduits to remove.
-     */
-    public static byte[] getRemoveConduitsTransaction(long vmId, List<byte[]> conduits, int nonce, byte chainId) {
-        if (nonce < 0) {
-            throw new RuntimeException("Nonce cannot be negative");
-        }
-        if (conduits.size() == 0) {
-            throw new RuntimeException("No conduits provided");
-        }
-
-        byte[] transactionBase = getTransactionBase( 15, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + (conduits.size() * 20));
-        buffer.put(transactionBase);
-        buffer.putLong(vmId);
-
-        for (byte[] conduit : conduits) {
-            buffer.put(conduit);
-        }
-
-        return buffer.array();
-    }
-
-    /**
-     * Returns the transaction for moving a specified amount of stake from one validator to another.
-     *
-     * @param sharesAmount  The amount of shares to be moved.
-     * @param fromValidator The address of the validator to move stake from.
-     * @param toValidator   The address of the validator to move stake to.
-     * @param nonce         The transaction nonce.
-     * @param chainId       The chain ID.
-     * @return A byte array representing the transaction of this method.
-     */
-    public static byte[] getMoveStakeTransaction(long sharesAmount, String fromValidator, String toValidator, int nonce, byte chainId) {
-        assetAddressValidity(fromValidator);
-        assetAddressValidity(toValidator);
-
-        byte[] transactionBase = getTransactionBase( 16, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 48);
-        buffer.put(transactionBase);
-        buffer.putLong(sharesAmount);
-        buffer.put(Hex.decode(fromValidator));
-        buffer.put(Hex.decode(toValidator));
-
-        return buffer.array();
-    }
-
-
-    public static byte[] getChangeEarlyWithdrawPenaltyProposalTxn(long withdrawalPenaltyTime, int withdrawalPenalty, String title, String description, int nonce, byte chainId) {
-        byte[] transactionBase = getTransactionBase( 17, nonce, chainId);
-        byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
-        byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
-
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 12 + 4 + titleBytea.length + descriptionBytea.length);
-        buffer.put(transactionBase);
-        buffer.putInt(titleBytea.length);
-        buffer.put(titleBytea);
-        buffer.putLong(withdrawalPenaltyTime);
-        buffer.putInt(withdrawalPenalty);
-        buffer.put(descriptionBytea);
-        return buffer.array();
-    }
-
-    public static byte[] getChangeFeePerByteProposalTxn(long feePerByte, String title, String description, int nonce, byte chainId) {
-        byte[] transactionBase = getTransactionBase( 18, nonce, chainId);
-        byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
-        byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
-
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 4 + titleBytea.length + descriptionBytea.length);
-        buffer.put(transactionBase);
-        buffer.putInt(titleBytea.length);
-        buffer.put(titleBytea);
-        buffer.putLong(feePerByte);
-        buffer.put(descriptionBytea);
-
-        return buffer.array();
-    }
-
-    public static byte[] getChangeMaxBlockSizeProposalTxn(int maxBlockSize, String title, String description, int nonce, byte chainId) {
-        byte[] transactionBase = getTransactionBase( 19, nonce, chainId);
-        byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
-        byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
-
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 4 + 4 + titleBytea.length + descriptionBytea.length);
-        buffer.put(transactionBase);
-        buffer.putInt(titleBytea.length);
-        buffer.put(titleBytea);
-        buffer.putInt(maxBlockSize);
-        buffer.put(descriptionBytea);
-
-        return buffer.array();
-    }
-
-    public static byte[] getChangeMaxTxnSizeProposalTxn(int maxTxnSize, String title, String description, int nonce, byte chainId) {
-        byte[] transactionBase = getTransactionBase( 20, nonce, chainId);
-        byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
-        byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
-
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 4 + 4 + titleBytea.length + descriptionBytea.length);
-        buffer.put(transactionBase);
-        buffer.putInt(titleBytea.length);
-        buffer.put(titleBytea);
-        buffer.putInt(maxTxnSize);
-        buffer.put(descriptionBytea);
-
-        return buffer.array();
-    }
-
-    public static byte[] getChangeOverallBurnPercentageProposalTxn(int burnPercentage, String title, String description, int nonce, byte chainId) {
-        byte[] transactionBase = getTransactionBase( 21, nonce, chainId);
-        byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
-        byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
-
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 4 + 4 + titleBytea.length + descriptionBytea.length);
-        buffer.put(transactionBase);
-        buffer.putInt(titleBytea.length);
-        buffer.put(titleBytea);
-        buffer.putInt(burnPercentage);
-        buffer.put(descriptionBytea);
-
-        return buffer.array();
-    }
-
-    public static byte[] getChangeRewardPerYearProposalTxn(long rewardPerYear, String title, String description, int nonce, byte chainId) {
-        byte[] transactionBase = getTransactionBase( 22, nonce, chainId);
-        byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
-        byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
-
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 4 + titleBytea.length + descriptionBytea.length);
-        buffer.put(transactionBase);
-        buffer.putInt(titleBytea.length);
-        buffer.put(titleBytea);
-        buffer.putLong(rewardPerYear);
-        buffer.put(description.getBytes(StandardCharsets.UTF_8));
-
-        return buffer.array();
-    }
-
-    public static byte[] getChangeValidatorCountLimitProposalTxn(int validatorCountLimit, String title, String description, int nonce, byte chainId) {
-        byte[] transactionBase = getTransactionBase( 23, nonce, chainId);
-        byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
-        byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
-
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 4 + 4 + titleBytea.length + descriptionBytea.length);
-        buffer.put(transactionBase);
-        buffer.putInt(titleBytea.length);
-        buffer.put(titleBytea);
-        buffer.putInt(validatorCountLimit);
-        buffer.put(descriptionBytea);
-
-        return buffer.array();
-    }
-
-    public static byte[] getChangeValidatorJoiningFeeProposalTxn(long joiningFee, String title, String description, int nonce, byte chainId) {
-        byte[] transactionBase = getTransactionBase( 24, nonce, chainId);
-        byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
-        byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
-
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 4 + titleBytea.length + descriptionBytea.length);
-        buffer.put(transactionBase);
-        buffer.putInt(titleBytea.length);
-        buffer.put(titleBytea);
-        buffer.putLong(joiningFee);
-        buffer.put(descriptionBytea);
-
-        return buffer.array();
-    }
-
-    public static byte[] getChangeVmIdClaimingFeeProposalTxn(long claimingFee, String title, String description, int nonce, byte chainId) {
-        byte[] transactionBase = getTransactionBase( 25, nonce, chainId);
-        byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
-        byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
-
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 4 + titleBytea.length + descriptionBytea.length);
-        buffer.put(transactionBase);
-        buffer.putInt(titleBytea.length);
-        buffer.put(titleBytea);
-        buffer.putLong(claimingFee);
-        buffer.put(descriptionBytea);
-
-        return buffer.array();
-    }
-
-    public static byte[] getChangeVmOwnerTxnFeeShareProposalTxn(int feeShare, String title, String description, int nonce, byte chainId) {
-        byte[] transactionBase = getTransactionBase( 26, nonce, chainId);
-        byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
-        byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
-
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 4 + 4 + titleBytea.length + descriptionBytea.length);
-        buffer.put(transactionBase);
-        buffer.putInt(titleBytea.length);
-        buffer.put(titleBytea);
-        buffer.putInt(feeShare);
-        buffer.put(descriptionBytea);
-
-        return buffer.array();
-    }
-
-    public static byte[] getOtherProposalTxn(String title, String description, int nonce, byte chainId) {
-        byte[] transactionBase = getTransactionBase( 27, nonce, chainId);
-        byte[] descriptionBytea = description.getBytes(StandardCharsets.UTF_8);
-        byte[] titleBytea = title.getBytes(StandardCharsets.UTF_8);
-
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 4 + titleBytea.length + descriptionBytea.length);
-        buffer.put(transactionBase);
-        buffer.putInt(titleBytea.length);
-        buffer.put(titleBytea);
-        buffer.put(descriptionBytea);
-
-        return buffer.array();
-    }
-
-    public static byte[] getVoteOnProposalTxn(String proposalHash, byte vote, int nonce, byte chainId) {
-        byte[] transactionBase = getTransactionBase( 28, nonce, chainId);
-        byte[] proposalHashBytes = Hex.decode(proposalHash);
-        errorIf(proposalHashBytes.length != 32, "Invalid proposal hash");
-
-        ByteBuffer buffer = ByteBuffer.allocate(39);
-        buffer.put(transactionBase);
-        buffer.put(proposalHashBytes);
-        buffer.put(vote);
-
-        return buffer.array();
-    }
-
-    public static byte[] getChangeIpTxn(String newIp, int nonce, byte chainId) {
-        errorIf(newIp == null || newIp.isEmpty() || newIp.length() < 7 || newIp.length() > 15, "Invalid IP address");
-
-        byte[] transactionBase = getTransactionBase( 29, nonce, chainId);
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + newIp.length());
-        buffer.put(transactionBase);
-        buffer.put(newIp.getBytes(StandardCharsets.UTF_8));
-
-        return buffer.array();
-    }
-
-    //endregion
 
     //region - Falcon Transactions
     public static byte[] getSetPublicKeyTransaction(long feePerByte, byte[] publicKey, byte[] sender, int nonce, byte chainId) {
@@ -746,13 +95,517 @@ public class TransactionBuilder {
         return buffer.array();
     }
 
-    public static byte[] getFalconVmDataTransaction(long feePerByte, byte[] sender, long vmId, byte[] data, int nonce, byte chainId) {
+    public static byte[] getFalconVidaDataTransaction(long feePerByte, byte[] sender, long vidaId, byte[] data, int nonce, byte chainId) {
         byte[] transactionBase = getFalconTransactionBase(1007, nonce, chainId, feePerByte, sender);
         ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 4 + data.length);
         buffer.put(transactionBase);
-        buffer.putLong(vmId);
+        buffer.putLong(vidaId);
         buffer.putInt(data.length);
         buffer.put(data);
+
+        return buffer.array();
+    }
+
+    // Governance Proposal Transactions
+
+    public static byte[] getChangeEarlyWithdrawPenaltyProposalTransaction(long feePerByte, byte[] sender, String title,
+                                                                          String description, long earlyWithdrawalTime,
+                                                                          int withdrawalPenalty, int nonce, byte chainId) {
+        // Identifier value should be updated with actual value
+        byte[] transactionBase = getFalconTransactionBase(2001, nonce, chainId, feePerByte, sender);
+        byte[] titleBytes = title.getBytes(StandardCharsets.UTF_8);
+        byte[] descriptionBytes = description.getBytes(StandardCharsets.UTF_8);
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 4 + titleBytes.length + 8 + 4 + descriptionBytes.length);
+        buffer.put(transactionBase);
+        buffer.putInt(titleBytes.length);
+        buffer.put(titleBytes);
+        buffer.putLong(earlyWithdrawalTime);
+        buffer.putInt(withdrawalPenalty);
+        buffer.put(descriptionBytes);
+
+        return buffer.array();
+    }
+
+    public static byte[] getChangeFeePerByteProposalTransaction(long feePerByte, byte[] sender, String title,
+                                                                String description, long newFeePerByte,
+                                                                int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(2002, nonce, chainId, feePerByte, sender);
+        byte[] titleBytes = title.getBytes(StandardCharsets.UTF_8);
+        byte[] descriptionBytes = description.getBytes(StandardCharsets.UTF_8);
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 4 + titleBytes.length + 8 + descriptionBytes.length);
+        buffer.put(transactionBase);
+        buffer.putInt(titleBytes.length);
+        buffer.put(titleBytes);
+        buffer.putLong(newFeePerByte);
+        buffer.put(descriptionBytes);
+
+        return buffer.array();
+    }
+
+    public static byte[] getChangeMaxBlockSizeProposalTransaction(long feePerByte, byte[] sender, String title,
+                                                                  String description, int maxBlockSize,
+                                                                  int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(2003, nonce, chainId, feePerByte, sender);
+        byte[] titleBytes = title.getBytes(StandardCharsets.UTF_8);
+        byte[] descriptionBytes = description.getBytes(StandardCharsets.UTF_8);
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 4 + titleBytes.length + 4 + descriptionBytes.length);
+        buffer.put(transactionBase);
+        buffer.putInt(titleBytes.length);
+        buffer.put(titleBytes);
+        buffer.putInt(maxBlockSize);
+        buffer.put(descriptionBytes);
+
+        return buffer.array();
+    }
+
+    public static byte[] getChangeMaxTxnSizeProposalTransaction(long feePerByte, byte[] sender, String title,
+                                                                String description, int maxTxnSize,
+                                                                int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(2004, nonce, chainId, feePerByte, sender);
+        byte[] titleBytes = title.getBytes(StandardCharsets.UTF_8);
+        byte[] descriptionBytes = description.getBytes(StandardCharsets.UTF_8);
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 4 + titleBytes.length + 4 + descriptionBytes.length);
+        buffer.put(transactionBase);
+        buffer.putInt(titleBytes.length);
+        buffer.put(titleBytes);
+        buffer.putInt(maxTxnSize);
+        buffer.put(descriptionBytes);
+
+        return buffer.array();
+    }
+
+    public static byte[] getChangeOverallBurnPercentageProposalTransaction(long feePerByte, byte[] sender, String title,
+                                                                           String description, int burnPercentage,
+                                                                           int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(2005, nonce, chainId, feePerByte, sender);
+        byte[] titleBytes = title.getBytes(StandardCharsets.UTF_8);
+        byte[] descriptionBytes = description.getBytes(StandardCharsets.UTF_8);
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 4 + titleBytes.length + 4 + descriptionBytes.length);
+        buffer.put(transactionBase);
+        buffer.putInt(titleBytes.length);
+        buffer.put(titleBytes);
+        buffer.putInt(burnPercentage);
+        buffer.put(descriptionBytes);
+
+        return buffer.array();
+    }
+
+    public static byte[] getChangeRewardPerYearProposalTransaction(long feePerByte, byte[] sender, String title,
+                                                                   String description, long rewardPerYear,
+                                                                   int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(2006, nonce, chainId, feePerByte, sender);
+        byte[] titleBytes = title.getBytes(StandardCharsets.UTF_8);
+        byte[] descriptionBytes = description.getBytes(StandardCharsets.UTF_8);
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 4 + titleBytes.length + 8 + descriptionBytes.length);
+        buffer.put(transactionBase);
+        buffer.putInt(titleBytes.length);
+        buffer.put(titleBytes);
+        buffer.putLong(rewardPerYear);
+        buffer.put(descriptionBytes);
+
+        return buffer.array();
+    }
+
+    public static byte[] getChangeValidatorCountLimitProposalTransaction(long feePerByte, byte[] sender, String title,
+                                                                         String description, int validatorCountLimit,
+                                                                         int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(2007, nonce, chainId, feePerByte, sender);
+        byte[] titleBytes = title.getBytes(StandardCharsets.UTF_8);
+        byte[] descriptionBytes = description.getBytes(StandardCharsets.UTF_8);
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 4 + titleBytes.length + 4 + descriptionBytes.length);
+        buffer.put(transactionBase);
+        buffer.putInt(titleBytes.length);
+        buffer.put(titleBytes);
+        buffer.putInt(validatorCountLimit);
+        buffer.put(descriptionBytes);
+
+        return buffer.array();
+    }
+
+    public static byte[] getChangeValidatorJoiningFeeProposalTransaction(long feePerByte, byte[] sender, String title,
+                                                                         String description, long joiningFee,
+                                                                         int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(2008, nonce, chainId, feePerByte, sender);
+        byte[] titleBytes = title.getBytes(StandardCharsets.UTF_8);
+        byte[] descriptionBytes = description.getBytes(StandardCharsets.UTF_8);
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 4 + titleBytes.length + 8 + descriptionBytes.length);
+        buffer.put(transactionBase);
+        buffer.putInt(titleBytes.length);
+        buffer.put(titleBytes);
+        buffer.putLong(joiningFee);
+        buffer.put(descriptionBytes);
+
+        return buffer.array();
+    }
+
+    public static byte[] getChangeVidaIdClaimingFeeProposalTransaction(long feePerByte, byte[] sender, String title,
+                                                                       String description, long vidaIdClaimingFee,
+                                                                       int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(2009, nonce, chainId, feePerByte, sender);
+        byte[] titleBytes = title.getBytes(StandardCharsets.UTF_8);
+        byte[] descriptionBytes = description.getBytes(StandardCharsets.UTF_8);
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 4 + titleBytes.length + 8 + descriptionBytes.length);
+        buffer.put(transactionBase);
+        buffer.putInt(titleBytes.length);
+        buffer.put(titleBytes);
+        buffer.putLong(vidaIdClaimingFee);
+        buffer.put(descriptionBytes);
+
+        return buffer.array();
+    }
+
+    public static byte[] getChangeVmOwnerTxnFeeShareProposalTransaction(long feePerByte, byte[] sender, String title,
+                                                                        String description, int vmOwnerTxnFeeShare,
+                                                                        int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(2010, nonce, chainId, feePerByte, sender);
+        byte[] titleBytes = title.getBytes(StandardCharsets.UTF_8);
+        byte[] descriptionBytes = description.getBytes(StandardCharsets.UTF_8);
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 4 + titleBytes.length + 4 + descriptionBytes.length);
+        buffer.put(transactionBase);
+        buffer.putInt(titleBytes.length);
+        buffer.put(titleBytes);
+        buffer.putInt(vmOwnerTxnFeeShare);
+        buffer.put(descriptionBytes);
+
+        return buffer.array();
+    }
+
+    public static byte[] getOtherProposalTransaction(long feePerByte, byte[] sender, String title,
+                                                     String description, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(2011, nonce, chainId, feePerByte, sender);
+        byte[] titleBytes = title.getBytes(StandardCharsets.UTF_8);
+        byte[] descriptionBytes = description.getBytes(StandardCharsets.UTF_8);
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 4 + titleBytes.length + descriptionBytes.length);
+        buffer.put(transactionBase);
+        buffer.putInt(titleBytes.length);
+        buffer.put(titleBytes);
+        buffer.put(descriptionBytes);
+
+        return buffer.array();
+    }
+
+    public static byte[] getVoteOnProposalTransaction(long feePerByte, byte[] sender, byte[] proposalHash,
+                                                      byte vote, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(2012, nonce, chainId, feePerByte, sender);
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 32 + 1);
+        buffer.put(transactionBase);
+        buffer.put(proposalHash);
+        buffer.put(vote);
+
+        return buffer.array();
+    }
+
+    // Guardian Transactions
+
+    public static byte[] getGuardianApprovalTransaction(long feePerByte, byte[] sender, List<byte[]> wrappedTxns,
+                                                        int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(3001, nonce, chainId, feePerByte, sender);
+
+        // Calculate size needed for all wrapped transactions
+        int totalWrappedSize = 0;
+        for (byte[] wrappedTxn : wrappedTxns) {
+            totalWrappedSize += 4 + wrappedTxn.length; // 4 bytes for length + txn size
+        }
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + totalWrappedSize);
+        buffer.put(transactionBase);
+
+        // Add each wrapped transaction with its length prefix
+        for (byte[] wrappedTxn : wrappedTxns) {
+            buffer.putInt(wrappedTxn.length);
+            buffer.put(wrappedTxn);
+        }
+
+        return buffer.array();
+    }
+
+    public static byte[] getRemoveGuardianTransaction(long feePerByte, byte[] sender, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(3002, nonce, chainId, feePerByte, sender);
+        return transactionBase;
+    }
+
+    public static byte[] getSetGuardianTransaction(long feePerByte, byte[] sender, long expiryDate,
+                                                   byte[] guardianAddress, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(3003, nonce, chainId, feePerByte, sender);
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 20);
+        buffer.put(transactionBase);
+        buffer.putLong(expiryDate);
+        buffer.put(guardianAddress);
+
+        return buffer.array();
+    }
+
+    // Staking Transactions
+
+    public static byte[] getMoveStakeTxnTransaction(long feePerByte, byte[] sender, BigInteger sharesAmount,
+                                                    byte[] fromValidator, byte[] toValidator,
+                                                    int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(4001, nonce, chainId, feePerByte, sender);
+        byte[] sharesAmountBytes = sharesAmount.toByteArray();
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 2 + sharesAmountBytes.length + 20 + 20);
+        buffer.put(transactionBase);
+        buffer.putShort((short) sharesAmountBytes.length);
+        buffer.put(sharesAmountBytes);
+        buffer.put(fromValidator);
+        buffer.put(toValidator);
+
+        return buffer.array();
+    }
+
+    public static byte[] getRemoveValidatorTransaction(long feePerByte, byte[] sender, byte[] validatorAddress,
+                                                       int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(4002, nonce, chainId, feePerByte, sender);
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 20);
+        buffer.put(transactionBase);
+        buffer.put(validatorAddress);
+
+        return buffer.array();
+    }
+
+    public static byte[] getWithdrawTransaction(long feePerByte, byte[] sender, BigInteger sharesAmount,
+                                                byte[] validator, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(4003, nonce, chainId, feePerByte, sender);
+        byte[] sharesAmountBytes = sharesAmount.toByteArray();
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 2 + sharesAmountBytes.length + 20);
+        buffer.put(transactionBase);
+        buffer.putShort((short) sharesAmountBytes.length);
+        buffer.put(sharesAmountBytes);
+        buffer.put(validator);
+
+        return buffer.array();
+    }
+
+    // VIDA Transactions
+
+    public static byte[] getSetConduitModeTransaction(long feePerByte, byte[] sender, long vidaId, byte mode,
+                                                      int conduitThreshold, Set<byte[]> conduits,
+                                                      int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(5001, nonce, chainId, feePerByte, sender);
+
+        // Calculate size: base + vidaId(8) + mode(1) + threshold(4) + (conduits * 20)
+        int totalSize = transactionBase.length + 8 + 1 + 4;
+        totalSize += (conduits != null ? conduits.size() * 20 : 0);
+
+        ByteBuffer buffer = ByteBuffer.allocate(totalSize);
+        buffer.put(transactionBase);
+        buffer.putLong(vidaId);
+        buffer.put(mode);
+        buffer.putInt(conduitThreshold);
+
+        // Add conduit addresses if provided
+        if (conduits != null) {
+            for (byte[] conduit : conduits) {
+                buffer.put(conduit);
+            }
+        }
+
+        return buffer.array();
+    }
+
+    public static byte[] getSetConduitModeWithVidaBasedTransaction(long feePerByte, byte[] sender, long vidaId, byte mode,
+                                                                   int conduitThreshold, List<byte[]> conduits,
+                                                                   List<Long> stakingPowers, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(5001, nonce, chainId, feePerByte, sender);
+
+        // Calculate size: base + vidaId(8) + mode(1) + threshold(4) + (conduits * (20+8))
+        int totalSize = transactionBase.length + 8 + 1 + 4;
+        totalSize += (conduits != null ? conduits.size() * 28 : 0); // 20 bytes address + 8 bytes staking power
+
+        ByteBuffer buffer = ByteBuffer.allocate(totalSize);
+        buffer.put(transactionBase);
+        buffer.putLong(vidaId);
+        buffer.put(mode);
+        buffer.putInt(conduitThreshold);
+
+        // Add conduit addresses and staking powers if provided
+        if (conduits != null && stakingPowers != null && conduits.size() == stakingPowers.size()) {
+            for (int i = 0; i < conduits.size(); i++) {
+                buffer.put(conduits.get(i));
+                buffer.putLong(stakingPowers.get(i));
+            }
+        }
+
+        return buffer.array();
+    }
+
+    public static byte[] getClaimVidaIdTransaction(long feePerByte, byte[] sender, long vidaId,
+                                                   int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(5002, nonce, chainId, feePerByte, sender);
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8);
+        buffer.put(transactionBase);
+        buffer.putLong(vidaId);
+
+        return buffer.array();
+    }
+
+    public static byte[] getConduitApprovalTransaction(long feePerByte, byte[] sender, long vidaId,
+                                                       List<byte[]> wrappedTxns, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(5003, nonce, chainId, feePerByte, sender);
+
+        // Calculate size needed for vidaId (8) and all wrapped transactions
+        int totalWrappedSize = 8; // 8 bytes for vidaId
+        for (byte[] wrappedTxn : wrappedTxns) {
+            totalWrappedSize += 4 + wrappedTxn.length; // 4 bytes for length + txn size
+        }
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + totalWrappedSize);
+        buffer.put(transactionBase);
+        buffer.putLong(vidaId);
+
+        // Add each wrapped transaction with its length prefix
+        for (byte[] wrappedTxn : wrappedTxns) {
+            buffer.putInt(wrappedTxn.length);
+            buffer.put(wrappedTxn);
+        }
+
+        return buffer.array();
+    }
+
+    public static byte[] getPayableVidaDataTransaction(long feePerByte, byte[] sender, long vidaId,
+                                                       byte[] data, long value, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(5004, nonce, chainId, feePerByte, sender);
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 4 + data.length + 8);
+        buffer.put(transactionBase);
+        buffer.putLong(vidaId);
+        buffer.putInt(data.length);
+        buffer.put(data);
+        buffer.putLong(value);
+
+        return buffer.array();
+    }
+
+    public static byte[] getRemoveConduitsTransaction(long feePerByte, byte[] sender, long vidaId,
+                                                      List<byte[]> conduits, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(5005, nonce, chainId, feePerByte, sender);
+
+        // Calculate total size needed: base + vidaId(8) + (conduits * 20)
+        int totalSize = transactionBase.length + 8 + (conduits.size() * 20);
+
+        ByteBuffer buffer = ByteBuffer.allocate(totalSize);
+        buffer.put(transactionBase);
+        buffer.putLong(vidaId);
+
+        // Add each conduit address
+        for (byte[] conduit : conduits) {
+            buffer.put(conduit);
+        }
+
+        return buffer.array();
+    }
+
+    public static byte[] getAddVidaAllowedSendersTransaction(long feePerByte, byte[] sender, long vidaId,
+                                                             Set<byte[]> allowedSenders, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(5006, nonce, chainId, feePerByte, sender);
+
+        // Calculate total size needed: base + vidaId(8) + (allowedSenders * 20)
+        int totalSize = transactionBase.length + 8 + (allowedSenders.size() * 20);
+
+        ByteBuffer buffer = ByteBuffer.allocate(totalSize);
+        buffer.put(transactionBase);
+        buffer.putLong(vidaId);
+
+        // Add each allowed sender address
+        for (byte[] allowedSender : allowedSenders) {
+            buffer.put(allowedSender);
+        }
+
+        return buffer.array();
+    }
+
+    public static byte[] getAddVidaSponsoredAddressesTransaction(long feePerByte, byte[] sender, long vidaId,
+                                                                 Set<byte[]> sponsoredAddresses, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(5007, nonce, chainId, feePerByte, sender);
+
+        // Calculate total size needed: base + vidaId(8) + (sponsoredAddresses * 20)
+        int totalSize = transactionBase.length + 8 + (sponsoredAddresses.size() * 20);
+
+        ByteBuffer buffer = ByteBuffer.allocate(totalSize);
+        buffer.put(transactionBase);
+        buffer.putLong(vidaId);
+
+        // Add each sponsored address
+        for (byte[] sponsoredAddress : sponsoredAddresses) {
+            buffer.put(sponsoredAddress);
+        }
+
+        return buffer.array();
+    }
+
+    public static byte[] getRemoveSponsoredAddressesTransaction(long feePerByte, byte[] sender, long vidaId,
+                                                                Set<byte[]> sponsoredAddresses, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(5008, nonce, chainId, feePerByte, sender);
+
+        // Calculate total size needed: base + vidaId(8) + (sponsoredAddresses * 20)
+        int totalSize = transactionBase.length + 8 + (sponsoredAddresses.size() * 20);
+
+        ByteBuffer buffer = ByteBuffer.allocate(totalSize);
+        buffer.put(transactionBase);
+        buffer.putLong(vidaId);
+
+        // Add each sponsored address to remove
+        for (byte[] sponsoredAddress : sponsoredAddresses) {
+            buffer.put(sponsoredAddress);
+        }
+
+        return buffer.array();
+    }
+
+    public static byte[] getRemoveVidaAllowedSendersTransaction(long feePerByte, byte[] sender, long vidaId,
+                                                                Set<byte[]> allowedSenders, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(5009, nonce, chainId, feePerByte, sender);
+
+        // Calculate total size needed: base + vidaId(8) + (allowedSenders * 20)
+        int totalSize = transactionBase.length + 8 + (allowedSenders.size() * 20);
+
+        ByteBuffer buffer = ByteBuffer.allocate(totalSize);
+        buffer.put(transactionBase);
+        buffer.putLong(vidaId);
+
+        // Add each allowed sender address to remove
+        for (byte[] allowedSender : allowedSenders) {
+            buffer.put(allowedSender);
+        }
+
+        return buffer.array();
+    }
+
+    public static byte[] getSetVidaPrivateStateTransaction(long feePerByte, byte[] sender, long vidaId,
+                                                           boolean privateState, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(5010, nonce, chainId, feePerByte, sender);
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 1);
+        buffer.put(transactionBase);
+        buffer.putLong(vidaId);
+        buffer.put((byte) (privateState ? 1 : 0));
+
+        return buffer.array();
+    }
+
+    public static byte[] getSetVidaToAbsolutePublicTransaction(long feePerByte, byte[] sender, long vidaId,
+                                                               int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(5011, nonce, chainId, feePerByte, sender);
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8);
+        buffer.put(transactionBase);
+        buffer.putLong(vidaId);
 
         return buffer.array();
     }

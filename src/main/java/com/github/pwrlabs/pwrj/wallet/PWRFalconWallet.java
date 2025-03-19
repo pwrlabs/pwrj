@@ -10,10 +10,13 @@ import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
 import org.bouncycastle.pqc.crypto.falcon.*;
 
 import java.io.*;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 
 import static com.github.pwrlabs.pwrj.Utils.NewError.errorIf;
 
@@ -133,9 +136,6 @@ public class PWRFalconWallet {
         buffer.put(signature);
         buffer.putShort((short) signature.length);
 
-        System.out.println("Txn hash: " + Hex.toHexString(txnHash));
-        System.out.println("Signature: " + Hex.toHexString(signature));
-
         return buffer.array();
     }
 
@@ -197,13 +197,13 @@ public class PWRFalconWallet {
         return getSignedTransaction(transaction);
     }
 
-    public byte[] getSignedSubmitVmDataTransaction(long vmId, byte[] data, Long feePerByte) throws IOException {
+    public byte[] getSignedVidaDataTransaction(long vmId, byte[] data, Long feePerByte) throws IOException {
         errorIf(data == null || data.length == 0, "Data cannot be empty");
         long baseFeePerByte = pwrj.getFeePerByte();
         if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
-        byte[] transaction = TransactionBuilder.getFalconVmDataTransaction(feePerByte, address, vmId, data, pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+        byte[] transaction = TransactionBuilder.getFalconVidaDataTransaction(feePerByte, address, vmId, data, pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
         return getSignedTransaction(transaction);
     }
 
@@ -247,29 +247,783 @@ public class PWRFalconWallet {
         return pwrj.broadcastTransaction(getSignedClaimActiveNodeSpotTransaction(feePerByte));
     }
 
-    public Response submitVmData(long vmId, byte[] data, Long feePerByte) throws IOException {
+    public Response submitVidaData(long vmId, byte[] data, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
         if(response != null && !response.isSuccess()) return response;
 
-        return pwrj.broadcastTransaction(getSignedSubmitVmDataTransaction(vmId, data, feePerByte));
+        return pwrj.broadcastTransaction(getSignedVidaDataTransaction(vmId, data, feePerByte));
     }
 
     private Response makeSurePublicKeyIsSet(long feePerByte) throws IOException {
         if(pwrj.getNonceOfAddress(getAddress()) == 0) {
-            return setPublicKey(feePerByte);
-        } else {
-            return null;
+            Response r = setPublicKey(feePerByte);
+            if(!r.isSuccess()) {
+                System.out.println("Failed to set public key");
+                System.out.println(r.getError());
+                return r;
+            }
+            else {
+                long startingTime = System.currentTimeMillis();
+                while (pwrj.getNonceOfAddress(getAddress()) == 0 && System.currentTimeMillis() - startingTime < 30000) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                if(pwrj.getNonceOfAddress(getAddress()) == 0) {
+                    return new Response(false, null, "Failed to set public key");
+                } else {
+                    System.out.println("Public key set successfully");
+                }
+            }
         }
+
+        return null;
     }
 
-    public static void main(String[] args) {
-        PWRJ pwrj = new PWRJ("https://pwrrpc.pwrlabs.io/");
-        PWRFalconWallet walet = new PWRFalconWallet(pwrj);
+    public byte[] getSignedChangeEarlyWithdrawPenaltyProposalTransaction(String title, String description,
+                                                                         long earlyWithdrawalTime, int withdrawalPenalty,
+                                                                         Long feePerByte) throws IOException {
+        errorIf(title == null || title.isEmpty(), "Title cannot be empty");
+        errorIf(description == null || description.isEmpty(), "Description cannot be empty");
 
-        byte[] data = "Hello, World!".getBytes();
-        byte[] signedData = walet.sign(data);
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
-        System.out.println("valid signature: " + Falcon.verify1024(data, signedData, walet.getPublicKey()));
+        byte[] transaction = TransactionBuilder.getChangeEarlyWithdrawPenaltyProposalTransaction(
+                feePerByte, address, title, description, earlyWithdrawalTime, withdrawalPenalty,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
     }
+
+    public Response proposeChangeEarlyWithdrawPenalty(String title, String description,
+                                                      long earlyWithdrawalTime, int withdrawalPenalty,
+                                                      Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedChangeEarlyWithdrawPenaltyProposalTransaction(
+                title, description, earlyWithdrawalTime, withdrawalPenalty, feePerByte));
+    }
+
+    public byte[] getSignedChangeFeePerByteProposalTransaction(String title, String description,
+                                                               long newFeePerByte, Long feePerByte) throws IOException {
+        errorIf(title == null || title.isEmpty(), "Title cannot be empty");
+        errorIf(description == null || description.isEmpty(), "Description cannot be empty");
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getChangeFeePerByteProposalTransaction(
+                feePerByte, address, title, description, newFeePerByte,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response proposeChangeFeePerByte(String title, String description,
+                                            long newFeePerByte, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedChangeFeePerByteProposalTransaction(
+                title, description, newFeePerByte, feePerByte));
+    }
+
+    public byte[] getSignedChangeMaxBlockSizeProposalTransaction(String title, String description,
+                                                                 int maxBlockSize, Long feePerByte) throws IOException {
+        errorIf(title == null || title.isEmpty(), "Title cannot be empty");
+        errorIf(description == null || description.isEmpty(), "Description cannot be empty");
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getChangeMaxBlockSizeProposalTransaction(
+                feePerByte, address, title, description, maxBlockSize,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response proposeChangeMaxBlockSize(String title, String description,
+                                              int maxBlockSize, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedChangeMaxBlockSizeProposalTransaction(
+                title, description, maxBlockSize, feePerByte));
+    }
+
+    public byte[] getSignedChangeMaxTxnSizeProposalTransaction(String title, String description,
+                                                               int maxTxnSize, Long feePerByte) throws IOException {
+        errorIf(title == null || title.isEmpty(), "Title cannot be empty");
+        errorIf(description == null || description.isEmpty(), "Description cannot be empty");
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getChangeMaxTxnSizeProposalTransaction(
+                feePerByte, address, title, description, maxTxnSize,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response proposeChangeMaxTxnSize(String title, String description,
+                                            int maxTxnSize, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedChangeMaxTxnSizeProposalTransaction(
+                title, description, maxTxnSize, feePerByte));
+    }
+
+    public byte[] getSignedChangeOverallBurnPercentageProposalTransaction(String title, String description,
+                                                                          int burnPercentage, Long feePerByte) throws IOException {
+        errorIf(title == null || title.isEmpty(), "Title cannot be empty");
+        errorIf(description == null || description.isEmpty(), "Description cannot be empty");
+        errorIf(burnPercentage < 0 || burnPercentage > 100, "Burn percentage must be between 0 and 100");
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getChangeOverallBurnPercentageProposalTransaction(
+                feePerByte, address, title, description, burnPercentage,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response proposeChangeOverallBurnPercentage(String title, String description,
+                                                       int burnPercentage, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedChangeOverallBurnPercentageProposalTransaction(
+                title, description, burnPercentage, feePerByte));
+    }
+
+    public byte[] getSignedChangeRewardPerYearProposalTransaction(String title, String description,
+                                                                  long rewardPerYear, Long feePerByte) throws IOException {
+        errorIf(title == null || title.isEmpty(), "Title cannot be empty");
+        errorIf(description == null || description.isEmpty(), "Description cannot be empty");
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getChangeRewardPerYearProposalTransaction(
+                feePerByte, address, title, description, rewardPerYear,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response proposeChangeRewardPerYear(String title, String description,
+                                               long rewardPerYear, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedChangeRewardPerYearProposalTransaction(
+                title, description, rewardPerYear, feePerByte));
+    }
+
+    public byte[] getSignedChangeValidatorCountLimitProposalTransaction(String title, String description,
+                                                                        int validatorCountLimit, Long feePerByte) throws IOException {
+        errorIf(title == null || title.isEmpty(), "Title cannot be empty");
+        errorIf(description == null || description.isEmpty(), "Description cannot be empty");
+        errorIf(validatorCountLimit <= 0, "Validator count limit must be positive");
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getChangeValidatorCountLimitProposalTransaction(
+                feePerByte, address, title, description, validatorCountLimit,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response proposeChangeValidatorCountLimit(String title, String description,
+                                                     int validatorCountLimit, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedChangeValidatorCountLimitProposalTransaction(
+                title, description, validatorCountLimit, feePerByte));
+    }
+
+    public byte[] getSignedChangeValidatorJoiningFeeProposalTransaction(String title, String description,
+                                                                        long joiningFee, Long feePerByte) throws IOException {
+        errorIf(title == null || title.isEmpty(), "Title cannot be empty");
+        errorIf(description == null || description.isEmpty(), "Description cannot be empty");
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getChangeValidatorJoiningFeeProposalTransaction(
+                feePerByte, address, title, description, joiningFee,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response proposeChangeValidatorJoiningFee(String title, String description,
+                                                     long joiningFee, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedChangeValidatorJoiningFeeProposalTransaction(
+                title, description, joiningFee, feePerByte));
+    }
+
+    public byte[] getSignedChangeVidaIdClaimingFeeProposalTransaction(String title, String description,
+                                                                      long vidaIdClaimingFee, Long feePerByte) throws IOException {
+        errorIf(title == null || title.isEmpty(), "Title cannot be empty");
+        errorIf(description == null || description.isEmpty(), "Description cannot be empty");
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getChangeVidaIdClaimingFeeProposalTransaction(
+                feePerByte, address, title, description, vidaIdClaimingFee,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response proposeChangeVidaIdClaimingFee(String title, String description,
+                                                   long vidaIdClaimingFee, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedChangeVidaIdClaimingFeeProposalTransaction(
+                title, description, vidaIdClaimingFee, feePerByte));
+    }
+
+    public byte[] getSignedChangeVmOwnerTxnFeeShareProposalTransaction(String title, String description,
+                                                                       int vmOwnerTxnFeeShare, Long feePerByte) throws IOException {
+        errorIf(title == null || title.isEmpty(), "Title cannot be empty");
+        errorIf(description == null || description.isEmpty(), "Description cannot be empty");
+        errorIf(vmOwnerTxnFeeShare < 0 || vmOwnerTxnFeeShare > 100, "VM owner txn fee share must be between 0 and 100");
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getChangeVmOwnerTxnFeeShareProposalTransaction(
+                feePerByte, address, title, description, vmOwnerTxnFeeShare,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response proposeChangeVmOwnerTxnFeeShare(String title, String description,
+                                                    int vmOwnerTxnFeeShare, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedChangeVmOwnerTxnFeeShareProposalTransaction(
+                title, description, vmOwnerTxnFeeShare, feePerByte));
+    }
+
+    public byte[] getSignedOtherProposalTransaction(String title, String description, Long feePerByte) throws IOException {
+        errorIf(title == null || title.isEmpty(), "Title cannot be empty");
+        errorIf(description == null || description.isEmpty(), "Description cannot be empty");
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getOtherProposalTransaction(
+                feePerByte, address, title, description,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response proposeOther(String title, String description, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedOtherProposalTransaction(
+                title, description, feePerByte));
+    }
+
+    public byte[] getSignedVoteOnProposalTransaction(byte[] proposalHash, byte vote, Long feePerByte) throws IOException {
+        errorIf(proposalHash == null || proposalHash.length != 32, "Proposal hash must be 32 bytes");
+        errorIf(vote != 0 && vote != 1, "Vote must be 0 (against) or 1 (in favor)");
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getVoteOnProposalTransaction(
+                feePerByte, address, proposalHash, vote,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response voteOnProposal(byte[] proposalHash, byte vote, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedVoteOnProposalTransaction(
+                proposalHash, vote, feePerByte));
+    }
+
+    // Guardian Transactions
+
+    public byte[] getSignedGuardianApprovalTransaction(List<byte[]> wrappedTxns, Long feePerByte) throws IOException {
+        errorIf(wrappedTxns == null || wrappedTxns.isEmpty(), "No transactions provided for guardian approval");
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getGuardianApprovalTransaction(
+                feePerByte, address, wrappedTxns,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response approveAsGuardian(List<byte[]> wrappedTxns, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedGuardianApprovalTransaction(
+                wrappedTxns, feePerByte));
+    }
+
+    public byte[] getSignedRemoveGuardianTransaction(Long feePerByte) throws IOException {
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getRemoveGuardianTransaction(
+                feePerByte, address,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response removeGuardian(Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedRemoveGuardianTransaction(feePerByte));
+    }
+
+    public byte[] getSignedSetGuardianTransaction(long expiryDate, byte[] guardianAddress, Long feePerByte) throws IOException {
+        errorIf(guardianAddress == null || guardianAddress.length != 20, "Guardian address must be 20 bytes");
+        errorIf(expiryDate <= System.currentTimeMillis(), "Expiry date must be in the future");
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getSetGuardianTransaction(
+                feePerByte, address, expiryDate, guardianAddress,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response setGuardian(long expiryDate, byte[] guardianAddress, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedSetGuardianTransaction(
+                expiryDate, guardianAddress, feePerByte));
+    }
+
+    // Staking Transactions
+
+    public byte[] getSignedMoveStakeTransaction(BigInteger sharesAmount, byte[] fromValidator,
+                                                byte[] toValidator, Long feePerByte) throws IOException {
+        errorIf(sharesAmount == null || sharesAmount.compareTo(BigInteger.ZERO) <= 0, "Shares amount must be positive");
+        errorIf(fromValidator == null || fromValidator.length != 20, "From validator address must be 20 bytes");
+        errorIf(toValidator == null || toValidator.length != 20, "To validator address must be 20 bytes");
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getMoveStakeTxnTransaction(
+                feePerByte, address, sharesAmount, fromValidator, toValidator,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response moveStake(BigInteger sharesAmount, byte[] fromValidator,
+                              byte[] toValidator, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedMoveStakeTransaction(
+                sharesAmount, fromValidator, toValidator, feePerByte));
+    }
+
+    public byte[] getSignedRemoveValidatorTransaction(byte[] validatorAddress, Long feePerByte) throws IOException {
+        errorIf(validatorAddress == null || validatorAddress.length != 20, "Validator address must be 20 bytes");
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getRemoveValidatorTransaction(
+                feePerByte, address, validatorAddress,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response removeValidator(byte[] validatorAddress, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedRemoveValidatorTransaction(
+                validatorAddress, feePerByte));
+    }
+
+    public byte[] getSignedWithdrawTransaction(BigInteger sharesAmount, byte[] validator, Long feePerByte) throws IOException {
+        errorIf(sharesAmount == null || sharesAmount.compareTo(BigInteger.ZERO) <= 0, "Shares amount must be positive");
+        errorIf(validator == null || validator.length != 20, "Validator address must be 20 bytes");
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getWithdrawTransaction(
+                feePerByte, address, sharesAmount, validator,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response withdraw(BigInteger sharesAmount, byte[] validator, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedWithdrawTransaction(
+                sharesAmount, validator, feePerByte));
+    }
+
+    // VIDA Transactions
+
+    public byte[] getSignedSetConduitModeTransaction(long vidaId, byte mode, int conduitThreshold,
+                                                     Set<byte[]> conduits, Long feePerByte) throws IOException {
+        errorIf(conduitThreshold < 0, "Conduit threshold must be non-negative");
+        if(mode == 1 || mode == 2) { // COUNT_BASED or STAKE_BASED mode
+            errorIf(conduits == null || conduits.isEmpty(), "Conduit addresses must be provided for this mode");
+        }
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getSetConduitModeTransaction(
+                feePerByte, address, vidaId, mode, conduitThreshold, conduits,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response setConduitMode(long vidaId, byte mode, int conduitThreshold,
+                                   Set<byte[]> conduits, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedSetConduitModeTransaction(
+                vidaId, mode, conduitThreshold, conduits, feePerByte));
+    }
+
+    public byte[] getSignedSetConduitModeWithVidaBasedTransaction(long vidaId, byte mode, int conduitThreshold,
+                                                                  List<byte[]> conduits, List<Long> stakingPowers,
+                                                                  Long feePerByte) throws IOException {
+        errorIf(conduitThreshold < 0, "Conduit threshold must be non-negative");
+        errorIf(mode != 3, "This method is only for VIDA_BASED mode (3)");
+        errorIf(conduits == null || conduits.isEmpty(), "Conduit addresses must be provided");
+        errorIf(stakingPowers == null || stakingPowers.isEmpty(), "Staking powers must be provided");
+        errorIf(conduits.size() != stakingPowers.size(), "Conduits and staking powers lists must be the same size");
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getSetConduitModeWithVidaBasedTransaction(
+                feePerByte, address, vidaId, mode, conduitThreshold, conduits, stakingPowers,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response setConduitModeWithVidaBased(long vidaId, byte mode, int conduitThreshold,
+                                                List<byte[]> conduits, List<Long> stakingPowers,
+                                                Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedSetConduitModeWithVidaBasedTransaction(
+                vidaId, mode, conduitThreshold, conduits, stakingPowers, feePerByte));
+    }
+
+    public byte[] getSignedClaimVidaIdTransaction(long vidaId, Long feePerByte) throws IOException {
+        errorIf(vidaId <= 0, "VIDA ID must be positive");
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getClaimVidaIdTransaction(
+                feePerByte, address, vidaId,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response claimVidaId(long vidaId, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedClaimVidaIdTransaction(
+                vidaId, feePerByte));
+    }
+
+    public byte[] getSignedConduitApprovalTransaction(long vidaId, List<byte[]> wrappedTxns, Long feePerByte) throws IOException {
+        errorIf(vidaId <= 0, "VIDA ID must be positive");
+        errorIf(wrappedTxns == null || wrappedTxns.isEmpty(), "No transactions provided for conduit approval");
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getConduitApprovalTransaction(
+                feePerByte, address, vidaId, wrappedTxns,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response approveAsConduit(long vidaId, List<byte[]> wrappedTxns, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedConduitApprovalTransaction(
+                vidaId, wrappedTxns, feePerByte));
+    }
+
+    public byte[] getSignedPayableVidaDataTransaction(long vidaId, byte[] data, long value, Long feePerByte) throws IOException {
+        errorIf(vidaId <= 0, "VIDA ID must be positive");
+        errorIf(data == null || data.length == 0, "Data cannot be empty");
+        errorIf(value < 0, "Value cannot be negative");
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getPayableVidaDataTransaction(
+                feePerByte, address, vidaId, data, value,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response submitPayableVidaData(long vidaId, byte[] data, long value, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedPayableVidaDataTransaction(
+                vidaId, data, value, feePerByte));
+    }
+
+    public byte[] getSignedRemoveConduitsTransaction(long vidaId, List<byte[]> conduits, Long feePerByte) throws IOException {
+        errorIf(vidaId <= 0, "VIDA ID must be positive");
+        errorIf(conduits == null || conduits.isEmpty(), "No conduits provided for removal");
+        for(byte[] conduit : conduits) {
+            errorIf(conduit == null || conduit.length != 20, "Conduit address must be 20 bytes");
+        }
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getRemoveConduitsTransaction(
+                feePerByte, address, vidaId, conduits,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response removeConduits(long vidaId, List<byte[]> conduits, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedRemoveConduitsTransaction(
+                vidaId, conduits, feePerByte));
+    }
+
+    public byte[] getSignedAddVidaAllowedSendersTransaction(long vidaId, Set<byte[]> allowedSenders, Long feePerByte) throws IOException {
+        errorIf(vidaId <= 0, "VIDA ID must be positive");
+        errorIf(allowedSenders == null || allowedSenders.isEmpty(), "No allowed senders provided");
+        for(byte[] sender : allowedSenders) {
+            errorIf(sender == null || sender.length != 20, "Sender address must be 20 bytes");
+        }
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getAddVidaAllowedSendersTransaction(
+                feePerByte, address, vidaId, allowedSenders,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response addVidaAllowedSenders(long vidaId, Set<byte[]> allowedSenders, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedAddVidaAllowedSendersTransaction(
+                vidaId, allowedSenders, feePerByte));
+    }
+
+    public byte[] getSignedAddVidaSponsoredAddressesTransaction(long vidaId, Set<byte[]> sponsoredAddresses, Long feePerByte) throws IOException {
+        errorIf(vidaId <= 0, "VIDA ID must be positive");
+        errorIf(sponsoredAddresses == null || sponsoredAddresses.isEmpty(), "No sponsored addresses provided");
+        for(byte[] address : sponsoredAddresses) {
+            errorIf(address == null || address.length != 20, "Sponsored address must be 20 bytes");
+        }
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getAddVidaSponsoredAddressesTransaction(
+                feePerByte, address, vidaId, sponsoredAddresses,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response addVidaSponsoredAddresses(long vidaId, Set<byte[]> sponsoredAddresses, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedAddVidaSponsoredAddressesTransaction(
+                vidaId, sponsoredAddresses, feePerByte));
+    }
+
+    public byte[] getSignedRemoveSponsoredAddressesTransaction(long vidaId, Set<byte[]> sponsoredAddresses, Long feePerByte) throws IOException {
+        errorIf(vidaId <= 0, "VIDA ID must be positive");
+        errorIf(sponsoredAddresses == null || sponsoredAddresses.isEmpty(), "No sponsored addresses provided for removal");
+        for(byte[] address : sponsoredAddresses) {
+            errorIf(address == null || address.length != 20, "Sponsored address must be 20 bytes");
+        }
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getRemoveSponsoredAddressesTransaction(
+                feePerByte, address, vidaId, sponsoredAddresses,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response removeSponsoredAddresses(long vidaId, Set<byte[]> sponsoredAddresses, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedRemoveSponsoredAddressesTransaction(
+                vidaId, sponsoredAddresses, feePerByte));
+    }
+
+    public byte[] getSignedRemoveVidaAllowedSendersTransaction(long vidaId, Set<byte[]> allowedSenders, Long feePerByte) throws IOException {
+        errorIf(vidaId <= 0, "VIDA ID must be positive");
+        errorIf(allowedSenders == null || allowedSenders.isEmpty(), "No allowed senders provided for removal");
+        for(byte[] sender : allowedSenders) {
+            errorIf(sender == null || sender.length != 20, "Sender address must be 20 bytes");
+        }
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getRemoveVidaAllowedSendersTransaction(
+                feePerByte, address, vidaId, allowedSenders,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response removeVidaAllowedSenders(long vidaId, Set<byte[]> allowedSenders, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedRemoveVidaAllowedSendersTransaction(
+                vidaId, allowedSenders, feePerByte));
+    }
+
+    public byte[] getSignedSetVidaPrivateStateTransaction(long vidaId, boolean privateState, Long feePerByte) throws IOException {
+        errorIf(vidaId <= 0, "VIDA ID must be positive");
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getSetVidaPrivateStateTransaction(
+                feePerByte, address, vidaId, privateState,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response setVidaPrivateState(long vidaId, boolean privateState, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedSetVidaPrivateStateTransaction(
+                vidaId, privateState, feePerByte));
+    }
+
+    public byte[] getSignedSetVidaToAbsolutePublicTransaction(long vidaId, Long feePerByte) throws IOException {
+        errorIf(vidaId <= 0, "VIDA ID must be positive");
+
+        long baseFeePerByte = pwrj.getFeePerByte();
+        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
+
+        byte[] transaction = TransactionBuilder.getSetVidaToAbsolutePublicTransaction(
+                feePerByte, address, vidaId,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response setVidaToAbsolutePublic(long vidaId, Long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedSetVidaToAbsolutePublicTransaction(
+                vidaId, feePerByte));
+    }
+
 
 }
