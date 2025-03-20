@@ -197,16 +197,6 @@ public class PWRFalconWallet {
         return getSignedTransaction(transaction);
     }
 
-    public byte[] getSignedVidaDataTransaction(long vmId, byte[] data, Long feePerByte) throws IOException {
-        errorIf(data == null || data.length == 0, "Data cannot be empty");
-        long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
-        errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
-
-        byte[] transaction = TransactionBuilder.getFalconVidaDataTransaction(feePerByte, address, vmId, data, pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
-        return getSignedTransaction(transaction);
-    }
-
     // Action methods that use the getSigned...Transaction methods
     public Response setPublicKey(Long feePerByte) throws IOException {
         return pwrj.broadcastTransaction(getSignedSetPublicKeyTransaction(feePerByte));
@@ -247,13 +237,6 @@ public class PWRFalconWallet {
         return pwrj.broadcastTransaction(getSignedClaimActiveNodeSpotTransaction(feePerByte));
     }
 
-    public Response submitVidaData(long vmId, byte[] data, Long feePerByte) throws IOException {
-        Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
-
-        return pwrj.broadcastTransaction(getSignedVidaDataTransaction(vmId, data, feePerByte));
-    }
-
     private Response makeSurePublicKeyIsSet(long feePerByte) throws IOException {
         if(pwrj.getNonceOfAddress(getAddress()) == 0) {
             Response r = setPublicKey(feePerByte);
@@ -264,12 +247,10 @@ public class PWRFalconWallet {
             }
             else {
                 long startingTime = System.currentTimeMillis();
-                while (pwrj.getNonceOfAddress(getAddress()) == 0 && System.currentTimeMillis() - startingTime < 30000) {
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                while (pwrj.getPublicKeyOfAddress(getAddress()) == null) {
+                    if(System.currentTimeMillis() - startingTime > 30000) break;
+
+                    try {Thread.sleep(1000);} catch (InterruptedException e) {e.printStackTrace();}
                 }
 
                 if(pwrj.getNonceOfAddress(getAddress()) == 0) {

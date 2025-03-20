@@ -7,8 +7,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class IvaTransactionSubscription {
-    private static final Logger logger = LoggerFactory.getLogger(IvaTransactionSubscription.class);
+public class VidaTransactionSubscription {
+    private static final Logger logger = LoggerFactory.getLogger(VidaTransactionSubscription.class);
 
     private PWRJ pwrj;
     private long vmId;
@@ -18,7 +18,7 @@ public class IvaTransactionSubscription {
 
     AtomicBoolean pause = new AtomicBoolean(false), stop = new AtomicBoolean(false);
 
-    public IvaTransactionSubscription(PWRJ pwrj, long vmId, long startingBlock, IvaTransactionHandler handler, long pollInterval) {
+    public VidaTransactionSubscription(PWRJ pwrj, long vmId, long startingBlock, IvaTransactionHandler handler, long pollInterval) {
         this.pwrj = pwrj;
         this.vmId = vmId;
         this.startingBlock = startingBlock;

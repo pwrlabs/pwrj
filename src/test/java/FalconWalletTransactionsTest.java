@@ -4,6 +4,7 @@ import com.github.pwrlabs.pwrj.record.response.Response;
 import com.github.pwrlabs.pwrj.wallet.PWRFalconWallet;
 
 import java.io.IOException;
+import java.util.Random;
 
 import static com.github.pwrlabs.pwrj.Utils.NewError.errorIf;
 
@@ -11,6 +12,8 @@ import static com.github.pwrlabs.pwrj.Utils.NewError.errorIf;
 //It's focused on testing the transactions and the soundness of their execution
 public class FalconWalletTransactionsTest {
     private static final PWRJ pwrj = new PWRJ("http://localhost:8085");
+    private static final int SLEEP_TIME_AFTER_SENDING_TXNS = 10000;
+
     public static void main(String[] args) {
         PWRFalconWallet wallet1 = new PWRFalconWallet(pwrj);
         PWRFalconWallet wallet2 = new PWRFalconWallet(pwrj);
@@ -30,15 +33,16 @@ public class FalconWalletTransactionsTest {
 
         try {
             testTransfer(wallet1, wallet2Address, 1000000);
-        } catch (IOException e) {
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
 
-    private static void testTransfer(PWRFalconWallet sender, byte[] receiver, long amount) throws IOException {
+    private static void testTransfer(PWRFalconWallet sender, byte[] receiver, long amount) throws IOException, InterruptedException {
         System.out.println("Transfering " + amount + " from " + sender.getAddress() + " to " + Hex.toHexString(receiver));
 
         long senderNonce = pwrj.getNonceOfAddress(sender.getAddress());
+        if(senderNonce == 0) ++senderNonce; //We increase the none because if it is zero then 2 txns will be sent (set public key first)
         long senderBalanceBefore = pwrj.getBalanceOfAddress(sender.getAddress());
         long receiverBalanceBefore = pwrj.getBalanceOfAddress(Hex.toHexString(receiver));
 
@@ -50,27 +54,48 @@ public class FalconWalletTransactionsTest {
             System.exit(0);
         }
 
-        long startTime = System.currentTimeMillis();
-        while (pwrj.getNonceOfAddress(sender.getAddress()) <= senderNonce && System.currentTimeMillis() - startTime < 10000) {
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-
-        System.out.println("Transfer complete. Time taken: " + (System.currentTimeMillis() - startTime) + "ms");
+        Thread.sleep(SLEEP_TIME_AFTER_SENDING_TXNS);
 
         long senderBalanceAfter = pwrj.getBalanceOfAddress(sender.getAddress());
         long receiverBalanceAfter = pwrj.getBalanceOfAddress(Hex.toHexString(receiver));
 
-        System.out.println("Sender balance before: " + senderBalanceBefore);
-        System.out.println("Sender balance after: " + senderBalanceAfter);
+        if(senderBalanceAfter > senderBalanceBefore - amount) {
+            System.err.println("Sender balance incorrect");
+            System.out.println("Expected: " + (senderBalanceBefore - amount) + " and less but got: " + senderBalanceAfter);
+            errorIf(true, "Sender balance incorrect");
+        }
 
-        System.out.println("Receiver balance before: " + receiverBalanceBefore);
-        System.out.println("Receiver balance after: " + receiverBalanceAfter);
+        if(receiverBalanceAfter < receiverBalanceBefore + amount) {
+            System.err.println("Receiver balance incorrect");
+            System.out.println("Expected: " + (receiverBalanceBefore + amount) + " and more but got: " + receiverBalanceAfter);
+            errorIf(true, "Receiver balance incorrect");
+        }
 
-        errorIf(senderBalanceAfter > senderBalanceBefore - amount, "Sender balance incorrect");
-        errorIf(receiverBalanceAfter < receiverBalanceBefore + amount, "Receiver balance incorrect");
+        System.out.println("Transfer successful");
+    }
+
+    private static void testVidaDataTxm(PWRFalconWallet sender) throws Exception {
+        byte[] data = generateRandomBytes(230);
+        long vidaId = new Random().nextLong();
+        long value = 100;
+        long blockNow = pwrj.getBlockNumber();
+
+        Response r = sender.submitPayableVidaData(vidaId, data, 1000000, pwrj.getFeePerByte());
+        errorIf(!r.isSuccess(), "Vida data txn failed: " + r.getError());
+
+        Thread.sleep(SLEEP_TIME_AFTER_SENDING_TXNS);
+
+        pwrj.subscribeToVidaTransactions(vidaId, blockNow, (transcation) -> {
+            
+        });
+    }
+
+    //function to generate x random bytes
+    private static byte[] generateRandomBytes(int x) {
+        byte[] randomBytes = new byte[x];
+        for (int i = 0; i < x; i++) {
+            randomBytes[i] = (byte) (Math.random() * 255);
+        }
+        return randomBytes;
     }
 }

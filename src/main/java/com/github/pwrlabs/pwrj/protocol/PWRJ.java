@@ -5,7 +5,6 @@ import com.github.pwrlabs.pwrj.record.block.Block;
 import com.github.pwrlabs.pwrj.record.response.EarlyWithdrawPenaltyResponse;
 import com.github.pwrlabs.pwrj.record.response.Response;
 import com.github.pwrlabs.pwrj.record.response.TransactionForGuardianApproval;
-import com.github.pwrlabs.pwrj.record.transaction.ecdsa.GuardianApprovalTransaction;
 import com.github.pwrlabs.pwrj.record.transaction.Interface.Transaction;
 import com.github.pwrlabs.pwrj.record.transaction.ecdsa.VmDataTransaction;
 import com.github.pwrlabs.pwrj.record.validator.Validator;
@@ -18,7 +17,6 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 //import java.net.http.HttpClient;
@@ -36,7 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.web3j.crypto.Hash;
 
-import java.nio.file.Files;
 import java.util.*;
 
 public class PWRJ {
@@ -220,6 +217,15 @@ public class PWRJ {
         return httpGet(rpcNodeUrl + "/nonceOfUser/?userAddress=" + address).getInt("nonce");
     }
 
+    public byte[] getPublicKeyOfAddress(String address) throws IOException {
+        String result = httpGet(rpcNodeUrl + "/publicKeyOfAddress?address=" + address).getString("falconPublicKey");
+        if(result == null) return null;
+        if(result.equalsIgnoreCase("null")) return null;
+
+        if (result.startsWith("0x")) result = result.substring(2);
+
+        return Hex.decode(result);
+    }
     /**
      * Queries the RPC node to obtain the balance of a specific address.
      *
@@ -856,14 +862,14 @@ public class PWRJ {
         return jsonObject.has(key) ? jsonObject.get(key) : defaultValue;
     }
 
-    public IvaTransactionSubscription subscribeToIvaTransactions(PWRJ pwrj, long vmId, long startingBlock, IvaTransactionHandler handler, long pollInterval) throws IOException {
-        IvaTransactionSubscription i = new IvaTransactionSubscription(pwrj, vmId, startingBlock, handler, pollInterval);
+    public VidaTransactionSubscription subscribeToVidaTransactions(long vmId, long startingBlock, IvaTransactionHandler handler, long pollInterval) throws IOException {
+        VidaTransactionSubscription i = new VidaTransactionSubscription(this, vmId, startingBlock, handler, pollInterval);
         i.start();
         return i;
     }
 
-    public IvaTransactionSubscription subscribeToIvaTransactions(PWRJ pwrj, long vmId, long startingBlock, IvaTransactionHandler handler) throws IOException {
-        return subscribeToIvaTransactions(pwrj, vmId, startingBlock, handler, 100);
+    public VidaTransactionSubscription subscribeToVidaTransactions(long vmId, long startingBlock, IvaTransactionHandler handler) throws IOException {
+        return subscribeToVidaTransactions(vmId, startingBlock, handler, 100);
     }
 
 }

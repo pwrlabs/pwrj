@@ -95,17 +95,6 @@ public class TransactionBuilder {
         return buffer.array();
     }
 
-    public static byte[] getFalconVidaDataTransaction(long feePerByte, byte[] sender, long vidaId, byte[] data, int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(1007, nonce, chainId, feePerByte, sender);
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 4 + data.length);
-        buffer.put(transactionBase);
-        buffer.putLong(vidaId);
-        buffer.putInt(data.length);
-        buffer.put(data);
-
-        return buffer.array();
-    }
-
     // Governance Proposal Transactions
 
     public static byte[] getChangeEarlyWithdrawPenaltyProposalTransaction(long feePerByte, byte[] sender, String title,

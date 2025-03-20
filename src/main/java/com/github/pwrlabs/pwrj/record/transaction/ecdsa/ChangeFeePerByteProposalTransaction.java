@@ -12,7 +12,9 @@ public class ChangeFeePerByteProposalTransaction extends Transaction {
     private long feePerByte;
 
     private String title; 
-    private String description;    public ChangeFeePerByteProposalTransaction(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
+    private String description;
+
+    public ChangeFeePerByteProposalTransaction(JSONObject json, long blockNumber, long timestamp, int positionInTheBlock) {
         super(json, blockNumber, timestamp, positionInTheBlock);
         this.feePerByte = json.optLong("feePerByte" , 8);
         this.description = json.optString("description" , "");
