@@ -36,7 +36,7 @@ public class VidaTransactionSubscription {
             stop.set(false);
         }
 
-        latestCheckedBlock = this.startingBlock;
+        latestCheckedBlock = this.startingBlock - 1;
         Thread thread = new Thread(() -> {
             while (true && !stop.get()) {
                 if(pause.get()) continue;
@@ -46,7 +46,7 @@ public class VidaTransactionSubscription {
 
                     long maxBlockToCheck = Math.min(latestBlock, latestCheckedBlock + 1000);
 
-                    VmDataTransaction[] transactions = pwrj.getVMDataTransactions(latestCheckedBlock, maxBlockToCheck, vidaId);
+                    VmDataTransaction[] transactions = pwrj.getVMDataTransactions(latestCheckedBlock + 1, maxBlockToCheck, vidaId);
 
                     for (VmDataTransaction transaction : transactions) {
                         handler.processIvaTransactions(transaction);
