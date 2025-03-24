@@ -724,7 +724,6 @@ public class PWRWallet {
             byte[] privateKeyBytes = AES256.decrypt(encryptedPrivateKey, password);
             return new PWRWallet(privateKeyBytes, pwrj);
         } catch (Exception e) {
-            e.printStackTrace();
             return null;
         }
     }
