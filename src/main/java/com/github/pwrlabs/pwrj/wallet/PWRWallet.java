@@ -317,8 +317,8 @@ public class PWRWallet {
      * @return A byte array that represents a signed transaction of this method
      * @throws RuntimeException For various transaction-related validation issues.
      */
-    public byte[] getSignedVmDataTransaction(long vmId, byte[] data, int nonce) {
-        return getSignedTransaction(TransactionBuilder.getVmDataTransaction(vmId, data, nonce, pwrj.getChainId()));
+    public byte[] getSignedVmDataTransaction(long vidaId, byte[] data, int nonce) {
+        return getSignedTransaction(TransactionBuilder.getVmDataTransaction(vidaId, data, nonce, pwrj.getChainId()));
     }
     /**
      * Sends data to a specified VM on the PWR network.
@@ -331,8 +331,8 @@ public class PWRWallet {
      *         On failure: Response(success=false, message=null, error=errorMessage).
      * @throws RuntimeException For various transaction-related validation issues.
      */
-    public Response sendVmDataTransaction(long vmId, byte[] data, int nonce) {
-        return pwrj.broadcastTransaction(getSignedVmDataTransaction(vmId, data, nonce));
+    public Response sendVmDataTransaction(long vidaId, byte[] data, int nonce) {
+        return pwrj.broadcastTransaction(getSignedVmDataTransaction(vidaId, data, nonce));
     }
 
 
@@ -344,8 +344,8 @@ public class PWRWallet {
      * @param nonce The transaction count of the wallet address.
      * @return A byte array that represents a signed transaction of this method
      */
-    public byte[] getSignedClaimVmIdTransaction(long vmId, int nonce) {
-        return getSignedTransaction(TransactionBuilder.getClaimVmIdTransaction(vmId, nonce, pwrj.getChainId()));
+    public byte[] getSignedClaimVmIdTransaction(long vidaId, int nonce) {
+        return getSignedTransaction(TransactionBuilder.getClaimVmIdTransaction(vidaId, nonce, pwrj.getChainId()));
     }
     /**
      * Sends a transaction to claim a Virtual Machine ID on the PWR network, ensuring its owner 15% revenue of all transaction fees paid when transacting with this VM.
@@ -356,8 +356,8 @@ public class PWRWallet {
      *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
      *         On failure: Response(success=false, message=null, error=errorMessage).
      */
-    public Response claimVmId(long vmId, int nonce) {
-        return pwrj.broadcastTransaction(getSignedClaimVmIdTransaction(vmId, nonce));
+    public Response claimVmId(long vidaId, int nonce) {
+        return pwrj.broadcastTransaction(getSignedClaimVmIdTransaction(vidaId, nonce));
     }
 
 
@@ -446,8 +446,8 @@ public class PWRWallet {
      * @return A byte array that represents a signed transaction of this method
      * @throws RuntimeException For various transaction-related validation issues.
      */
-    public byte[] getSignedPayableVmDataTransaction(long vmId, long value, byte[] data, int nonce) {
-        return getSignedTransaction(TransactionBuilder.getPayableVmDataTransaction(vmId, value, data, nonce, pwrj.getChainId()));
+    public byte[] getSignedPayableVmDataTransaction(long vidaId, long value, byte[] data, int nonce) {
+        return getSignedTransaction(TransactionBuilder.getPayableVmDataTransaction(vidaId, value, data, nonce, pwrj.getChainId()));
     }
     /**
      * Sends data and PWR coins to a specified VM on the PWR network.
@@ -461,9 +461,9 @@ public class PWRWallet {
      *         On failure: Response(success=false, message=null, error=errorMessage).
      * @throws RuntimeException For various transaction-related validation issues.
      */
-    public Response sendPayableVmDataTransaction(long vmId, long value, byte[] data, int nonce) {
+    public Response sendPayableVmDataTransaction(long vidaId, long value, byte[] data, int nonce) {
         try {
-            return pwrj.broadcastTransaction(getSignedPayableVmDataTransaction(vmId, value, data, nonce));
+            return pwrj.broadcastTransaction(getSignedPayableVmDataTransaction(vidaId, value, data, nonce));
         } catch (Exception e) {
             return new Response(false, null, e.getMessage());
         }
@@ -504,8 +504,8 @@ public class PWRWallet {
      * @return A byte array representing the transaction of this method.
      * @throws RuntimeException     If the nonce is negative or there are no transactions to approve.
      */
-    public byte[] getSignedConduitApprovalTransaction(long vmId, List<byte[]> transactions, int nonce) {
-        return getSignedTransaction(TransactionBuilder.getConduitApprovalTransaction(vmId, transactions, nonce, pwrj.getChainId()));
+    public byte[] getSignedConduitApprovalTransaction(long vidaId, List<byte[]> transactions, int nonce) {
+        return getSignedTransaction(TransactionBuilder.getConduitApprovalTransaction(vidaId, transactions, nonce, pwrj.getChainId()));
     }
     /**
      * Sends the transaction for approving a set of transactions for a specific VM.
@@ -516,8 +516,8 @@ public class PWRWallet {
      * @return A byte array representing the transaction of this method.
      * @throws RuntimeException     If the nonce is negative or there are no transactions to approve.
      */
-    public Response conduitApprove(long vmId, List<byte[]> transactions, int nonce) {
-        return pwrj.broadcastTransaction(getSignedConduitApprovalTransaction(vmId, transactions, nonce));
+    public Response conduitApprove(long vidaId, List<byte[]> transactions, int nonce) {
+        return pwrj.broadcastTransaction(getSignedConduitApprovalTransaction(vidaId, transactions, nonce));
     }
 
 
@@ -530,8 +530,8 @@ public class PWRWallet {
      * @return A byte array representing the transaction of this method.
      * @throws RuntimeException     If the nonce is negative or there are no conduits to set.
      */
-    public byte[] getSignedSetConduitTransaction(long vmId, List<byte[]> conduits, int nonce) {
-        return getSignedTransaction(TransactionBuilder.getSetConduitsTransaction(vmId, conduits, nonce, pwrj.getChainId()));
+    public byte[] getSignedSetConduitTransaction(long vidaId, List<byte[]> conduits, int nonce) {
+        return getSignedTransaction(TransactionBuilder.getSetConduitsTransaction(vidaId, conduits, nonce, pwrj.getChainId()));
     }
     /**
      * Sends the transaction for setting a list of conduits for a specific VM.
@@ -542,8 +542,8 @@ public class PWRWallet {
      * @return A byte array representing the transaction of this method.
      * @throws RuntimeException     If the nonce is negative or there are no conduits to set.
      */
-    public Response setConduits(long vmId, List<byte[]> conduits, int nonce) {
-        return pwrj.broadcastTransaction(getSignedSetConduitTransaction(vmId, conduits, nonce));
+    public Response setConduits(long vidaId, List<byte[]> conduits, int nonce) {
+        return pwrj.broadcastTransaction(getSignedSetConduitTransaction(vidaId, conduits, nonce));
     }
 
 

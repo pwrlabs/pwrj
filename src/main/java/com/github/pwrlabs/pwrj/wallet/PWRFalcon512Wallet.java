@@ -224,13 +224,13 @@ public class PWRFalcon512Wallet {
         return getSignedTransaction(transaction);
     }
 
-    public byte[] getSignedSubmitVmDataTransaction(long vmId, byte[] data, Long feePerByte) throws IOException {
+    public byte[] getSignedSubmitVmDataTransaction(long vidaId, byte[] data, Long feePerByte) throws IOException {
         errorIf(data == null || data.length == 0, "Data cannot be empty");
         long baseFeePerByte = pwrj.getFeePerByte();
         if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
-        byte[] transaction = TransactionBuilder.getFalconVmDataTransaction(feePerByte, address, vmId, data, pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+        byte[] transaction = TransactionBuilder.getFalconVmDataTransaction(feePerByte, address, vidaId, data, pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
         return getSignedTransaction(transaction);
     }
 
@@ -274,11 +274,11 @@ public class PWRFalcon512Wallet {
         return pwrj.broadcastTransaction(getSignedClaimActiveNodeSpotTransaction(feePerByte));
     }
 
-    public Response submitVmData(long vmId, byte[] data, Long feePerByte) throws IOException {
+    public Response submitVmData(long vidaId, byte[] data, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
         if(response != null && !response.isSuccess()) return response;
 
-        return pwrj.broadcastTransaction(getSignedSubmitVmDataTransaction(vmId, data, feePerByte));
+        return pwrj.broadcastTransaction(getSignedSubmitVmDataTransaction(vidaId, data, feePerByte));
     }
 
     private Response makeSurePublicKeyIsSet(long feePerByte) throws IOException {

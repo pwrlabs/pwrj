@@ -7,20 +7,20 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class IvaTransactionSubscription {
-    private static final Logger logger = LoggerFactory.getLogger(IvaTransactionSubscription.class);
+public class VidaTransactionSubscription {
+    private static final Logger logger = LoggerFactory.getLogger(VidaTransactionSubscription.class);
 
     private PWRJ pwrj;
-    private long vmId;
+    private long vidaId;
     private long startingBlock;
     private long latestCheckedBlock;
     private IvaTransactionHandler handler;
 
     AtomicBoolean pause = new AtomicBoolean(false), stop = new AtomicBoolean(false);
 
-    public IvaTransactionSubscription(PWRJ pwrj, long vmId, long startingBlock, IvaTransactionHandler handler, long pollInterval) {
+    public VidaTransactionSubscription(PWRJ pwrj, long vidaId, long startingBlock, IvaTransactionHandler handler, long pollInterval) {
         this.pwrj = pwrj;
-        this.vmId = vmId;
+        this.vidaId = vidaId;
         this.startingBlock = startingBlock;
         this.handler = handler;
     }
@@ -42,9 +42,11 @@ public class IvaTransactionSubscription {
                 if(pause.get()) continue;
                 try {
                     long latestBlock = pwrj.getLatestBlockNumber();
-                    long maxBlockToCheck = Math.min(latestBlock, startingBlock + 1000);
+                    if(latestBlock == latestCheckedBlock) continue;
 
-                    VmDataTransaction[] transactions = pwrj.getVMDataTransactions(startingBlock, maxBlockToCheck, vmId);
+                    long maxBlockToCheck = Math.min(latestBlock, latestCheckedBlock + 1000);
+
+                    VmDataTransaction[] transactions = pwrj.getVMDataTransactions(latestCheckedBlock, maxBlockToCheck, vidaId);
 
                     for (VmDataTransaction transaction : transactions) {
                         handler.processIvaTransactions(transaction);
@@ -64,7 +66,7 @@ public class IvaTransactionSubscription {
             running.set(false);
         });
 
-        thread.setName("IvaTransactionSubscription:IVA-ID-" + vmId);
+        thread.setName("IvaTransactionSubscription:IVA-ID-" + vidaId);
         thread.start();
     }
 
@@ -100,8 +102,8 @@ public class IvaTransactionSubscription {
         return startingBlock;
     }
 
-    public long getVmId() {
-        return vmId;
+    public long getVidaId() {
+        return vidaId;
     }
 
     public IvaTransactionHandler getHandler() {

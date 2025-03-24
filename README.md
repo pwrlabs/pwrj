@@ -123,7 +123,7 @@ if(r.isSuccess()) {
 ```java
 int vmId = 123;
 byte[] data = ...;
-Response r = wallet.sendVmDataTxn(vmId, data);
+Response r = wallet.sendVmDataTxn(vidaId, data);
 
 if(r.isSuccess()) {
    System.out.println("Transcation Hash: " + r.getMessage());

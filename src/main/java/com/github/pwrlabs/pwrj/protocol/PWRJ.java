@@ -18,7 +18,6 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 //import java.net.http.HttpClient;
@@ -36,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.web3j.crypto.Hash;
 
-import java.nio.file.Files;
 import java.util.*;
 
 public class PWRJ {
@@ -405,8 +403,8 @@ public class PWRJ {
         return TransactionsArray;
     }
 
-    public VmDataTransaction[] getVMDataTransactionsFilterByBytePrefix(long startingBlock, long endingBlock, long vmId, byte[] prefix) throws IOException {
-        JSONObject object = httpGet(rpcNodeUrl + "/getVmTransactionsSortByBytePrefix/?startingBlock=" + startingBlock + "&endingBlock=" + endingBlock + "&vmId=" + vmId + "&bytePrefix=" + Hex.toHexString(prefix));
+    public VmDataTransaction[] getVMDataTransactionsFilterByBytePrefix(long startingBlock, long endingBlock, long vidaId, byte[] prefix) throws IOException {
+        JSONObject object = httpGet(rpcNodeUrl + "/getVmTransactionsSortByBytePrefix/?startingBlock=" + startingBlock + "&endingBlock=" + endingBlock + "&vmId=" + vidaId + "&bytePrefix=" + Hex.toHexString(prefix));
 
         JSONArray Transactions = object.getJSONArray("transactions");
         VmDataTransaction[] TransactionsArray = new VmDataTransaction[Transactions.length()];
@@ -855,14 +853,14 @@ public class PWRJ {
         return jsonObject.has(key) ? jsonObject.get(key) : defaultValue;
     }
 
-    public IvaTransactionSubscription subscribeToIvaTransactions(PWRJ pwrj, long vmId, long startingBlock, IvaTransactionHandler handler, long pollInterval) throws IOException {
-        IvaTransactionSubscription i = new IvaTransactionSubscription(pwrj, vmId, startingBlock, handler, pollInterval);
+    public VidaTransactionSubscription subscribeToVidaTransactions(PWRJ pwrj, long vidaId, long startingBlock, IvaTransactionHandler handler, long pollInterval) throws IOException {
+        VidaTransactionSubscription i = new VidaTransactionSubscription(pwrj, vidaId, startingBlock, handler, pollInterval);
         i.start();
         return i;
     }
 
-    public IvaTransactionSubscription subscribeToIvaTransactions(PWRJ pwrj, long vmId, long startingBlock, IvaTransactionHandler handler) throws IOException {
-        return subscribeToIvaTransactions(pwrj, vmId, startingBlock, handler, 100);
+    public VidaTransactionSubscription subscribeToVidaTransactions(PWRJ pwrj, long vidaId, long startingBlock, IvaTransactionHandler handler) throws IOException {
+        return subscribeToVidaTransactions(pwrj, vidaId, startingBlock, handler, 100);
     }
 
 }

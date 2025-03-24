@@ -184,7 +184,7 @@ public class TransactionBuilder {
      * @return A byte array that represents the transaction of this method.
      * @throws RuntimeException For various transaction-related validation issues.
      */
-    public static byte[] getVmDataTransaction(long vmId, byte[] data, int nonce, byte chainId) {
+    public static byte[] getVmDataTransaction(long vidaId, byte[] data, int nonce, byte chainId) {
         if (nonce < 0) {
             throw new RuntimeException("Nonce cannot be negative");
         }
@@ -207,7 +207,7 @@ public class TransactionBuilder {
      * @param chainId The chain ID.
      * @return A byte array that represents the transaction of this method.
      */
-    public static byte[] getClaimVmIdTransaction(long vmId, int nonce, byte chainId) {
+    public static byte[] getClaimVmIdTransaction(long vidaId, int nonce, byte chainId) {
         byte[] transactionBase = getTransactionBase( 6, nonce, chainId);
         ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8);
         buffer.put(transactionBase);
@@ -298,7 +298,7 @@ public class TransactionBuilder {
      * @return A byte array that represents the transaction of this method.
      * @throws RuntimeException For various transaction-related validation issues.
      */
-    public static byte[] getPayableVmDataTransaction(long vmId, long value, byte[] data, int nonce, byte chainId) {
+    public static byte[] getPayableVmDataTransaction(long vidaId, long value, byte[] data, int nonce, byte chainId) {
         if (nonce < 0) {
             throw new RuntimeException("Nonce cannot be negative");
         }
@@ -349,7 +349,7 @@ public class TransactionBuilder {
      * @return A byte array representing the transaction of this method.
      * @throws RuntimeException If the nonce is negative or there are no transactions to approve.
      */
-    public static byte[] getConduitApprovalTransaction(long vmId, List<byte[]> transactions, int nonce, byte chainId) {
+    public static byte[] getConduitApprovalTransaction(long vidaId, List<byte[]> transactions, int nonce, byte chainId) {
         if (nonce < 0) {
             throw new RuntimeException("Nonce cannot be negative");
         }
@@ -385,7 +385,7 @@ public class TransactionBuilder {
      * @return A byte array representing the transaction of this method.
      * @throws RuntimeException If the nonce is negative or there are no conduits to set.
      */
-    public static byte[] getSetConduitsTransaction(long vmId, List<byte[]> conduits, int nonce, byte chainId) {
+    public static byte[] getSetConduitsTransaction(long vidaId, List<byte[]> conduits, int nonce, byte chainId) {
         if (nonce < 0) {
             throw new RuntimeException("Nonce cannot be negative");
         }
@@ -421,7 +421,7 @@ public class TransactionBuilder {
      * @return A byte array representing the transaction of this method.
      * @throws RuntimeException If the nonce is negative or there are no conduits to add.
      */
-    public static byte[] getAddConduitsTransaction(long vmId, List<byte[]> conduits, int nonce, byte chainId) {
+    public static byte[] getAddConduitsTransaction(long vidaId, List<byte[]> conduits, int nonce, byte chainId) {
         if (nonce < 0) {
             throw new RuntimeException("Nonce cannot be negative");
         }
@@ -451,7 +451,7 @@ public class TransactionBuilder {
      * @return A byte array representing the transaction of this method.
      * @throws RuntimeException If the nonce is negative or there are no conduits to remove.
      */
-    public static byte[] getRemoveConduitsTransaction(long vmId, List<byte[]> conduits, int nonce, byte chainId) {
+    public static byte[] getRemoveConduitsTransaction(long vidaId, List<byte[]> conduits, int nonce, byte chainId) {
         if (nonce < 0) {
             throw new RuntimeException("Nonce cannot be negative");
         }
@@ -746,7 +746,7 @@ public class TransactionBuilder {
         return buffer.array();
     }
 
-    public static byte[] getFalconVmDataTransaction(long feePerByte, byte[] sender, long vmId, byte[] data, int nonce, byte chainId) {
+    public static byte[] getFalconVmDataTransaction(long feePerByte, byte[] sender, long vidaId, byte[] data, int nonce, byte chainId) {
         byte[] transactionBase = getFalconTransactionBase(1007, nonce, chainId, feePerByte, sender);
         ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 4 + data.length);
         buffer.put(transactionBase);
