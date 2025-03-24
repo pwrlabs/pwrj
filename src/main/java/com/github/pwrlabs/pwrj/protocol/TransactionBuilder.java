@@ -177,7 +177,7 @@ public class TransactionBuilder {
     /**
      * Returns the transaction of sending data to a specified VM on the PWR network.
      *
-     * @param vmId    The ID of the VM.
+     * @param vidaId    The ID of the VM.
      * @param data    The data to be sent.
      * @param nonce   The transaction nonce.
      * @param chainId The chain ID.
@@ -192,7 +192,7 @@ public class TransactionBuilder {
         byte[] transactionBase = getTransactionBase( 5, nonce, chainId);
         ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 4 + data.length);
         buffer.put(transactionBase);
-        buffer.putLong(vmId);
+        buffer.putLong(vidaId);
         buffer.putInt(data.length);
         buffer.put(data);
 
@@ -202,7 +202,7 @@ public class TransactionBuilder {
     /**
      * Returns the transaction of sending a transaction to claim a Virtual Machine ID on the PWR network, ensuring its owner 15% revenue of all transaction fees paid when transacting with this VM.
      *
-     * @param vmId    The ID of the VM.
+     * @param vidaId    The ID of the VM.
      * @param nonce   The transaction nonce.
      * @param chainId The chain ID.
      * @return A byte array that represents the transaction of this method.
@@ -211,7 +211,7 @@ public class TransactionBuilder {
         byte[] transactionBase = getTransactionBase( 6, nonce, chainId);
         ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8);
         buffer.put(transactionBase);
-        buffer.putLong(vmId);
+        buffer.putLong(vidaId);
 
         return buffer.array();
     }
@@ -290,7 +290,7 @@ public class TransactionBuilder {
     /**
      * Returns the transaction of sending payable data to a specified VM on the PWR network.
      *
-     * @param vmId    The ID of the VM.
+     * @param vidaId    The ID of the VM.
      * @param value   The amount of PWR tokens to be sent.
      * @param data    The data to be sent.
      * @param nonce   The transaction nonce.
@@ -306,7 +306,7 @@ public class TransactionBuilder {
         byte[] transactionBase = getTransactionBase( 11, nonce, chainId);
         ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 16 + 4 + data.length);
         buffer.put(transactionBase);
-        buffer.putLong(vmId);
+        buffer.putLong(vidaId);
         buffer.putInt(data.length);
         buffer.put(data);
         buffer.putLong(value);
@@ -342,7 +342,7 @@ public class TransactionBuilder {
     /**
      * Returns the transaction for approving a set of transactions for a specific VM.
      *
-     * @param vmId         The ID of the VM.
+     * @param vidaId         The ID of the VM.
      * @param transactions The transactions to be approved.
      * @param nonce        The transaction nonce.
      * @param chainId      The chain ID.
@@ -365,7 +365,7 @@ public class TransactionBuilder {
         byte[] transactionBase = getTransactionBase( 12, nonce, chainId);
         ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + (transactions.size() * 4) + totalTransactionsLength);
         buffer.put(transactionBase);
-        buffer.putLong(vmId);
+        buffer.putLong(vidaId);
 
         for (byte[] Transaction : transactions) {
             buffer.putInt(Transaction.length);
@@ -378,7 +378,7 @@ public class TransactionBuilder {
     /**
      * Returns the transaction for setting a list of conduits for a specific VM.
      *
-     * @param vmId     The ID of the VM.
+     * @param vidaId     The ID of the VM.
      * @param conduits The list of conduits to be set.
      * @param nonce    The transaction nonce.
      * @param chainId  The chain ID.
@@ -401,7 +401,7 @@ public class TransactionBuilder {
         byte[] transactionBase = getTransactionBase( 13, nonce, chainId);
         ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + (conduits.size() * 4) + totalConduitLength);
         buffer.put(transactionBase);
-        buffer.putLong(vmId);
+        buffer.putLong(vidaId);
 
         for (byte[] conduit : conduits) {
             buffer.putInt(conduit.length);
@@ -414,7 +414,7 @@ public class TransactionBuilder {
     /**
      * Returns the transaction for adding a list of conduits to a specific VM.
      *
-     * @param vmId     The ID of the VM.
+     * @param vidaId     The ID of the VM.
      * @param conduits The list of conduits to be added.
      * @param nonce    The transaction nonce.
      * @param chainId  The chain ID.
@@ -432,7 +432,7 @@ public class TransactionBuilder {
         byte[] transactionBase = getTransactionBase( 14, nonce, chainId);
         ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + (conduits.size() * 20));
         buffer.put(transactionBase);
-        buffer.putLong(vmId);
+        buffer.putLong(vidaId);
 
         for (byte[] conduit : conduits) {
             buffer.put(conduit);
@@ -444,7 +444,7 @@ public class TransactionBuilder {
     /**
      * Returns the transaction for removing a list of conduits from a specific VM.
      *
-     * @param vmId     The ID of the VM.
+     * @param vidaId     The ID of the VM.
      * @param conduits The list of conduits to be removed.
      * @param nonce    The transaction nonce.
      * @param chainId  The chain ID.
@@ -462,7 +462,7 @@ public class TransactionBuilder {
         byte[] transactionBase = getTransactionBase( 15, nonce, chainId);
         ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + (conduits.size() * 20));
         buffer.put(transactionBase);
-        buffer.putLong(vmId);
+        buffer.putLong(vidaId);
 
         for (byte[] conduit : conduits) {
             buffer.put(conduit);
@@ -750,7 +750,7 @@ public class TransactionBuilder {
         byte[] transactionBase = getFalconTransactionBase(1007, nonce, chainId, feePerByte, sender);
         ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 4 + data.length);
         buffer.put(transactionBase);
-        buffer.putLong(vmId);
+        buffer.putLong(vidaId);
         buffer.putInt(data.length);
         buffer.put(data);
 

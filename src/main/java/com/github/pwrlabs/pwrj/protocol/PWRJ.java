@@ -1,6 +1,6 @@
 package com.github.pwrlabs.pwrj.protocol;
 
-import com.github.pwrlabs.pwrj.interfaces.IvaTransactionHandler;
+import com.github.pwrlabs.pwrj.interfaces.VidaTransactionHandler;
 import com.github.pwrlabs.pwrj.record.block.Block;
 import com.github.pwrlabs.pwrj.record.response.EarlyWithdrawPenaltyResponse;
 import com.github.pwrlabs.pwrj.record.response.Response;
@@ -733,13 +733,13 @@ public class PWRJ {
      * <p>If the RPC node returns an unsuccessful status or if there's any network error,
      * appropriate exceptions will be thrown.</p>
      *
-     * @param vmId The ID of the VM for which to fetch the owner.
+     * @param vidaId The ID of the VM for which to fetch the owner.
      * @return The owner of the specified VM.
      * @throws IOException If there's an issue with the network or stream handling.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public String getOwnerOfVm(long vmId) throws IOException {
-        JSONObject response = httpGet(rpcNodeUrl + "/ownerOfVmId/?vmId=" + vmId);
+    public String getOwnerOfVida(long vidaId) throws IOException {
+        JSONObject response = httpGet(rpcNodeUrl + "/ownerOfVmId/?vmId=" + vidaId);
 
         if(response.optBoolean("claimed", false)) {
             return response.getString("owner");
@@ -853,13 +853,13 @@ public class PWRJ {
         return jsonObject.has(key) ? jsonObject.get(key) : defaultValue;
     }
 
-    public VidaTransactionSubscription subscribeToVidaTransactions(PWRJ pwrj, long vidaId, long startingBlock, IvaTransactionHandler handler, long pollInterval) throws IOException {
+    public VidaTransactionSubscription subscribeToVidaTransactions(PWRJ pwrj, long vidaId, long startingBlock, VidaTransactionHandler handler, long pollInterval) throws IOException {
         VidaTransactionSubscription i = new VidaTransactionSubscription(pwrj, vidaId, startingBlock, handler, pollInterval);
         i.start();
         return i;
     }
 
-    public VidaTransactionSubscription subscribeToVidaTransactions(PWRJ pwrj, long vidaId, long startingBlock, IvaTransactionHandler handler) throws IOException {
+    public VidaTransactionSubscription subscribeToVidaTransactions(PWRJ pwrj, long vidaId, long startingBlock, VidaTransactionHandler handler) throws IOException {
         return subscribeToVidaTransactions(pwrj, vidaId, startingBlock, handler, 100);
     }
 

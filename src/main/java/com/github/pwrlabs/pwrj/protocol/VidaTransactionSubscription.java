@@ -1,6 +1,6 @@
 package com.github.pwrlabs.pwrj.protocol;
 
-import com.github.pwrlabs.pwrj.interfaces.IvaTransactionHandler;
+import com.github.pwrlabs.pwrj.interfaces.VidaTransactionHandler;
 import com.github.pwrlabs.pwrj.record.transaction.ecdsa.VmDataTransaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,11 +14,11 @@ public class VidaTransactionSubscription {
     private long vidaId;
     private long startingBlock;
     private long latestCheckedBlock;
-    private IvaTransactionHandler handler;
+    private VidaTransactionHandler handler;
 
     AtomicBoolean pause = new AtomicBoolean(false), stop = new AtomicBoolean(false);
 
-    public VidaTransactionSubscription(PWRJ pwrj, long vidaId, long startingBlock, IvaTransactionHandler handler, long pollInterval) {
+    public VidaTransactionSubscription(PWRJ pwrj, long vidaId, long startingBlock, VidaTransactionHandler handler, long pollInterval) {
         this.pwrj = pwrj;
         this.vidaId = vidaId;
         this.startingBlock = startingBlock;
@@ -106,7 +106,7 @@ public class VidaTransactionSubscription {
         return vidaId;
     }
 
-    public IvaTransactionHandler getHandler() {
+    public VidaTransactionHandler getHandler() {
         return handler;
     }
 

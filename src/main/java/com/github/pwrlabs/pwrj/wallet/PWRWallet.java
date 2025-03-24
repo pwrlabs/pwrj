@@ -311,7 +311,7 @@ public class PWRWallet {
     /**
      * Returns the signed transaction of send data to a specified VM on the PWR network.
      *
-     * @param vmId The ID of the VM.
+     * @param vidaId The ID of the VM.
      * @param data The data to be sent.
      * @param nonce The transaction count of the wallet address.
      * @return A byte array that represents a signed transaction of this method
@@ -323,7 +323,7 @@ public class PWRWallet {
     /**
      * Sends data to a specified VM on the PWR network.
      *
-     * @param vmId The ID of the VM.
+     * @param vidaId The ID of the VM.
      * @param data The data to be sent.
      * @param nonce The transaction count of the wallet address.
      * @return A Response object encapsulating the outcome of the transaction broadcast.
@@ -340,7 +340,7 @@ public class PWRWallet {
     /**
      * Returns a signed transaction of sending a transaction to claim a Virtual Machine ID on the PWR network, ensuring its owner 15% revenue of all transaction fees paid when transacting with this VM.
      *
-     * @param vmId The ID of the VM.
+     * @param vidaId The ID of the VM.
      * @param nonce The transaction count of the wallet address.
      * @return A byte array that represents a signed transaction of this method
      */
@@ -350,7 +350,7 @@ public class PWRWallet {
     /**
      * Sends a transaction to claim a Virtual Machine ID on the PWR network, ensuring its owner 15% revenue of all transaction fees paid when transacting with this VM.
      *
-     * @param vmId The ID of the VM.
+     * @param vidaId The ID of the VM.
      * @param nonce The transaction count of the wallet address.
      * @return A Response object encapsulating the outcome of the transaction broadcast.
      *         On successful broadcast: Response(success=true, message=transactionHash, error=null).
@@ -439,7 +439,7 @@ public class PWRWallet {
     /**
      * Returns the signed transaction of send payable data to a specified VM on the PWR network.
      *
-     * @param vmId The ID of the VM.
+     * @param vidaId The ID of the VM.
      * @param value The amount of PWR tokens to be sent.
      * @param data The data to be sent.
      * @param nonce The transaction count of the wallet address.
@@ -452,7 +452,7 @@ public class PWRWallet {
     /**
      * Sends data and PWR coins to a specified VM on the PWR network.
      *
-     * @param vmId The ID of the VM.
+     * @param vidaId The ID of the VM.
      * @param value The amount of PWR tokens to be sent.
      * @param data The data to be sent.
      * @param nonce The transaction count of the wallet address.
@@ -498,7 +498,7 @@ public class PWRWallet {
     /**
      * Returns the signed transaction for approving a set of transactions for a specific VM.
      *
-     * @param vmId         The ID of the VM.
+     * @param vidaId         The ID of the VM.
      * @param transactions The transactions to be approved.
      * @param nonce        The transaction nonce.
      * @return A byte array representing the transaction of this method.
@@ -510,7 +510,7 @@ public class PWRWallet {
     /**
      * Sends the transaction for approving a set of transactions for a specific VM.
      *
-     * @param vmId         The ID of the VM.
+     * @param vidaId         The ID of the VM.
      * @param transactions The transactions to be approved.
      * @param nonce        The transaction nonce.
      * @return A byte array representing the transaction of this method.
@@ -524,7 +524,7 @@ public class PWRWallet {
     /**
      * Returns the signed transaction for setting a list of conduits for a specific VM.
      *
-     * @param vmId     The ID of the VM.
+     * @param vidaId     The ID of the VM.
      * @param conduits The list of conduits to be set.
      * @param nonce    The transaction nonce.
      * @return A byte array representing the transaction of this method.
@@ -536,7 +536,7 @@ public class PWRWallet {
     /**
      * Sends the transaction for setting a list of conduits for a specific VM.
      *
-     * @param vmId     The ID of the VM.
+     * @param vidaId     The ID of the VM.
      * @param conduits The list of conduits to be set.
      * @param nonce    The transaction nonce.
      * @return A byte array representing the transaction of this method.
