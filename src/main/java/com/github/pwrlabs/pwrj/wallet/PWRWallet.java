@@ -10,6 +10,7 @@ import org.bouncycastle.jcajce.provider.digest.Keccak;
 import org.bouncycastle.math.ec.FixedPointCombMultiplier;
 import com.github.pwrlabs.pwrj.protocol.Signature;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.http.HttpClient;
@@ -720,10 +721,14 @@ public class PWRWallet {
 
     public static PWRWallet loadWallet(String path, String password, PWRJ pwrj) {
         try {
+            File file = new File(path);
+            if (!file.exists()) return null;
+
             byte[] encryptedPrivateKey = Files.readAllBytes(Path.of(path));
             byte[] privateKeyBytes = AES256.decrypt(encryptedPrivateKey, password);
             return new PWRWallet(privateKeyBytes, pwrj);
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
