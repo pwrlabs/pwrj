@@ -11,6 +11,10 @@ public class FalconTransferTransaction extends Transaction {
         super(json, blockNumber, timestamp, positionInTheBlock);
     }
 
+    public int getIdentifier() {
+        return 1006;
+    }
+
     @Override
     public String getType() {
         return type;

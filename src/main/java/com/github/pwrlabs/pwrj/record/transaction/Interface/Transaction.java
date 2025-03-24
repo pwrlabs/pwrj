@@ -18,7 +18,7 @@ public abstract class Transaction {
     private final boolean hasError;
     private final int nonce, size, positionInTheBlock;
     private final String type, sender, receiver, hash, errorMessage;
-    private final long timestamp, value, blockNumber, fee, extraFee;
+    private final long timestamp, value, blockNumber, fee, extraFee, feePerByte;
     private final byte[] rawTransaction;
     private final JSONObject extraData;
 
@@ -27,6 +27,7 @@ public abstract class Transaction {
         this.positionInTheBlock = positionInTheBlock;
         this.fee = json.optLong("fee", 0L);
         this.extraFee = json.optLong("extraFee", 0L);
+        this.feePerByte = json.optLong("feePerByte", 0L);
         this.type = json.optString("type", "unknown");
         this.sender = json.optString("sender", "0x");
         this.receiver = json.optString("receiver", "0x");
@@ -42,6 +43,8 @@ public abstract class Transaction {
         this.extraData = json.has("extraData") ? json.getJSONObject("extraData") : null;
     }
 
+    public abstract int getIdentifier();
+
     public boolean hasError() {
         return hasError;
     }
@@ -53,6 +56,7 @@ public abstract class Transaction {
         json.put("positionInTheBlock", positionInTheBlock);
         json.put("fee", fee);
         json.put("extraFee", extraFee);
+        json.put("feePerByte", feePerByte);
         json.put("type", type);
         json.put("sender", sender);
         json.put("receiver", receiver);

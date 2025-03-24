@@ -22,6 +22,10 @@ public class FalconSetPublicKeyTransaction extends Transaction {
         this.publicKey = Hex.decode(key);
     }
 
+    public int getIdentifier() {
+        return 1001;
+    }
+
     @Override
     public String getType() {
         return type;

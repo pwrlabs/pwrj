@@ -858,10 +858,6 @@ public class PWRJ {
         }
     }
 
-    public Object getOrDefault(JSONObject jsonObject, String key, Object defaultValue) {
-        return jsonObject.has(key) ? jsonObject.get(key) : defaultValue;
-    }
-
     public VidaTransactionSubscription subscribeToVidaTransactions(long vmId, long startingBlock, IvaTransactionHandler handler, long pollInterval) throws IOException {
         VidaTransactionSubscription i = new VidaTransactionSubscription(this, vmId, startingBlock, handler, pollInterval);
         i.start();
