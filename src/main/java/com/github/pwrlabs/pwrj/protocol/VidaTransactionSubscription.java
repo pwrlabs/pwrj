@@ -36,7 +36,7 @@ public class VidaTransactionSubscription {
             stop.set(false);
         }
 
-        long startingBlock = this.startingBlock;
+        latestCheckedBlock = this.startingBlock;
         Thread thread = new Thread(() -> {
             while (true && !stop.get()) {
                 if(pause.get()) continue;
