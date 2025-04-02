@@ -1,6 +1,6 @@
 package com.github.pwrlabs.pwrj.record.response;
 
-import com.github.pwrlabs.pwrj.record.transaction.Interface.Transaction;
+import com.github.pwrlabs.pwrj.record.transaction.FalconTransaction;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 
@@ -10,5 +10,5 @@ public class TransactionForGuardianApproval {
     private boolean valid;
     private String guardianAddress;
     private String errorMessage;
-    private Transaction transaction;
+    private FalconTransaction transaction;
 }

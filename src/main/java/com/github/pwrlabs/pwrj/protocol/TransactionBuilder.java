@@ -34,7 +34,6 @@ public class TransactionBuilder {
         return buffer.array();
     }
 
-
     //region - Falcon Transactions
     public static byte[] getSetPublicKeyTransaction(long feePerByte, byte[] publicKey, byte[] sender, int nonce, byte chainId) {
         byte[] transactionBase = getFalconTransactionBase(1001, nonce, chainId, feePerByte, sender);

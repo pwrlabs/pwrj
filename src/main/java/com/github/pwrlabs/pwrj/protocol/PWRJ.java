@@ -1,12 +1,11 @@
 package com.github.pwrlabs.pwrj.protocol;
 
-import com.github.pwrlabs.pwrj.interfaces.IvaTransactionHandler;
+import com.github.pwrlabs.pwrj.interfaces.VidaTransactionHandler;
 import com.github.pwrlabs.pwrj.record.block.Block;
 import com.github.pwrlabs.pwrj.record.response.EarlyWithdrawPenaltyResponse;
 import com.github.pwrlabs.pwrj.record.response.Response;
 import com.github.pwrlabs.pwrj.record.response.TransactionForGuardianApproval;
-import com.github.pwrlabs.pwrj.record.transaction.Interface.Transaction;
-import com.github.pwrlabs.pwrj.record.transaction.ecdsa.VmDataTransaction;
+import com.github.pwrlabs.pwrj.record.transaction.FalconTransaction;
 import com.github.pwrlabs.pwrj.record.validator.Validator;
 import lombok.Getter;
 import lombok.Setter;
@@ -109,20 +108,7 @@ public class PWRJ {
         }
     }
 
-//    public long getFee(byte[] txn) throws IOException {
-//        long feePerByte = getFeePerByte();
-//        Transaction transaction = TransactionDecoder.decode(txn);
-//        if(transaction instanceof GuardianApprovalTransaction) {
-//            GuardianApprovalTransaction guardianApprovalTransaction = (GuardianApprovalTransaction) transaction;
-//            long fee = (txn.length * feePerByte) + ecdsaVerificationFee;
-//            fee += guardianApprovalTransaction.getTransactions().size() * ecdsaVerificationFee;
-//            return fee;
-//        } else {
-//            return (txn.length * feePerByte) + ecdsaVerificationFee;
-//        }
-//    }
-
-    public static String getVmIdAddress(long vmId) {
+    public static String getVidaIdAddress(long vmId) {
         String hexAddress = vmId >= 0 ? "1" : "0";
         if(vmId < 0) vmId = -vmId;
         String vmIdString = Long.toString(vmId);
@@ -136,7 +122,7 @@ public class PWRJ {
         return "0x" + hexAddress;
     }
 
-    public static boolean isVmAddress(String address) {
+    public static boolean isVidaAddress(String address) {
         try {
             if (address == null || (address.length() != 40 && address.length() != 42)) return false;
             if (address.startsWith("0x")) address = address.substring(2);
@@ -199,6 +185,17 @@ public class PWRJ {
     }
 
 
+    public byte[] getPublicKeyOfAddress(String address) {
+        try {
+            JSONObject object = httpGet(rpcNodeUrl + "/publicKeyOfAddress/?address=" + address);
+            String publicKey = object.getString("falconPublicKey");
+            if(publicKey == null || publicKey.equalsIgnoreCase("null")) return null;
+            if(publicKey.startsWith("0x")) publicKey = publicKey.substring(2);
+            return Hex.decode(publicKey);
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     /**
      * Queries the RPC node to get the nonce of a specific address.
@@ -217,15 +214,6 @@ public class PWRJ {
         return httpGet(rpcNodeUrl + "/nonceOfUser/?userAddress=" + address).getInt("nonce");
     }
 
-    public byte[] getPublicKeyOfAddress(String address) throws IOException {
-        String result = httpGet(rpcNodeUrl + "/publicKeyOfAddress?address=" + address).getString("falconPublicKey");
-        if(result == null) return null;
-        if(result.equalsIgnoreCase("null")) return null;
-
-        if (result.startsWith("0x")) result = result.substring(2);
-
-        return Hex.decode(result);
-    }
     /**
      * Queries the RPC node to obtain the balance of a specific address.
      *
@@ -284,7 +272,7 @@ public class PWRJ {
         return httpGet(rpcNodeUrl + "/validatorSlashingFee/").getInt("validatorSlashingFee");
     }
 
-    public int getVmOwnerTransactionFeeShare() throws IOException {
+    public int getVidaOwnerTransactionFeeShare() throws IOException {
         return httpGet(rpcNodeUrl + "/vmOwnerTransactionFeeShare/").getInt("vmOwnerTransactionFeeShare");
     }
 
@@ -324,8 +312,8 @@ public class PWRJ {
         return httpGet(rpcNodeUrl + "/maxGuardianTime/").getLong("maxGuardianTime");
     }
 
-    public long getVmIdClaimingFee() throws IOException {
-        return httpGet(rpcNodeUrl + "/vmIdClaimingFee/").getLong("vmIdClaimingFee");
+    public long getVidaIdClaimingFee() throws IOException {
+        return httpGet(rpcNodeUrl + "/vidaIdClaimingFee/").getLong("vidaIdClaimingFee");
     }
 
     public long getProposalFee() throws IOException {
@@ -379,49 +367,42 @@ public class PWRJ {
         return new Block(httpGet(rpcNodeUrl + "/blockExcludingDataAndExtraData/?blockNumber=" + blockNumber).getJSONObject("block"));
     }
 
-    public Block getBlockWithVmDataTransactionsOnly(long blockNumber, long vmId) throws Exception {
+    public Block getBlockWithViDataTransactionsOnly(long blockNumber, long vmId) throws Exception {
         return new Block(httpGet(rpcNodeUrl + "/blockWithVmDataTransactionsOnly/?blockNumber=" + blockNumber + "&vmId=" + vmId).getJSONObject("block"));
     }
 
-    public Transaction getTransactionByHash(String hash) throws Exception {
+    public FalconTransaction getTransactionByHash(String hash) throws Exception {
         JSONObject object = httpGet(rpcNodeUrl + "/transactionByHash/?transactionHash=" + hash).getJSONObject("transaction");
-        return Transaction.fromJSON(object, object.getLong("blockNumber"), object.getLong("timestamp"), object.getInt("positionInTheBlock"));
+        return FalconTransaction.fromJson(object);
     }
 
     public String getProposalStatus(String proposalHash) throws IOException {
         return httpGet(rpcNodeUrl + "/proposalStatus/?proposalHash=" + proposalHash).getString("status");
     }
 
-    public JSONObject getTransactionExplorerInfo(String hash) throws IOException {
-        JSONObject object = httpGet(rpcNodeUrl + "/transactionExplorerInfo/?transactionHash=" + hash).getJSONObject("transaction");
-        return object;
-    }
-
-    public VmDataTransaction[] getVMDataTransactions(long startingBlock, long endingBlock, long vmId) throws IOException {
-        JSONObject object = httpGet(rpcNodeUrl + "/getVmTransactions/?startingBlock=" + startingBlock + "&endingBlock=" + endingBlock + "&vmId=" + vmId);
+    public FalconTransaction.PayableVidaDataTxn[] getVidaDataTransactions(long startingBlock, long endingBlock, long vidaId) throws IOException {
+        JSONObject object = httpGet(rpcNodeUrl + "/getVidaTransactions/?startingBlock=" + startingBlock + "&endingBlock=" + endingBlock + "&vidaId=" + vidaId);
 
         JSONArray Transactions = object.getJSONArray("transactions");
-        VmDataTransaction[] TransactionsArray = new VmDataTransaction[Transactions.length()];
+        FalconTransaction.PayableVidaDataTxn[] TransactionsArray = new FalconTransaction.PayableVidaDataTxn[Transactions.length()];
 
         for(int i = 0; i < Transactions.length(); i++) {
             JSONObject TransactionObject = Transactions.getJSONObject(i);
-            VmDataTransaction Transaction = new VmDataTransaction(TransactionObject, TransactionObject.optLong("blockNumber", 0), TransactionObject.optLong("timestamp", 0), TransactionObject.optInt("positionInTheBlock", 0));
-            TransactionsArray[i] = Transaction;
+            TransactionsArray[i] = (FalconTransaction.PayableVidaDataTxn) FalconTransaction.fromJson(TransactionObject);
         }
 
         return TransactionsArray;
     }
 
-    public VmDataTransaction[] getVMDataTransactionsFilterByBytePrefix(long startingBlock, long endingBlock, long vmId, byte[] prefix) throws IOException {
-        JSONObject object = httpGet(rpcNodeUrl + "/getVmTransactionsSortByBytePrefix/?startingBlock=" + startingBlock + "&endingBlock=" + endingBlock + "&vmId=" + vmId + "&bytePrefix=" + Hex.toHexString(prefix));
+    public FalconTransaction.PayableVidaDataTxn[] getVidaDataTransactionsFilterByBytePrefix(long startingBlock, long endingBlock, long vidaId, byte[] prefix) throws IOException {
+        JSONObject object = httpGet(rpcNodeUrl + "/getVmTransactionsSortByBytePrefix/?startingBlock=" + startingBlock + "&endingBlock=" + endingBlock + "&vidaId=" + vidaId + "&bytePrefix=" + Hex.toHexString(prefix));
 
         JSONArray Transactions = object.getJSONArray("transactions");
-        VmDataTransaction[] TransactionsArray = new VmDataTransaction[Transactions.length()];
+        FalconTransaction.PayableVidaDataTxn[] TransactionsArray = new FalconTransaction.PayableVidaDataTxn[Transactions.length()];
 
         for(int i = 0; i < Transactions.length(); i++) {
             JSONObject TransactionObject = Transactions.getJSONObject(i);
-            VmDataTransaction Transaction = new VmDataTransaction(TransactionObject, TransactionObject.optLong("blockNumber", 0), TransactionObject.optLong("timestamp", 0), TransactionObject.optInt("positionInTheBlock", 0));
-            TransactionsArray[i] = Transaction;
+            TransactionsArray[i] = (FalconTransaction.PayableVidaDataTxn) FalconTransaction.fromJson(TransactionObject);
         }
 
         return TransactionsArray;
@@ -435,7 +416,7 @@ public class PWRJ {
             return TransactionForGuardianApproval.builder()
                     .valid(true)
                     .guardianAddress(object.optString("guardian", "0x"))
-                    .transaction(Transaction.fromJSON(object.getJSONObject("transaction"), 0, 0, 0))
+                    .transaction(FalconTransaction.fromJson(object))
                     .build();
         } else {
             return TransactionForGuardianApproval.builder()
@@ -674,6 +655,7 @@ public class PWRJ {
 
     public List<Validator> getDelegatees(String address) throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/delegateesOfUser/?userAddress=" + address);
+        System.out.println(object);
         JSONArray validators = object.getJSONArray("validators");
         List<Validator> validatorsList = new ArrayList<>();
 
@@ -711,18 +693,6 @@ public class PWRJ {
         return validator;
     }
 
-    public Map<String /*Validator address*/, Long /*Reward*/> getValidatorsReward(long blockNumber) throws IOException {
-        JSONObject object = httpGet(rpcNodeUrl + "/validatorsBlockRewards/?blockNumber=" + blockNumber);
-        JSONObject rewards = object.getJSONObject("rewards");
-        Map<String, Long> rewardsMap = new HashMap<>();
-
-        for(String address: rewards.keySet()) {
-            rewardsMap.put(address, rewards.getLong(address));
-        }
-
-        return rewardsMap;
-    }
-
     public long getDelegatedPWR(String delegatorAddress, String validatorAddress) throws IOException {
         return httpGet(rpcNodeUrl + "/validator/delegator/delegatedPWROfAddress/?userAddress=" + delegatorAddress + "&validatorAddress=" + validatorAddress).getLong("delegatedPWR");
     }
@@ -742,13 +712,13 @@ public class PWRJ {
      * <p>If the RPC node returns an unsuccessful status or if there's any network error,
      * appropriate exceptions will be thrown.</p>
      *
-     * @param vmId The ID of the VM for which to fetch the owner.
+     * @param vidaId The ID of the VM for which to fetch the owner.
      * @return The owner of the specified VM.
      * @throws IOException If there's an issue with the network or stream handling.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
-    public String getOwnerOfVm(long vmId) throws IOException {
-        JSONObject response = httpGet(rpcNodeUrl + "/ownerOfVmId/?vmId=" + vmId);
+    public String getOwnerOfVida(long vidaId) throws IOException {
+        JSONObject response = httpGet(rpcNodeUrl + "/ownerOfVidaId/?vidaId=" + vidaId);
 
         if(response.optBoolean("claimed", false)) {
             return response.getString("owner");
@@ -845,7 +815,7 @@ public class PWRJ {
                 //System.out.println("Status code: " + response.getStatusLine().getStatusCode());
                 return new Response(true, "0x" + Hex.toHexString(Hash.sha3(transaction)), null);
             } else if (response.getStatusLine().getStatusCode() == 400) {
-               System.out.println("Status code: " + response.getStatusLine().getStatusCode());
+                System.out.println("Status code: " + response.getStatusLine().getStatusCode());
                 JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
                 System.out.println("broadcast response:" + object.toString());
                 return new Response(false, null, object.optString("message", ""));
@@ -858,14 +828,18 @@ public class PWRJ {
         }
     }
 
-    public VidaTransactionSubscription subscribeToVidaTransactions(long vmId, long startingBlock, IvaTransactionHandler handler, long pollInterval) throws IOException {
-        VidaTransactionSubscription i = new VidaTransactionSubscription(this, vmId, startingBlock, handler, pollInterval);
+    public Object getOrDefault(JSONObject jsonObject, String key, Object defaultValue) {
+        return jsonObject.has(key) ? jsonObject.get(key) : defaultValue;
+    }
+
+    public VidaTransactionSubscription subscribeToVidaTransactions(PWRJ pwrj, long vidaId, long startingBlock, VidaTransactionHandler handler, long pollInterval) throws IOException {
+        VidaTransactionSubscription i = new VidaTransactionSubscription(pwrj, vidaId, startingBlock, handler, pollInterval);
         i.start();
         return i;
     }
 
-    public VidaTransactionSubscription subscribeToVidaTransactions(long vmId, long startingBlock, IvaTransactionHandler handler) throws IOException {
-        return subscribeToVidaTransactions(vmId, startingBlock, handler, 100);
+    public VidaTransactionSubscription subscribeToVidaTransactions(PWRJ pwrj, long vidaId, long startingBlock, VidaTransactionHandler handler) throws IOException {
+        return subscribeToVidaTransactions(pwrj, vidaId, startingBlock, handler, 100);
     }
 
 }

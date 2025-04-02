@@ -1,7 +1,7 @@
 package com.github.pwrlabs.pwrj.protocol;
 
-import com.github.pwrlabs.pwrj.interfaces.IvaTransactionHandler;
-import com.github.pwrlabs.pwrj.record.transaction.ecdsa.VmDataTransaction;
+import com.github.pwrlabs.pwrj.interfaces.VidaTransactionHandler;
+import com.github.pwrlabs.pwrj.record.transaction.FalconTransaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,16 +11,16 @@ public class VidaTransactionSubscription {
     private static final Logger logger = LoggerFactory.getLogger(VidaTransactionSubscription.class);
 
     private PWRJ pwrj;
-    private long vmId;
+    private long vidaId;
     private long startingBlock;
     private long latestCheckedBlock;
-    private IvaTransactionHandler handler;
+    private VidaTransactionHandler handler;
 
     AtomicBoolean pause = new AtomicBoolean(false), stop = new AtomicBoolean(false);
 
-    public VidaTransactionSubscription(PWRJ pwrj, long vmId, long startingBlock, IvaTransactionHandler handler, long pollInterval) {
+    public VidaTransactionSubscription(PWRJ pwrj, long vidaId, long startingBlock, VidaTransactionHandler handler, long pollInterval) {
         this.pwrj = pwrj;
-        this.vmId = vmId;
+        this.vidaId = vidaId;
         this.startingBlock = startingBlock;
         this.handler = handler;
     }
@@ -36,17 +36,19 @@ public class VidaTransactionSubscription {
             stop.set(false);
         }
 
-        long startingBlock = this.startingBlock;
+        latestCheckedBlock = this.startingBlock - 1;
         Thread thread = new Thread(() -> {
             while (true && !stop.get()) {
                 if(pause.get()) continue;
                 try {
                     long latestBlock = pwrj.getLatestBlockNumber();
-                    long maxBlockToCheck = Math.min(latestBlock, startingBlock + 1000);
+                    if(latestBlock == latestCheckedBlock) continue;
 
-                    VmDataTransaction[] transactions = pwrj.getVMDataTransactions(startingBlock, maxBlockToCheck, vmId);
+                    long maxBlockToCheck = Math.min(latestBlock, latestCheckedBlock + 1000);
 
-                    for (VmDataTransaction transaction : transactions) {
+                    FalconTransaction.PayableVidaDataTxn[] transactions = pwrj.getVidaDataTransactions(latestCheckedBlock + 1, maxBlockToCheck, vidaId);
+
+                    for (FalconTransaction.PayableVidaDataTxn transaction : transactions) {
                         handler.processIvaTransactions(transaction);
                     }
 
@@ -64,7 +66,7 @@ public class VidaTransactionSubscription {
             running.set(false);
         });
 
-        thread.setName("IvaTransactionSubscription:IVA-ID-" + vmId);
+        thread.setName("IvaTransactionSubscription:IVA-ID-" + vidaId);
         thread.start();
     }
 
@@ -100,11 +102,11 @@ public class VidaTransactionSubscription {
         return startingBlock;
     }
 
-    public long getVmId() {
-        return vmId;
+    public long getVidaId() {
+        return vidaId;
     }
 
-    public IvaTransactionHandler getHandler() {
+    public VidaTransactionHandler getHandler() {
         return handler;
     }
 

@@ -1,44 +1,42 @@
 package com.github.pwrlabs.pwrj.record.block;
 
-import com.github.pwrlabs.pwrj.record.transaction.Interface.Transaction;
+import io.pwrlabs.utils.BinaryJSONKeyMapper;
 import lombok.Getter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.List;
+
 @Getter
 public class Block {
-    private final int transactionCount;
-    private final int size;
-    private final long number;
-    private final long reward;
-    private final long timestamp;
-    private final String hash;
-    private final String submitter;
-    private final boolean processedWithoutCriticalErrors;
-    private final Transaction[] transactions;
+    private final long blockNumber;
+    private final long timeStamp;
+    private final long blockReward;
+    private final long burnedFees;
+    private final int blockSize;
+    private final int blockchainVersion;
+    private final String blockHash;
+    private final String previousBlockHash;
+    private final String rootHash;
+    private final String proposer;
+    private List<String> transactionHash;
 
-    public Block(JSONObject blockJson) throws Exception {
-        transactionCount = blockJson.optInt("transactionCount", 0);
-        size = blockJson.optInt("size", 0);
-        number = blockJson.optLong("blockNumber", 0);
-        reward = blockJson.optLong("blockReward", 0);
-        timestamp = blockJson.optLong("timestamp", 0);
-        hash = blockJson.optString("blockHash", null);
-        submitter = blockJson.optString("blockSubmitter", null);
-        processedWithoutCriticalErrors = blockJson.optBoolean("processedWithoutCriticalErrors", true);
+    public Block(JSONObject blockJson) {
+        this.blockNumber = blockJson.getLong(BinaryJSONKeyMapper.BLOCK_NUMBER);
+        this.timeStamp = blockJson.getLong(BinaryJSONKeyMapper.TIME_STAMP);
+        this.blockReward = blockJson.getLong(BinaryJSONKeyMapper.BLOCK_REWARD);
+        this.burnedFees = blockJson.getLong(BinaryJSONKeyMapper.BURNED_FEES);
+        this.blockSize = blockJson.getInt(BinaryJSONKeyMapper.SIZE);
+        this.blockchainVersion = blockJson.getInt(BinaryJSONKeyMapper.BLOCKCHAIN_VERSION);
+        this.blockHash = blockJson.getString(BinaryJSONKeyMapper.BLOCK_HASH);
+        this.previousBlockHash = blockJson.getString(BinaryJSONKeyMapper.PREVIOUS_BLOCK_HASH);
+        this.rootHash = blockJson.getString(BinaryJSONKeyMapper.ROOT_HASH);
+        this.proposer = blockJson.getString(BinaryJSONKeyMapper.PROPOSER);
 
-        JSONArray txns = blockJson.getJSONArray("transactions");
-        transactions = new Transaction[txns.length()];
-
-        for(int i = 0; i < txns.length(); i++) {
-            JSONObject txnObject = txns.getJSONObject(i);
-            Transaction txn = Transaction.fromJSON(txnObject, number, timestamp, i);
-            transactions[i] = txn;
+        JSONArray transactionHashJson = blockJson.getJSONArray(BinaryJSONKeyMapper.TRANSACTION_HASH);
+        for (int i = 0; i < transactionHashJson.length(); i++) {
+            this.transactionHash.add(transactionHashJson.getString(i));
         }
-
     }
 
-    public boolean processedWithoutCriticalErrors() {
-        return processedWithoutCriticalErrors;
-    }
 }
