@@ -29,7 +29,7 @@
 //    }
 //    public static void changeIpTest() {
 //        try {
-//            PWRWallet wallet = new PWRWallet(pwrj);
+//            PWRFalconWallet wallet = new PWRFalconWallet(pwrj);
 //            String randomIp1 = generateRandomIp();
 //            String randomIp2 = generateRandomIp();
 //

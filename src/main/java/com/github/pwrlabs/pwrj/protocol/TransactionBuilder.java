@@ -99,8 +99,7 @@ public class TransactionBuilder {
     public static byte[] getChangeEarlyWithdrawPenaltyProposalTransaction(long feePerByte, byte[] sender, String title,
                                                                           String description, long earlyWithdrawalTime,
                                                                           int withdrawalPenalty, int nonce, byte chainId) {
-        // Identifier value should be updated with actual value
-        byte[] transactionBase = getFalconTransactionBase(2001, nonce, chainId, feePerByte, sender);
+        byte[] transactionBase = getFalconTransactionBase(1009, nonce, chainId, feePerByte, sender);
         byte[] titleBytes = title.getBytes(StandardCharsets.UTF_8);
         byte[] descriptionBytes = description.getBytes(StandardCharsets.UTF_8);
 
@@ -118,7 +117,7 @@ public class TransactionBuilder {
     public static byte[] getChangeFeePerByteProposalTransaction(long feePerByte, byte[] sender, String title,
                                                                 String description, long newFeePerByte,
                                                                 int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(2002, nonce, chainId, feePerByte, sender);
+        byte[] transactionBase = getFalconTransactionBase(1010, nonce, chainId, feePerByte, sender);
         byte[] titleBytes = title.getBytes(StandardCharsets.UTF_8);
         byte[] descriptionBytes = description.getBytes(StandardCharsets.UTF_8);
 
@@ -135,7 +134,7 @@ public class TransactionBuilder {
     public static byte[] getChangeMaxBlockSizeProposalTransaction(long feePerByte, byte[] sender, String title,
                                                                   String description, int maxBlockSize,
                                                                   int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(2003, nonce, chainId, feePerByte, sender);
+        byte[] transactionBase = getFalconTransactionBase(1011, nonce, chainId, feePerByte, sender);
         byte[] titleBytes = title.getBytes(StandardCharsets.UTF_8);
         byte[] descriptionBytes = description.getBytes(StandardCharsets.UTF_8);
 
@@ -152,7 +151,7 @@ public class TransactionBuilder {
     public static byte[] getChangeMaxTxnSizeProposalTransaction(long feePerByte, byte[] sender, String title,
                                                                 String description, int maxTxnSize,
                                                                 int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(2004, nonce, chainId, feePerByte, sender);
+        byte[] transactionBase = getFalconTransactionBase(1012, nonce, chainId, feePerByte, sender);
         byte[] titleBytes = title.getBytes(StandardCharsets.UTF_8);
         byte[] descriptionBytes = description.getBytes(StandardCharsets.UTF_8);
 
@@ -169,7 +168,7 @@ public class TransactionBuilder {
     public static byte[] getChangeOverallBurnPercentageProposalTransaction(long feePerByte, byte[] sender, String title,
                                                                            String description, int burnPercentage,
                                                                            int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(2005, nonce, chainId, feePerByte, sender);
+        byte[] transactionBase = getFalconTransactionBase(1013, nonce, chainId, feePerByte, sender);
         byte[] titleBytes = title.getBytes(StandardCharsets.UTF_8);
         byte[] descriptionBytes = description.getBytes(StandardCharsets.UTF_8);
 
@@ -186,7 +185,7 @@ public class TransactionBuilder {
     public static byte[] getChangeRewardPerYearProposalTransaction(long feePerByte, byte[] sender, String title,
                                                                    String description, long rewardPerYear,
                                                                    int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(2006, nonce, chainId, feePerByte, sender);
+        byte[] transactionBase = getFalconTransactionBase(1014, nonce, chainId, feePerByte, sender);
         byte[] titleBytes = title.getBytes(StandardCharsets.UTF_8);
         byte[] descriptionBytes = description.getBytes(StandardCharsets.UTF_8);
 
@@ -203,7 +202,7 @@ public class TransactionBuilder {
     public static byte[] getChangeValidatorCountLimitProposalTransaction(long feePerByte, byte[] sender, String title,
                                                                          String description, int validatorCountLimit,
                                                                          int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(2007, nonce, chainId, feePerByte, sender);
+        byte[] transactionBase = getFalconTransactionBase(1015, nonce, chainId, feePerByte, sender);
         byte[] titleBytes = title.getBytes(StandardCharsets.UTF_8);
         byte[] descriptionBytes = description.getBytes(StandardCharsets.UTF_8);
 
@@ -220,7 +219,7 @@ public class TransactionBuilder {
     public static byte[] getChangeValidatorJoiningFeeProposalTransaction(long feePerByte, byte[] sender, String title,
                                                                          String description, long joiningFee,
                                                                          int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(2008, nonce, chainId, feePerByte, sender);
+        byte[] transactionBase = getFalconTransactionBase(1016, nonce, chainId, feePerByte, sender);
         byte[] titleBytes = title.getBytes(StandardCharsets.UTF_8);
         byte[] descriptionBytes = description.getBytes(StandardCharsets.UTF_8);
 
@@ -237,7 +236,7 @@ public class TransactionBuilder {
     public static byte[] getChangeVidaIdClaimingFeeProposalTransaction(long feePerByte, byte[] sender, String title,
                                                                        String description, long vidaIdClaimingFee,
                                                                        int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(2009, nonce, chainId, feePerByte, sender);
+        byte[] transactionBase = getFalconTransactionBase(1017, nonce, chainId, feePerByte, sender);
         byte[] titleBytes = title.getBytes(StandardCharsets.UTF_8);
         byte[] descriptionBytes = description.getBytes(StandardCharsets.UTF_8);
 
@@ -254,7 +253,7 @@ public class TransactionBuilder {
     public static byte[] getChangeVmOwnerTxnFeeShareProposalTransaction(long feePerByte, byte[] sender, String title,
                                                                         String description, int vmOwnerTxnFeeShare,
                                                                         int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(2010, nonce, chainId, feePerByte, sender);
+        byte[] transactionBase = getFalconTransactionBase(1018, nonce, chainId, feePerByte, sender);
         byte[] titleBytes = title.getBytes(StandardCharsets.UTF_8);
         byte[] descriptionBytes = description.getBytes(StandardCharsets.UTF_8);
 
@@ -270,7 +269,7 @@ public class TransactionBuilder {
 
     public static byte[] getOtherProposalTransaction(long feePerByte, byte[] sender, String title,
                                                      String description, int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(2011, nonce, chainId, feePerByte, sender);
+        byte[] transactionBase = getFalconTransactionBase(1019, nonce, chainId, feePerByte, sender);
         byte[] titleBytes = title.getBytes(StandardCharsets.UTF_8);
         byte[] descriptionBytes = description.getBytes(StandardCharsets.UTF_8);
 
@@ -285,7 +284,7 @@ public class TransactionBuilder {
 
     public static byte[] getVoteOnProposalTransaction(long feePerByte, byte[] sender, byte[] proposalHash,
                                                       byte vote, int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(2012, nonce, chainId, feePerByte, sender);
+        byte[] transactionBase = getFalconTransactionBase(1020, nonce, chainId, feePerByte, sender);
 
         ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 32 + 1);
         buffer.put(transactionBase);
@@ -299,7 +298,7 @@ public class TransactionBuilder {
 
     public static byte[] getGuardianApprovalTransaction(long feePerByte, byte[] sender, List<byte[]> wrappedTxns,
                                                         int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(3001, nonce, chainId, feePerByte, sender);
+        byte[] transactionBase = getFalconTransactionBase(1021, nonce, chainId, feePerByte, sender);
 
         // Calculate size needed for all wrapped transactions
         int totalWrappedSize = 0;
@@ -307,8 +306,10 @@ public class TransactionBuilder {
             totalWrappedSize += 4 + wrappedTxn.length; // 4 bytes for length + txn size
         }
 
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + totalWrappedSize);
+        ByteBuffer buffer = ByteBuffer.allocate(4 + transactionBase.length + totalWrappedSize);
         buffer.put(transactionBase);
+
+        buffer.putInt(wrappedTxns.size());
 
         // Add each wrapped transaction with its length prefix
         for (byte[] wrappedTxn : wrappedTxns) {
@@ -320,13 +321,13 @@ public class TransactionBuilder {
     }
 
     public static byte[] getRemoveGuardianTransaction(long feePerByte, byte[] sender, int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(3002, nonce, chainId, feePerByte, sender);
+        byte[] transactionBase = getFalconTransactionBase(1022, nonce, chainId, feePerByte, sender);
         return transactionBase;
     }
 
     public static byte[] getSetGuardianTransaction(long feePerByte, byte[] sender, long expiryDate,
                                                    byte[] guardianAddress, int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(3003, nonce, chainId, feePerByte, sender);
+        byte[] transactionBase = getFalconTransactionBase(1023, nonce, chainId, feePerByte, sender);
 
         ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 20);
         buffer.put(transactionBase);
@@ -341,7 +342,7 @@ public class TransactionBuilder {
     public static byte[] getMoveStakeTxnTransaction(long feePerByte, byte[] sender, BigInteger sharesAmount,
                                                     byte[] fromValidator, byte[] toValidator,
                                                     int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(4001, nonce, chainId, feePerByte, sender);
+        byte[] transactionBase = getFalconTransactionBase(1024, nonce, chainId, feePerByte, sender);
         byte[] sharesAmountBytes = sharesAmount.toByteArray();
 
         ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 2 + sharesAmountBytes.length + 20 + 20);
@@ -356,7 +357,7 @@ public class TransactionBuilder {
 
     public static byte[] getRemoveValidatorTransaction(long feePerByte, byte[] sender, byte[] validatorAddress,
                                                        int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(4002, nonce, chainId, feePerByte, sender);
+        byte[] transactionBase = getFalconTransactionBase(1025, nonce, chainId, feePerByte, sender);
 
         ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 20);
         buffer.put(transactionBase);
@@ -367,7 +368,7 @@ public class TransactionBuilder {
 
     public static byte[] getWithdrawTransaction(long feePerByte, byte[] sender, BigInteger sharesAmount,
                                                 byte[] validator, int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(4003, nonce, chainId, feePerByte, sender);
+        byte[] transactionBase = getFalconTransactionBase(1026, nonce, chainId, feePerByte, sender);
         byte[] sharesAmountBytes = sharesAmount.toByteArray();
 
         ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 2 + sharesAmountBytes.length + 20);
@@ -381,10 +382,77 @@ public class TransactionBuilder {
 
     // VIDA Transactions
 
+    public static byte[] getClaimVidaIdTransaction(long feePerByte, byte[] sender, long vidaId,
+                                                   int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(1028, nonce, chainId, feePerByte, sender);
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8);
+        buffer.put(transactionBase);
+        buffer.putLong(vidaId);
+
+        return buffer.array();
+    }
+
+    public static byte[] getConduitApprovalTransaction(long feePerByte, byte[] sender, long vidaId,
+                                                       List<byte[]> wrappedTxns, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(1029, nonce, chainId, feePerByte, sender);
+
+        // Calculate size needed for vidaId (8) and all wrapped transactions
+        int totalWrappedSize = 8; // 8 bytes for vidaId
+        for (byte[] wrappedTxn : wrappedTxns) {
+            totalWrappedSize += 4 + wrappedTxn.length; // 4 bytes for length + txn size
+        }
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + totalWrappedSize);
+        buffer.put(transactionBase);
+        buffer.putLong(vidaId);
+
+        // Add each wrapped transaction with its length prefix
+        for (byte[] wrappedTxn : wrappedTxns) {
+            buffer.putInt(wrappedTxn.length);
+            buffer.put(wrappedTxn);
+        }
+
+        return buffer.array();
+    }
+
+    public static byte[] getPayableVidaDataTransaction(long feePerByte, byte[] sender, long vidaId,
+                                                       byte[] data, long value, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(1030, nonce, chainId, feePerByte, sender);
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 4 + data.length + 8);
+        buffer.put(transactionBase);
+        buffer.putLong(vidaId);
+        buffer.putInt(data.length);
+        buffer.put(data);
+        buffer.putLong(value);
+
+        return buffer.array();
+    }
+
+    public static byte[] getRemoveConduitsTransaction(long feePerByte, byte[] sender, long vidaId,
+                                                      List<byte[]> conduits, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(1031, nonce, chainId, feePerByte, sender);
+
+        // Calculate total size needed: base + vidaId(8) + (conduits * 20)
+        int totalSize = transactionBase.length + 8 + (conduits.size() * 20);
+
+        ByteBuffer buffer = ByteBuffer.allocate(totalSize);
+        buffer.put(transactionBase);
+        buffer.putLong(vidaId);
+
+        // Add each conduit address
+        for (byte[] conduit : conduits) {
+            buffer.put(conduit);
+        }
+
+        return buffer.array();
+    }
+
     public static byte[] getSetConduitModeTransaction(long feePerByte, byte[] sender, long vidaId, byte mode,
                                                       int conduitThreshold, Set<byte[]> conduits,
                                                       int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(5001, nonce, chainId, feePerByte, sender);
+        byte[] transactionBase = getFalconTransactionBase(1033, nonce, chainId, feePerByte, sender);
 
         // Calculate size: base + vidaId(8) + mode(1) + threshold(4) + (conduits * 20)
         int totalSize = transactionBase.length + 8 + 1 + 4;
@@ -409,7 +477,7 @@ public class TransactionBuilder {
     public static byte[] getSetConduitModeWithVidaBasedTransaction(long feePerByte, byte[] sender, long vidaId, byte mode,
                                                                    int conduitThreshold, List<byte[]> conduits,
                                                                    List<Long> stakingPowers, int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(5001, nonce, chainId, feePerByte, sender);
+        byte[] transactionBase = getFalconTransactionBase(1033, nonce, chainId, feePerByte, sender);
 
         // Calculate size: base + vidaId(8) + mode(1) + threshold(4) + (conduits * (20+8))
         int totalSize = transactionBase.length + 8 + 1 + 4;
@@ -432,9 +500,21 @@ public class TransactionBuilder {
         return buffer.array();
     }
 
-    public static byte[] getClaimVidaIdTransaction(long feePerByte, byte[] sender, long vidaId,
-                                                   int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(5002, nonce, chainId, feePerByte, sender);
+    public static byte[] getSetVidaPrivateStateTransaction(long feePerByte, byte[] sender, long vidaId,
+                                                           boolean privateState, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(1034, nonce, chainId, feePerByte, sender);
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 1);
+        buffer.put(transactionBase);
+        buffer.putLong(vidaId);
+        buffer.put((byte) (privateState ? 1 : 0));
+
+        return buffer.array();
+    }
+
+    public static byte[] getSetVidaToAbsolutePublicTransaction(long feePerByte, byte[] sender, long vidaId,
+                                                               int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(1035, nonce, chainId, feePerByte, sender);
 
         ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8);
         buffer.put(transactionBase);
@@ -443,84 +523,9 @@ public class TransactionBuilder {
         return buffer.array();
     }
 
-    public static byte[] getConduitApprovalTransaction(long feePerByte, byte[] sender, long vidaId,
-                                                       List<byte[]> wrappedTxns, int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(5003, nonce, chainId, feePerByte, sender);
-
-        // Calculate size needed for vidaId (8) and all wrapped transactions
-        int totalWrappedSize = 8; // 8 bytes for vidaId
-        for (byte[] wrappedTxn : wrappedTxns) {
-            totalWrappedSize += 4 + wrappedTxn.length; // 4 bytes for length + txn size
-        }
-
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + totalWrappedSize);
-        buffer.put(transactionBase);
-        buffer.putLong(vidaId);
-
-        // Add each wrapped transaction with its length prefix
-        for (byte[] wrappedTxn : wrappedTxns) {
-            buffer.putInt(wrappedTxn.length);
-            buffer.put(wrappedTxn);
-        }
-
-        return buffer.array();
-    }
-
-    public static byte[] getPayableVidaDataTransaction(long feePerByte, byte[] sender, long vidaId,
-                                                       byte[] data, long value, int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(5004, nonce, chainId, feePerByte, sender);
-
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 4 + data.length + 8);
-        buffer.put(transactionBase);
-        buffer.putLong(vidaId);
-        buffer.putInt(data.length);
-        buffer.put(data);
-        buffer.putLong(value);
-
-        return buffer.array();
-    }
-
-    public static byte[] getRemoveConduitsTransaction(long feePerByte, byte[] sender, long vidaId,
-                                                      List<byte[]> conduits, int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(5005, nonce, chainId, feePerByte, sender);
-
-        // Calculate total size needed: base + vidaId(8) + (conduits * 20)
-        int totalSize = transactionBase.length + 8 + (conduits.size() * 20);
-
-        ByteBuffer buffer = ByteBuffer.allocate(totalSize);
-        buffer.put(transactionBase);
-        buffer.putLong(vidaId);
-
-        // Add each conduit address
-        for (byte[] conduit : conduits) {
-            buffer.put(conduit);
-        }
-
-        return buffer.array();
-    }
-
-    public static byte[] getAddVidaAllowedSendersTransaction(long feePerByte, byte[] sender, long vidaId,
-                                                             Set<byte[]> allowedSenders, int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(5006, nonce, chainId, feePerByte, sender);
-
-        // Calculate total size needed: base + vidaId(8) + (allowedSenders * 20)
-        int totalSize = transactionBase.length + 8 + (allowedSenders.size() * 20);
-
-        ByteBuffer buffer = ByteBuffer.allocate(totalSize);
-        buffer.put(transactionBase);
-        buffer.putLong(vidaId);
-
-        // Add each allowed sender address
-        for (byte[] allowedSender : allowedSenders) {
-            buffer.put(allowedSender);
-        }
-
-        return buffer.array();
-    }
-
     public static byte[] getAddVidaSponsoredAddressesTransaction(long feePerByte, byte[] sender, long vidaId,
                                                                  Set<byte[]> sponsoredAddresses, int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(5007, nonce, chainId, feePerByte, sender);
+        byte[] transactionBase = getFalconTransactionBase(1036, nonce, chainId, feePerByte, sender);
 
         // Calculate total size needed: base + vidaId(8) + (sponsoredAddresses * 20)
         int totalSize = transactionBase.length + 8 + (sponsoredAddresses.size() * 20);
@@ -537,20 +542,20 @@ public class TransactionBuilder {
         return buffer.array();
     }
 
-    public static byte[] getRemoveSponsoredAddressesTransaction(long feePerByte, byte[] sender, long vidaId,
-                                                                Set<byte[]> sponsoredAddresses, int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(5008, nonce, chainId, feePerByte, sender);
+    public static byte[] getAddVidaAllowedSendersTransaction(long feePerByte, byte[] sender, long vidaId,
+                                                             Set<byte[]> allowedSenders, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(1037, nonce, chainId, feePerByte, sender);
 
-        // Calculate total size needed: base + vidaId(8) + (sponsoredAddresses * 20)
-        int totalSize = transactionBase.length + 8 + (sponsoredAddresses.size() * 20);
+        // Calculate total size needed: base + vidaId(8) + (allowedSenders * 20)
+        int totalSize = transactionBase.length + 8 + (allowedSenders.size() * 20);
 
         ByteBuffer buffer = ByteBuffer.allocate(totalSize);
         buffer.put(transactionBase);
         buffer.putLong(vidaId);
 
-        // Add each sponsored address to remove
-        for (byte[] sponsoredAddress : sponsoredAddresses) {
-            buffer.put(sponsoredAddress);
+        // Add each allowed sender address
+        for (byte[] allowedSender : allowedSenders) {
+            buffer.put(allowedSender);
         }
 
         return buffer.array();
@@ -558,7 +563,7 @@ public class TransactionBuilder {
 
     public static byte[] getRemoveVidaAllowedSendersTransaction(long feePerByte, byte[] sender, long vidaId,
                                                                 Set<byte[]> allowedSenders, int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(5009, nonce, chainId, feePerByte, sender);
+        byte[] transactionBase = getFalconTransactionBase(1038, nonce, chainId, feePerByte, sender);
 
         // Calculate total size needed: base + vidaId(8) + (allowedSenders * 20)
         int totalSize = transactionBase.length + 8 + (allowedSenders.size() * 20);
@@ -575,25 +580,21 @@ public class TransactionBuilder {
         return buffer.array();
     }
 
-    public static byte[] getSetVidaPrivateStateTransaction(long feePerByte, byte[] sender, long vidaId,
-                                                           boolean privateState, int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(5010, nonce, chainId, feePerByte, sender);
+    public static byte[] getRemoveSponsoredAddressesTransaction(long feePerByte, byte[] sender, long vidaId,
+                                                                Set<byte[]> sponsoredAddresses, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(1039, nonce, chainId, feePerByte, sender);
 
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 1);
+        // Calculate total size needed: base + vidaId(8) + (sponsoredAddresses * 20)
+        int totalSize = transactionBase.length + 8 + (sponsoredAddresses.size() * 20);
+
+        ByteBuffer buffer = ByteBuffer.allocate(totalSize);
         buffer.put(transactionBase);
         buffer.putLong(vidaId);
-        buffer.put((byte) (privateState ? 1 : 0));
 
-        return buffer.array();
-    }
-
-    public static byte[] getSetVidaToAbsolutePublicTransaction(long feePerByte, byte[] sender, long vidaId,
-                                                               int nonce, byte chainId) {
-        byte[] transactionBase = getFalconTransactionBase(5011, nonce, chainId, feePerByte, sender);
-
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8);
-        buffer.put(transactionBase);
-        buffer.putLong(vidaId);
+        // Add each sponsored address to remove
+        for (byte[] sponsoredAddress : sponsoredAddresses) {
+            buffer.put(sponsoredAddress);
+        }
 
         return buffer.array();
     }

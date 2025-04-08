@@ -6,6 +6,7 @@ import com.github.pwrlabs.pwrj.Utils.PWRHash;
 import com.github.pwrlabs.pwrj.protocol.PWRJ;
 import com.github.pwrlabs.pwrj.protocol.TransactionBuilder;
 import com.github.pwrlabs.pwrj.record.response.Response;
+import io.pwrlabs.utils.BinaryJSONKeyMapper;
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
 import org.bouncycastle.pqc.crypto.falcon.*;
 
@@ -16,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.Set;
 
 import static com.github.pwrlabs.pwrj.Utils.NewError.errorIf;
@@ -31,7 +33,7 @@ public class PWRFalconWallet {
 
     public PWRFalconWallet(PWRJ pwrj) {
         this.pwrj = pwrj;
-        this.keyPair = Falcon.generateKeyPair1024();
+        this.keyPair = Falcon.generateKeyPair512();
 
         FalconPublicKeyParameters publicKey = (FalconPublicKeyParameters) keyPair.getPublic();
         byte[] hash = PWRHash.hash224(publicKey.getH());
@@ -81,7 +83,7 @@ public class PWRFalconWallet {
      *
      * @param pwrj     The PWRJ instance to use for the wallet.
      * @param filePath Path to the PEM file that contains the private/public keys.
-     * @return a new PWRFalcon1024Wallet with the loaded key pair.
+     * @return a new PWRFalcon512Wallet with the loaded key pair.
      * @throws IOException if there's an error reading the file or parsing the keys.
      */
     public static PWRFalconWallet loadWallet(PWRJ pwrj, String filePath) throws IOException {
@@ -105,7 +107,7 @@ public class PWRFalconWallet {
         byte[] publicKeyBytes = new byte[publicKeyLength];
         buffer.get(publicKeyBytes);
 
-        FalconParameters p = FalconParameters.falcon_1024;
+        FalconParameters p = FalconParameters.falcon_512;
         FalconPrivateKeyParameters falconPrivKey = new FalconPrivateKeyParameters(p, f, g, F, publicKeyBytes);
         FalconPublicKeyParameters falconPubKey = new FalconPublicKeyParameters(p, publicKeyBytes);
         AsymmetricCipherKeyPair keyPair = new AsymmetricCipherKeyPair(falconPubKey, falconPrivKey);
@@ -116,6 +118,10 @@ public class PWRFalconWallet {
 
     public String getAddress() {
         return "0x" + Hex.toHexString(address);
+    }
+
+    public byte[] getByteaAddress() {
+        return address;
     }
 
     public byte[] getPublicKey() {
@@ -237,7 +243,7 @@ public class PWRFalconWallet {
         return pwrj.broadcastTransaction(getSignedClaimActiveNodeSpotTransaction(feePerByte));
     }
 
-    private Response makeSurePublicKeyIsSet(long feePerByte) throws IOException {
+    public Response makeSurePublicKeyIsSet(long feePerByte) throws IOException {
         if(pwrj.getNonceOfAddress(getAddress()) == 0) {
             Response r = setPublicKey(feePerByte);
             if(!r.isSuccess()) {
@@ -497,7 +503,7 @@ public class PWRFalconWallet {
                                                                        int vmOwnerTxnFeeShare, Long feePerByte) throws IOException {
         errorIf(title == null || title.isEmpty(), "Title cannot be empty");
         errorIf(description == null || description.isEmpty(), "Description cannot be empty");
-        errorIf(vmOwnerTxnFeeShare < 0 || vmOwnerTxnFeeShare > 100, "VM owner txn fee share must be between 0 and 100");
+        errorIf(vmOwnerTxnFeeShare < 0 || vmOwnerTxnFeeShare > 10000, "VM owner txn fee share must be between 0 and 10000");
 
         long baseFeePerByte = pwrj.getFeePerByte();
         if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
@@ -764,7 +770,7 @@ public class PWRFalconWallet {
     }
 
     public byte[] getSignedClaimVidaIdTransaction(long vidaId, Long feePerByte) throws IOException {
-        errorIf(vidaId <= 0, "VIDA ID must be positive");
+        errorIf(vidaId == 0, "VIDA ID cannot be zero");
 
         long baseFeePerByte = pwrj.getFeePerByte();
         if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
@@ -786,7 +792,7 @@ public class PWRFalconWallet {
     }
 
     public byte[] getSignedConduitApprovalTransaction(long vidaId, List<byte[]> wrappedTxns, Long feePerByte) throws IOException {
-        errorIf(vidaId <= 0, "VIDA ID must be positive");
+        errorIf(vidaId == 0, "VIDA ID cannot be zero");
         errorIf(wrappedTxns == null || wrappedTxns.isEmpty(), "No transactions provided for conduit approval");
 
         long baseFeePerByte = pwrj.getFeePerByte();
@@ -809,7 +815,7 @@ public class PWRFalconWallet {
     }
 
     public byte[] getSignedPayableVidaDataTransaction(long vidaId, byte[] data, long value, Long feePerByte) throws IOException {
-        errorIf(vidaId <= 0, "VIDA ID must be positive");
+        errorIf(vidaId == 0, "VIDA ID cannot be zero");
         errorIf(data == null || data.length == 0, "Data cannot be empty");
         errorIf(value < 0, "Value cannot be negative");
 
@@ -833,7 +839,7 @@ public class PWRFalconWallet {
     }
 
     public byte[] getSignedRemoveConduitsTransaction(long vidaId, List<byte[]> conduits, Long feePerByte) throws IOException {
-        errorIf(vidaId <= 0, "VIDA ID must be positive");
+        errorIf(vidaId == 0, "VIDA ID cannot be zero");
         errorIf(conduits == null || conduits.isEmpty(), "No conduits provided for removal");
         for(byte[] conduit : conduits) {
             errorIf(conduit == null || conduit.length != 20, "Conduit address must be 20 bytes");
@@ -859,7 +865,7 @@ public class PWRFalconWallet {
     }
 
     public byte[] getSignedAddVidaAllowedSendersTransaction(long vidaId, Set<byte[]> allowedSenders, Long feePerByte) throws IOException {
-        errorIf(vidaId <= 0, "VIDA ID must be positive");
+        errorIf(vidaId == 0, "VIDA ID cannot be zero");
         errorIf(allowedSenders == null || allowedSenders.isEmpty(), "No allowed senders provided");
         for(byte[] sender : allowedSenders) {
             errorIf(sender == null || sender.length != 20, "Sender address must be 20 bytes");
@@ -885,7 +891,7 @@ public class PWRFalconWallet {
     }
 
     public byte[] getSignedAddVidaSponsoredAddressesTransaction(long vidaId, Set<byte[]> sponsoredAddresses, Long feePerByte) throws IOException {
-        errorIf(vidaId <= 0, "VIDA ID must be positive");
+        errorIf(vidaId == 0, "VIDA ID cannot be zero");
         errorIf(sponsoredAddresses == null || sponsoredAddresses.isEmpty(), "No sponsored addresses provided");
         for(byte[] address : sponsoredAddresses) {
             errorIf(address == null || address.length != 20, "Sponsored address must be 20 bytes");
@@ -911,7 +917,7 @@ public class PWRFalconWallet {
     }
 
     public byte[] getSignedRemoveSponsoredAddressesTransaction(long vidaId, Set<byte[]> sponsoredAddresses, Long feePerByte) throws IOException {
-        errorIf(vidaId <= 0, "VIDA ID must be positive");
+        errorIf(vidaId == 0, "VIDA ID cannot be zero");
         errorIf(sponsoredAddresses == null || sponsoredAddresses.isEmpty(), "No sponsored addresses provided for removal");
         for(byte[] address : sponsoredAddresses) {
             errorIf(address == null || address.length != 20, "Sponsored address must be 20 bytes");
@@ -928,7 +934,7 @@ public class PWRFalconWallet {
         return getSignedTransaction(transaction);
     }
 
-    public Response removeSponsoredAddresses(long vidaId, Set<byte[]> sponsoredAddresses, Long feePerByte) throws IOException {
+    public Response removeVidaSponsoredAddresses(long vidaId, Set<byte[]> sponsoredAddresses, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
         if(response != null && !response.isSuccess()) return response;
 
@@ -937,7 +943,7 @@ public class PWRFalconWallet {
     }
 
     public byte[] getSignedRemoveVidaAllowedSendersTransaction(long vidaId, Set<byte[]> allowedSenders, Long feePerByte) throws IOException {
-        errorIf(vidaId <= 0, "VIDA ID must be positive");
+        errorIf(vidaId == 0, "VIDA ID cannot be zero");
         errorIf(allowedSenders == null || allowedSenders.isEmpty(), "No allowed senders provided for removal");
         for(byte[] sender : allowedSenders) {
             errorIf(sender == null || sender.length != 20, "Sender address must be 20 bytes");
@@ -963,7 +969,7 @@ public class PWRFalconWallet {
     }
 
     public byte[] getSignedSetVidaPrivateStateTransaction(long vidaId, boolean privateState, Long feePerByte) throws IOException {
-        errorIf(vidaId <= 0, "VIDA ID must be positive");
+        errorIf(vidaId == 0, "VIDA ID cannot be zero");
 
         long baseFeePerByte = pwrj.getFeePerByte();
         if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
@@ -985,7 +991,7 @@ public class PWRFalconWallet {
     }
 
     public byte[] getSignedSetVidaToAbsolutePublicTransaction(long vidaId, Long feePerByte) throws IOException {
-        errorIf(vidaId <= 0, "VIDA ID must be positive");
+        errorIf(vidaId == 0, "VIDA ID cannot be zero");
 
         long baseFeePerByte = pwrj.getFeePerByte();
         if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
@@ -1004,6 +1010,57 @@ public class PWRFalconWallet {
 
         return pwrj.broadcastTransaction(getSignedSetVidaToAbsolutePublicTransaction(
                 vidaId, feePerByte));
+    }
+
+    public static void main(String[] args) {
+        PWRJ prj = new PWRJ("https://pwrrpc.pwrlabs.io/");
+        PWRFalconWallet wallet = new PWRFalconWallet(prj);
+//
+//        int longestSignatureSize = 0;
+//        for(int t=0; t < 10000; ++t) {
+//            String message = generateRandomString(new Random().nextInt(1000));
+//            byte[] messageHAsh = PWRHash.hash256(message.getBytes());
+//
+//            byte[] signature = wallet.sign(messageHAsh);
+//
+//            System.out.println(signature.length);
+//
+//            if(signature.length > longestSignatureSize) {
+//                longestSignatureSize = signature.length;
+//            }
+//        }
+//
+//        System.out.println("Longest signature size: " + longestSignatureSize);
+//
+        String maxHexNumber = generateRandomFF(1282);
+        byte[] n = Hex.decode(maxHexNumber);
+        BigInteger bigInt = new BigInteger(1, n);
+
+        BigInteger bigInt2 = bigInt.divide(BigInteger.valueOf(2));
+
+        String newHex = bigInt2.toString(16);
+        System.out.println(newHex.length());
+
+    }
+
+    //function to generate random string of x length
+    public static String generateRandomString(int length) {
+        StringBuilder sb = new StringBuilder(length);
+        Random random = new Random();
+        for (int i = 0; i < length; i++) {
+            sb.append((char) (random.nextInt(26) + 'a'));
+        }
+        return sb.toString();
+    }
+
+    //function that generates x ff characters
+    public static String generateRandomFF(int length) {
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            sb.append('f');
+            sb.append('f');
+        }
+        return sb.toString();
     }
 
 

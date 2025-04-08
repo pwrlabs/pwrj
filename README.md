@@ -69,21 +69,21 @@ PWRJ.setRpcNodeUrl("https://pwrrpc.pwrlabs.io/");
 
 **Generate a new wallet:** 
 ```java
-PWRWallet wallet = new PWRWallet(); 
+PWRFalconWallet wallet = new PWRFalconWallet(); 
 ```
 
 You also have the flexibility to import existing wallets using a variety of constructors
 ```java
 String privateKey = "private key"; //Replace with hex private key
-PWRWallet wallet = new PWRWallet(privateKey); 
+PWRFalconWallet wallet = new PWRFalconWallet(privateKey); 
 ```
 ```java
 byte[] privateKey = ...; 
-PWRWallet wallet = new PWRWallet(privateKey); 
+PWRFalconWallet wallet = new PWRFalconWallet(privateKey); 
 ```
 ```java
 ECKeyPair ecKeyPair = ...; //Generate or import ecKeyPair 
-PWRWallet wallet = new PWRWallet(ecKeyPair); 
+PWRFalconWallet wallet = new PWRFalconWallet(ecKeyPair); 
 ```
 
 **Get wallet address:**

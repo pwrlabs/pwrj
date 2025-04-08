@@ -6,7 +6,9 @@ import com.github.pwrlabs.pwrj.record.response.EarlyWithdrawPenaltyResponse;
 import com.github.pwrlabs.pwrj.record.response.Response;
 import com.github.pwrlabs.pwrj.record.response.TransactionForGuardianApproval;
 import com.github.pwrlabs.pwrj.record.transaction.FalconTransaction;
+import com.github.pwrlabs.pwrj.record.transaction.WithdrawalOrder;
 import com.github.pwrlabs.pwrj.record.validator.Validator;
+import io.pwrlabs.util.encoders.BiResult;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.http.client.config.RequestConfig;
@@ -108,18 +110,22 @@ public class PWRJ {
         }
     }
 
-    public static String getVidaIdAddress(long vmId) {
-        String hexAddress = vmId >= 0 ? "1" : "0";
-        if(vmId < 0) vmId = -vmId;
-        String vmIdString = Long.toString(vmId);
+    public byte[] getVidaIdAddressBytea(long vidaId) {
+        String hexAddress = vidaId >= 0 ? "1" : "0";
+        if (vidaId < 0) vidaId = -vidaId;
+        String vidaIdString = Long.toString(vidaId);
 
-        for(int i=0; i < 39 - vmIdString.length(); i++) {
+        for (int i = 0; i < 39 - vidaIdString.length(); i++) {
             hexAddress += "0";
         }
 
-        hexAddress += vmIdString;
+        hexAddress += vidaIdString;
 
-        return "0x" + hexAddress;
+        return Hex.decode(hexAddress);
+    }
+
+    public String getVidaIdAddress(long vmId) {
+        return Hex.toHexString(getVidaIdAddressBytea(vmId));
     }
 
     public static boolean isVidaAddress(String address) {
@@ -230,11 +236,19 @@ public class PWRJ {
         return httpGet(rpcNodeUrl + "/balanceOf/?userAddress=" + address).getLong("balance");
     }
 
-    public String getGuardianOfAddress(String address) throws IOException {
+    /**
+     * Retrieves guardian information for a specified wallet address.
+     *
+     * @param address The wallet address to check for guardian information
+     * @return A BiResult containing the guardian's address (String) and expiry date (Long timestamp),
+     *         or null if the address is not guarded
+     * @throws IOException If there is an error during the HTTP request to the RPC node
+     */
+    public BiResult<String, Long> getGuardianOfAddress(String address) throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/guardianOf/?userAddress=" + address);
 
         if(object.getBoolean("isGuarded")) {
-            return object.getString("guardian");
+            return new BiResult<>(object.getString("guardian"), object.getLong("expiryDate"));
         } else {
             return null;
         }
@@ -727,6 +741,50 @@ public class PWRJ {
         }
     }
 
+    public List<String> getVidaSponsoredAddresses(long vidaId) {
+    
+        try {
+            JSONObject object = httpGet(rpcNodeUrl + "/vidaSponsoredAddresses?vidaId=" + vidaId);
+            JSONArray addresses = object.getJSONArray("sponsoredAddresses");
+            List<String> addressesList = new ArrayList<>();
+
+            for(int i = 0; i < addresses.length(); i++) {
+                addressesList.add(addresses.getString(i));
+            }
+
+            return addressesList;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    public List<String> getVidaAllowedSenders(long vidaId) {
+        try {
+            JSONObject object = httpGet(rpcNodeUrl + "/vidaAllowedSenders?vidaId=" + vidaId);
+            JSONArray addresses = object.getJSONArray("allowedSenders");
+            List<String> addressesList = new ArrayList<>();
+
+            for(int i = 0; i < addresses.length(); i++) {
+                addressesList.add(addresses.getString(i));
+            }
+
+            return addressesList;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+
+    public Boolean isVidaPrivate(long vidaId) {
+        try {
+            JSONObject response = httpGet(rpcNodeUrl + "/isVidaPrivate/?vidaId=" + vidaId);
+            return response.getBoolean("isPrivate");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
     public List<Validator> getConduitsOfVm(long vmId) {
         try {
             JSONObject object = httpGet(rpcNodeUrl + "/conduitsOfVm/?vmId=" + vmId);
@@ -768,6 +826,16 @@ public class PWRJ {
         }
 
         return penalties;
+    }
+
+    public WithdrawalOrder getWithdrawalOrder(byte[] withdrawalHash) throws IOException {
+        JSONObject object = httpGet(rpcNodeUrl + "/withdrawalOrder?withdrawalHash=" + Hex.toHexString(withdrawalHash));
+        boolean withdrawalOrderFound = object.getBoolean("withdrawalOrderFound");
+        if (!withdrawalOrderFound) {
+            return null;
+        }
+
+        return new WithdrawalOrder(object.getJSONObject("withdrawalOrder"));
     }
 
     /**
