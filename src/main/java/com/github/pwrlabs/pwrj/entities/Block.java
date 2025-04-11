@@ -21,6 +21,7 @@ public class Block {
     private final String rootHash;
     private final String proposer;
     private List<String> transactionHashes = new ArrayList<>();
+    private final boolean processedWithoutCriticalErrors;
 
     public Block(JSONObject blockJson) {
         this.blockNumber = blockJson.getLong(BinaryJSONKeyMapper.BLOCK_NUMBER);
@@ -33,6 +34,7 @@ public class Block {
         this.previousBlockHash = blockJson.getString(BinaryJSONKeyMapper.PREVIOUS_BLOCK_HASH);
         this.rootHash = blockJson.getString(BinaryJSONKeyMapper.ROOT_HASH);
         this.proposer = blockJson.getString(BinaryJSONKeyMapper.PROPOSER);
+        this.processedWithoutCriticalErrors = blockJson.getBoolean(BinaryJSONKeyMapper.PROCESS_WITHOUT_CRITICAL_ERRORS);
 
         JSONArray transactionHashJson = blockJson.getJSONArray(BinaryJSONKeyMapper.TRANSACTIONS);
         for (int i = 0; i < transactionHashJson.length(); i++) {
