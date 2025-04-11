@@ -20,7 +20,7 @@ public class Block {
     private final String previousBlockHash;
     private final String rootHash;
     private final String proposer;
-    private List<String> transactionHashes;
+    private List<String> transactionHashes = new ArrayList<>();
 
     public Block(JSONObject blockJson) {
         this.blockNumber = blockJson.getLong(BinaryJSONKeyMapper.BLOCK_NUMBER);
