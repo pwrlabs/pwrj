@@ -1165,6 +1165,91 @@ public abstract class FalconTransaction {
         }
     }
 
+    @Getter
+    public static class SetPWRTransferRightsTxn extends FalconTransfer {
+        public static final int IDENTIFIER = 1040;
+
+        private final long vidaId;
+        private final boolean ownerCanTransferPWR;
+
+        public SetPWRTransferRightsTxn(JSONObject json) {
+            super(json);
+            this.vidaId = json.getLong(BinaryJSONKeyMapper.VIDA_ID);
+            this.ownerCanTransferPWR = json.getBoolean(BinaryJSONKeyMapper.OWNER_CAN_TRANSFER_PWR);
+        }
+
+        public SetPWRTransferRightsTxn() {
+            super();
+            this.vidaId = 0;
+            this.ownerCanTransferPWR = false;
+        }
+
+        @Override
+        public int getIdentifier() {
+            return IDENTIFIER;
+        }
+
+        @Override
+        public String getType() {
+            return "Set PWR Transfer Rights";
+        }
+
+        @Override
+        public String getReceiver() {
+            return vidaId + "";
+        }
+
+        @Override
+        public JSONObject toJson() {
+            JSONObject data = super.toJson();
+            data.put("vidaId", vidaId);
+            data.put("ownerCanTransferPWR", ownerCanTransferPWR);
+            return data;
+        }
+    }
+
+    public static class TransferPWRFromVidaTxn extends FalconTransfer {
+        public static final int IDENTIFIER = 1041;
+
+        private final long vidaId;
+        private final String receiver;
+
+        public TransferPWRFromVidaTxn(JSONObject json) {
+            super(json);
+            this.vidaId = json.getLong(BinaryJSONKeyMapper.VIDA_ID);
+            this.receiver = json.getString(BinaryJSONKeyMapper.RECEIVER);
+        }
+
+        public TransferPWRFromVidaTxn() {
+            super();
+            this.vidaId = 0;
+            this.receiver = null;
+        }
+
+        @Override
+        public int getIdentifier() {
+            return IDENTIFIER;
+        }
+
+        @Override
+        public String getType() {
+            return "Transfer PWR From VIDA";
+        }
+
+        @Override
+        public String getReceiver() {
+            return receiver;
+        }
+
+        @Override
+        public JSONObject toJson() {
+            JSONObject data = super.toJson();
+            data.put("vidaId", vidaId);
+            data.put("receiver", receiver);
+            return data;
+        }
+    }
+
     // Governance Proposal Transactions
 
     @Getter
