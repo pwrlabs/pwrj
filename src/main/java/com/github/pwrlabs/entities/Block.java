@@ -19,7 +19,7 @@ public class Block {
     private final String previousBlockHash;
     private final String rootHash;
     private final String proposer;
-    private List<String> transactionHash;
+    private List<String> transactionHashes;
 
     public Block(JSONObject blockJson) {
         this.blockNumber = blockJson.getLong(BinaryJSONKeyMapper.BLOCK_NUMBER);
@@ -35,8 +35,12 @@ public class Block {
 
         JSONArray transactionHashJson = blockJson.getJSONArray(BinaryJSONKeyMapper.TRANSACTION_HASH);
         for (int i = 0; i < transactionHashJson.length(); i++) {
-            this.transactionHash.add(transactionHashJson.getString(i));
+            this.transactionHashes.add(transactionHashJson.getString(i));
         }
+    }
+
+    public int getTransactionCount() {
+        return transactionHashes.size();
     }
 
 }
