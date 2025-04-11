@@ -391,6 +391,24 @@ public class PWRJ {
         return FalconTransaction.fromJson(object);
     }
 
+    public List<FalconTransaction> getTransactionsByHashes(List<String> hashes) throws Exception {
+        JSONArray hashesArray = new JSONArray();
+        for (String hash : hashes) {
+            hashesArray.put(hash);
+        }
+
+        JSONArray transactionsArray = httpPost(rpcNodeUrl + "/getTransactionsByHashes", new JSONObject().put("transactionHashes", hashesArray)).getJSONArray("transactions");
+
+        List<FalconTransaction> transactions = new ArrayList<>();
+        for (int i = 0; i < transactionsArray.length(); i++) {
+            JSONObject transactionObject = transactionsArray.getJSONObject(i);
+            FalconTransaction transaction = FalconTransaction.fromJson(transactionObject);
+            transactions.add(transaction);
+        }
+
+        return transactions;
+    }
+
     public String getProposalStatus(String proposalHash) throws IOException {
         return httpGet(rpcNodeUrl + "/proposalStatus/?proposalHash=" + proposalHash).getString("status");
     }
