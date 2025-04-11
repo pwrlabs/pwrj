@@ -60,6 +60,8 @@ public abstract class FalconTransaction {
 
     public abstract String getType();
 
+    public abstract String getReceiver();
+
     //This function must be overriden by child classes to add more data to it
     public JSONObject toJson() {
         JSONObject data = new JSONObject();
@@ -120,6 +122,11 @@ public abstract class FalconTransaction {
         }
 
         @Override
+        public String getReceiver() {
+            return receiver;
+        }
+
+        @Override
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("receiver", receiver);
@@ -147,6 +154,11 @@ public abstract class FalconTransaction {
         @Override
         public String getType() {
             return "Set Public Key";
+        }
+
+        @Override
+        public String getReceiver() {
+            return "PWR Chain";
         }
 
         @Override
@@ -179,6 +191,11 @@ public abstract class FalconTransaction {
         }
 
         @Override
+        public String getReceiver() {
+            return "PWR Chain";
+        }
+
+        @Override
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("ip", ip);
@@ -205,6 +222,11 @@ public abstract class FalconTransaction {
         @Override
         public String getType() {
             return "Change IP";
+        }
+
+        @Override
+        public String getReceiver() {
+            return "PWR Chain";
         }
 
         @Override
@@ -239,6 +261,11 @@ public abstract class FalconTransaction {
         }
 
         @Override
+        public String getReceiver() {
+            return validator;
+        }
+
+        @Override
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("validator", validator);
@@ -259,6 +286,11 @@ public abstract class FalconTransaction {
         @Override
         public int getIdentifier() {
             return IDENTIFIER;
+        }
+
+        @Override
+        public String getReceiver() {
+            return "PWR Chain";
         }
 
         @Override
@@ -288,6 +320,11 @@ public abstract class FalconTransaction {
         @Override
         public String getType() {
             return "Withdraw";
+        }
+
+        @Override
+        public String getReceiver() {
+            return validator;
         }
 
         @Override
@@ -321,6 +358,11 @@ public abstract class FalconTransaction {
         }
 
         @Override
+        public String getReceiver() {
+            return vidaId + "";
+        }
+
+        @Override
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("vidaId", vidaId);
@@ -347,6 +389,11 @@ public abstract class FalconTransaction {
         @Override
         public String getType() {
             return "Remove Validator";
+        }
+
+        @Override
+        public String getReceiver() {
+            return "PWR Chain";
         }
 
         @Override
@@ -381,6 +428,11 @@ public abstract class FalconTransaction {
         }
 
         @Override
+        public String getReceiver() {
+            return "PWR Chain";
+        }
+
+        @Override
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("guardianAddress", guardianAddress);
@@ -406,6 +458,11 @@ public abstract class FalconTransaction {
         @Override
         public String getType() {
             return "Remove Guardian";
+        }
+
+        @Override
+        public String getReceiver() {
+            return "PWR Chain";
         }
     }
 
@@ -438,6 +495,11 @@ public abstract class FalconTransaction {
         @Override
         public String getType() {
             return "Guardian Approval";
+        }
+
+        @Override
+        public String getReceiver() {
+            return "PWR Chain";
         }
 
         @Override
@@ -485,6 +547,11 @@ public abstract class FalconTransaction {
         }
 
         @Override
+        public String getReceiver() {
+            return vidaId + "";
+        }
+
+        @Override
         public JSONObject toJson() {
             JSONObject dataJson = super.toJson();
             dataJson.put("vidaId", vidaId);
@@ -523,6 +590,11 @@ public abstract class FalconTransaction {
         @Override
         public String getType() {
             return "Conduit Approval";
+        }
+
+        @Override
+        public String getReceiver() {
+            return vidaId + "";
         }
 
         @Override
@@ -567,6 +639,11 @@ public abstract class FalconTransaction {
         }
 
         @Override
+        public String getReceiver() {
+            return vidaId + "";
+        }
+
+        @Override
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("vidaId", vidaId);
@@ -598,6 +675,11 @@ public abstract class FalconTransaction {
         @Override
         public String getType() {
             return "Move Stake";
+        }
+
+        @Override
+        public String getReceiver() {
+            return fromValidator;
         }
 
         @Override
@@ -654,6 +736,11 @@ public abstract class FalconTransaction {
         }
 
         @Override
+        public String getReceiver() {
+            return vidaId + "";
+        }
+
+        @Override
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("vidaId", vidaId);
@@ -699,6 +786,11 @@ public abstract class FalconTransaction {
         }
 
         @Override
+        public String getReceiver() {
+            return vidaId + "";
+        }
+
+        @Override
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("vidaId", vidaId);
@@ -734,6 +826,11 @@ public abstract class FalconTransaction {
         @Override
         public String getType() {
             return "Add VIDA Sponsored Addresses";
+        }
+
+        @Override
+        public String getReceiver() {
+            return vidaId + "";
         }
 
         @Override
@@ -775,6 +872,11 @@ public abstract class FalconTransaction {
         }
 
         @Override
+        public String getReceiver() {
+            return vidaId + "";
+        }
+
+        @Override
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("vidaId", vidaId);
@@ -813,6 +915,11 @@ public abstract class FalconTransaction {
         }
 
         @Override
+        public String getReceiver() {
+            return vidaId + "";
+        }
+
+        @Override
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("vidaId", vidaId);
@@ -845,6 +952,11 @@ public abstract class FalconTransaction {
         }
 
         @Override
+        public String getReceiver() {
+            return vidaId + "";
+        }
+
+        @Override
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("vidaId", vidaId);
@@ -872,6 +984,11 @@ public abstract class FalconTransaction {
         @Override
         public String getType() {
             return "Set VIDA To Absolute Public";
+        }
+
+        @Override
+        public String getReceiver() {
+            return vidaId + "";
         }
 
         @Override
@@ -912,6 +1029,11 @@ public abstract class FalconTransaction {
         }
 
         @Override
+        public String getReceiver() {
+            return "PWR Chain";
+        }
+
+        @Override
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("title", title);
@@ -945,6 +1067,11 @@ public abstract class FalconTransaction {
         @Override
         public String getType() {
             return "Change Fee Per Byte Proposal";
+        }
+
+        @Override
+        public String getReceiver() {
+            return "PWR Chain";
         }
 
         @Override
@@ -983,6 +1110,11 @@ public abstract class FalconTransaction {
         }
 
         @Override
+        public String getReceiver() {
+            return "PWR Chain";
+        }
+
+        @Override
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("title", title);
@@ -1015,6 +1147,11 @@ public abstract class FalconTransaction {
         @Override
         public String getType() {
             return "Change Max Transaction Size Proposal";
+        }
+
+        @Override
+        public String getReceiver() {
+            return "PWR Chain";
         }
 
         @Override
@@ -1053,6 +1190,11 @@ public abstract class FalconTransaction {
         }
 
         @Override
+        public String getReceiver() {
+            return "PWR Chain";
+        }
+
+        @Override
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("title", title);
@@ -1085,6 +1227,11 @@ public abstract class FalconTransaction {
         @Override
         public String getType() {
             return "Change Reward Per Year Proposal";
+        }
+
+        @Override
+        public String getReceiver() {
+            return "PWR Chain";
         }
 
         @Override
@@ -1123,6 +1270,11 @@ public abstract class FalconTransaction {
         }
 
         @Override
+        public String getReceiver() {
+            return "PWR Chain";
+        }
+
+        @Override
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("title", title);
@@ -1155,6 +1307,11 @@ public abstract class FalconTransaction {
         @Override
         public String getType() {
             return "Change Validator Joining Fee Proposal";
+        }
+
+        @Override
+        public String getReceiver() {
+            return "PWR Chain";
         }
 
         @Override
@@ -1193,6 +1350,11 @@ public abstract class FalconTransaction {
         }
 
         @Override
+        public String getReceiver() {
+            return "PWR Chain";
+        }
+
+        @Override
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("title", title);
@@ -1225,6 +1387,11 @@ public abstract class FalconTransaction {
         @Override
         public String getType() {
             return "Change VM Owner Transaction Fee Share Proposal";
+        }
+
+        @Override
+        public String getReceiver() {
+            return "PWR Chain";
         }
 
         @Override
@@ -1261,6 +1428,11 @@ public abstract class FalconTransaction {
         }
 
         @Override
+        public String getReceiver() {
+            return "PWR Chain";
+        }
+
+        @Override
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("title", title);
@@ -1290,6 +1462,11 @@ public abstract class FalconTransaction {
         @Override
         public String getType() {
             return "Vote On Proposal";
+        }
+
+        @Override
+        public String getReceiver() {
+            return "PWR Chain";
         }
 
         @Override
