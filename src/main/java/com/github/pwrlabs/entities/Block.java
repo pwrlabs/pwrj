@@ -5,6 +5,7 @@ import lombok.Getter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -39,8 +40,14 @@ public class Block {
         }
     }
 
+    public List<String> getTransactionHashes() {
+        if(transactionHashes == null) return new ArrayList<>();
+        else return transactionHashes;
+    }
+
     public int getTransactionCount() {
-        return transactionHashes.size();
+        if(transactionHashes == null) return 0;
+        else return transactionHashes.size();
     }
 
 }
