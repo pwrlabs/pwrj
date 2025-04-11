@@ -33,7 +33,7 @@ public class Block {
         this.rootHash = blockJson.getString(BinaryJSONKeyMapper.ROOT_HASH);
         this.proposer = blockJson.getString(BinaryJSONKeyMapper.PROPOSER);
 
-        JSONArray transactionHashJson = blockJson.getJSONArray(BinaryJSONKeyMapper.TRANSACTION_HASH);
+        JSONArray transactionHashJson = blockJson.getJSONArray(BinaryJSONKeyMapper.TRANSACTIONS);
         for (int i = 0; i < transactionHashJson.length(); i++) {
             this.transactionHashes.add(transactionHashJson.getString(i));
         }
