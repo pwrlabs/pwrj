@@ -1,6 +1,6 @@
 package com.github.pwrlabs.pwrj.record.response;
 
-import com.github.pwrlabs.entities.FalconTransaction;
+import com.github.pwrlabs.pwrj.entities.FalconTransaction;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;
 

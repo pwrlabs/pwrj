@@ -1,13 +1,13 @@
 package com.github.pwrlabs.pwrj.protocol;
 
 import com.github.pwrlabs.pwrj.interfaces.VidaTransactionHandler;
-import com.github.pwrlabs.entities.Block;
+import com.github.pwrlabs.pwrj.entities.Block;
 import com.github.pwrlabs.pwrj.record.response.EarlyWithdrawPenaltyResponse;
 import com.github.pwrlabs.pwrj.record.response.Response;
 import com.github.pwrlabs.pwrj.record.response.TransactionForGuardianApproval;
-import com.github.pwrlabs.entities.FalconTransaction;
-import com.github.pwrlabs.entities.WithdrawalOrder;
-import com.github.pwrlabs.entities.Validator;
+import com.github.pwrlabs.pwrj.entities.FalconTransaction;
+import com.github.pwrlabs.pwrj.entities.WithdrawalOrder;
+import com.github.pwrlabs.pwrj.entities.Validator;
 import io.pwrlabs.util.encoders.BiResult;
 import io.pwrlabs.util.encoders.ByteArrayWrapper;
 import lombok.Getter;

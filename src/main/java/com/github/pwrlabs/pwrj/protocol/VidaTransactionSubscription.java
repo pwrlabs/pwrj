@@ -1,7 +1,7 @@
 package com.github.pwrlabs.pwrj.protocol;
 
 import com.github.pwrlabs.pwrj.interfaces.VidaTransactionHandler;
-import com.github.pwrlabs.entities.FalconTransaction;
+import com.github.pwrlabs.pwrj.entities.FalconTransaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

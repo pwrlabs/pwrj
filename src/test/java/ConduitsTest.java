@@ -2,7 +2,7 @@ import com.github.pwrlabs.pwrj.Utils.Hex;
 import com.github.pwrlabs.pwrj.protocol.PWRJ;
 import com.github.pwrlabs.pwrj.protocol.TransactionBuilder;
 import com.github.pwrlabs.pwrj.record.response.Response;
-import com.github.pwrlabs.entities.Validator;
+import com.github.pwrlabs.pwrj.entities.Validator;
 import com.github.pwrlabs.pwrj.wallet.PWRFalconWallet;
 import io.pwrlabs.util.encoders.ByteArrayWrapper;
 

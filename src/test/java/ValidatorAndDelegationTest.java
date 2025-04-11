@@ -1,6 +1,6 @@
 import com.github.pwrlabs.pwrj.protocol.PWRJ;
-import com.github.pwrlabs.entities.WithdrawalOrder;
-import com.github.pwrlabs.entities.Validator;
+import com.github.pwrlabs.pwrj.entities.WithdrawalOrder;
+import com.github.pwrlabs.pwrj.entities.Validator;
 import com.github.pwrlabs.pwrj.wallet.PWRFalconWallet;
 import com.github.pwrlabs.pwrj.record.response.Response;
 import org.bouncycastle.util.encoders.Hex;
