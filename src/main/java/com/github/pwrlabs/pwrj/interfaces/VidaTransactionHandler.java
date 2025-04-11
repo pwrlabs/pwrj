@@ -1,7 +1,7 @@
 package com.github.pwrlabs.pwrj.interfaces;
 
 
-import com.github.pwrlabs.pwrj.record.transaction.FalconTransaction;
+import com.github.pwrlabs.entities.FalconTransaction;
 
 @FunctionalInterface
 public interface VidaTransactionHandler {

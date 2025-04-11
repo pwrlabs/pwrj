@@ -1,4 +1,4 @@
-package com.github.pwrlabs.pwrj.record.block;
+package com.github.pwrlabs.entities;
 
 import io.pwrlabs.utils.BinaryJSONKeyMapper;
 import lombok.Getter;

@@ -1,7 +1,6 @@
-package com.github.pwrlabs.pwrj.record.transaction;
+package com.github.pwrlabs.entities;
 
 import com.github.pwrlabs.pwrj.Utils.Hex;
-import io.pwrlabs.utils.BinaryJSONKeyMapper;
 import lombok.Getter;
 import org.json.JSONObject;
 

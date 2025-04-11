@@ -1,23 +1,12 @@
 package com.github.pwrlabs.pwrj.protocol;
 
-import com.github.pwrlabs.pwrj.Utils.Falcon;
-import com.github.pwrlabs.pwrj.Utils.Hex;
-import com.github.pwrlabs.pwrj.Utils.ValidationException;
-import org.bouncycastle.jcajce.provider.digest.Keccak;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.jce.provider.PEMUtil;
-import org.bouncycastle.math.ec.ECPoint;
-import org.bouncycastle.math.ec.FixedPointCombMultiplier;
+import io.pwrlabs.util.encoders.ByteArrayWrapper;
 
-import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.security.SecureRandom;
-import java.security.Security;
-import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static com.github.pwrlabs.pwrj.Utils.NewError.errorIf;
@@ -84,7 +73,7 @@ public class TransactionBuilder {
         return transactionBase;
     }
 
-    public static byte[] getFalconTransferTransaction(long feePerByte, byte[] sender, byte[] receiver, long amount, int nonce, byte chainId) {
+    public static byte[] getTransferTransaction(long feePerByte, byte[] sender, byte[] receiver, long amount, int nonce, byte chainId) {
         byte[] transactionBase = getFalconTransactionBase(1006, nonce, chainId, feePerByte, sender);
         ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 20 + 8);
         buffer.put(transactionBase);
@@ -403,9 +392,10 @@ public class TransactionBuilder {
             totalWrappedSize += 4 + wrappedTxn.length; // 4 bytes for length + txn size
         }
 
-        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + totalWrappedSize);
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 4 + totalWrappedSize);
         buffer.put(transactionBase);
         buffer.putLong(vidaId);
+        buffer.putInt(wrappedTxns.size());
 
         // Add each wrapped transaction with its length prefix
         for (byte[] wrappedTxn : wrappedTxns) {
@@ -450,13 +440,16 @@ public class TransactionBuilder {
     }
 
     public static byte[] getSetConduitModeTransaction(long feePerByte, byte[] sender, long vidaId, byte mode,
-                                                      int conduitThreshold, Set<byte[]> conduits,
+                                                      int conduitThreshold, Set<byte[]> conduits, Map<ByteArrayWrapper, Long> conduitsWithVotingPower,
                                                       int nonce, byte chainId) {
+        errorIf(conduits != null && conduitsWithVotingPower != null, "Conduits and conduitsWithVotingPower cannot both be sent in the same txn");
+
         byte[] transactionBase = getFalconTransactionBase(1033, nonce, chainId, feePerByte, sender);
 
         // Calculate size: base + vidaId(8) + mode(1) + threshold(4) + (conduits * 20)
-        int totalSize = transactionBase.length + 8 + 1 + 4;
+        int totalSize = transactionBase.length + 8 + 1 + 4 + 4;
         totalSize += (conduits != null ? conduits.size() * 20 : 0);
+        totalSize += (conduitsWithVotingPower != null ? conduitsWithVotingPower.size() * 28 : 0); // 20 bytes address + 8 bytes voting power
 
         ByteBuffer buffer = ByteBuffer.allocate(totalSize);
         buffer.put(transactionBase);
@@ -466,9 +459,22 @@ public class TransactionBuilder {
 
         // Add conduit addresses if provided
         if (conduits != null) {
+            buffer.putInt(conduits.size());
             for (byte[] conduit : conduits) {
                 buffer.put(conduit);
             }
+        }
+
+        if(conduitsWithVotingPower != null && !conduitsWithVotingPower.isEmpty()) {
+            buffer.putInt(conduitsWithVotingPower.size());
+            for (Map.Entry<ByteArrayWrapper, Long> entry : conduitsWithVotingPower.entrySet()) {
+                buffer.put(entry.getKey().data());
+                buffer.putLong(entry.getValue());
+            }
+        }
+
+        if((conduits == null || conduits.isEmpty()) && (conduitsWithVotingPower == null || conduitsWithVotingPower.isEmpty())) {
+            buffer.putInt(0);
         }
 
         return buffer.array();
@@ -595,6 +601,34 @@ public class TransactionBuilder {
         for (byte[] sponsoredAddress : sponsoredAddresses) {
             buffer.put(sponsoredAddress);
         }
+
+        return buffer.array();
+    }
+
+    public static byte[] getSetPWRTransferRightsTransaction(long feePerByte, byte[] sender, long vidaId,
+                                                            boolean ownerCanTransferPWR, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(1040, nonce, chainId, feePerByte, sender);
+
+        // Calculate total size needed: base + vidaId(8) + (allowedSenders * 20)
+        int totalSize = transactionBase.length + 8 + 1 + 1;
+
+        ByteBuffer buffer = ByteBuffer.allocate(totalSize);
+        buffer.put(transactionBase);
+        buffer.putLong(vidaId);
+        buffer.put((byte) (ownerCanTransferPWR ? 1 : 0));
+
+        return buffer.array();
+    }
+
+    public static byte[] getTransferPWRFromVidaTransaction(long feePerByte, byte[] sender, long vidaId,
+                                                                byte[] receiver, long amount, int nonce, byte chainId) {
+        byte[] transactionBase = getFalconTransactionBase(1041, nonce, chainId, feePerByte, sender);
+
+        ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 8 + 20 + 8);
+        buffer.put(transactionBase);
+        buffer.putLong(vidaId);
+        buffer.put(receiver);
+        buffer.putLong(amount);
 
         return buffer.array();
     }

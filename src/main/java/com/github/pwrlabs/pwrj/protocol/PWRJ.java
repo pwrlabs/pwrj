@@ -1,14 +1,15 @@
 package com.github.pwrlabs.pwrj.protocol;
 
 import com.github.pwrlabs.pwrj.interfaces.VidaTransactionHandler;
-import com.github.pwrlabs.pwrj.record.block.Block;
+import com.github.pwrlabs.entities.Block;
 import com.github.pwrlabs.pwrj.record.response.EarlyWithdrawPenaltyResponse;
 import com.github.pwrlabs.pwrj.record.response.Response;
 import com.github.pwrlabs.pwrj.record.response.TransactionForGuardianApproval;
-import com.github.pwrlabs.pwrj.record.transaction.FalconTransaction;
-import com.github.pwrlabs.pwrj.record.transaction.WithdrawalOrder;
-import com.github.pwrlabs.pwrj.record.validator.Validator;
+import com.github.pwrlabs.entities.FalconTransaction;
+import com.github.pwrlabs.entities.WithdrawalOrder;
+import com.github.pwrlabs.entities.Validator;
 import io.pwrlabs.util.encoders.BiResult;
+import io.pwrlabs.util.encoders.ByteArrayWrapper;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.http.client.config.RequestConfig;
@@ -785,23 +786,46 @@ public class PWRJ {
             return null;
         }
     }
-    public List<Validator> getConduitsOfVm(long vmId) {
-        try {
-            JSONObject object = httpGet(rpcNodeUrl + "/conduitsOfVm/?vmId=" + vmId);
-            JSONArray validators = object.getJSONArray("conduits");
-            List<Validator> validatorsList = new ArrayList<>();
 
-            for(int i = 0; i < validators.length(); i++) {
-                JSONObject validatorObject = validators.getJSONObject(i);
-                Validator validator = new Validator(validatorObject);
-                validatorsList.add(validator);
-            }
+    /**
+     * Retrieves a mapping of conduit addresses and their corresponding voting power for a specific VIDA.
+     *
+     * This method makes an HTTP GET request to the RPC node to fetch all conduits associated with the provided
+     * VIDA ID. The response is parsed to extract each conduit's address and voting power, which are then
+     * stored in a map.
+     *
+     * @param vidaId The unique identifier of the VIDA whose conduits are to be retrieved
+     * @return A Map where each key is a ByteArrayWrapper containing a conduit address and each value is the
+     *         corresponding voting power as a Long
+     * @throws IOException If an error occurs during the HTTP request or response handling
+     */
+    public Map<ByteArrayWrapper /*Conduit address*/, Long/*Voting Power*/> getConduitsOfVida(long vidaId) throws IOException {
+        JSONObject object = httpGet(rpcNodeUrl + "/conduitsOfVida?vidaId=" + vidaId);
 
-            return validatorsList;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ArrayList<>();
+        JSONArray conduits = object.getJSONArray("conduits");
+
+        Map<ByteArrayWrapper, Long> conduitsMap = new HashMap<>();
+        for (int i = 0; i < conduits.length(); i++) {
+            JSONObject conduitObject = conduits.getJSONObject(i);
+
+            String address = conduitObject.getString("address");
+            if (address.startsWith("0x")) address = address.substring(2);
+
+            ByteArrayWrapper conduitAddress = new ByteArrayWrapper(Hex.decode(address));
+            long votingPower = conduitObject.getLong("votingPower");
+
+            conduitsMap.put(conduitAddress, votingPower);
         }
+
+        return conduitsMap;
+    }
+
+    public boolean isOwnerAllowedToTransferPWRFromVida(long vidaId) throws IOException {
+        return httpGet(rpcNodeUrl + "/isOwnerAllowedToTransferPWRFromVida?vidaId=" + vidaId).getBoolean("allowed");
+    }
+
+    public boolean areConduitsAllowedToTransferPWRFromVida(long vidaId) throws IOException {
+        return httpGet(rpcNodeUrl + "/areConduitsAllowedToTransferPWRFromVida/?vidaId=" + vidaId).getBoolean("allowed");
     }
 
     public EarlyWithdrawPenaltyResponse getEarlyWithdrawPenalty(long withdrawTime) throws IOException {

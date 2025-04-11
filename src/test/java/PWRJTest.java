@@ -7,11 +7,11 @@ import io.pwrlabs.util.encoders.BiResult;
 import org.bouncycastle.util.encoders.Hex;
 
 import com.github.pwrlabs.pwrj.protocol.PWRJ;
-import com.github.pwrlabs.pwrj.record.block.Block;
+import com.github.pwrlabs.entities.Block;
 import com.github.pwrlabs.pwrj.record.response.EarlyWithdrawPenaltyResponse;
 import com.github.pwrlabs.pwrj.record.response.TransactionForGuardianApproval;
-import com.github.pwrlabs.pwrj.record.transaction.FalconTransaction;
-import com.github.pwrlabs.pwrj.record.validator.Validator;
+import com.github.pwrlabs.entities.FalconTransaction;
+import com.github.pwrlabs.entities.Validator;
 
 public class PWRJTest {
     private static final String RPC_NODE_URL = "http://localhost:8085"; // Example URL, replace with real test endpoint
@@ -175,7 +175,7 @@ public class PWRJTest {
             String vidaOwner = pwrj.getOwnerOfVida(TEST_VIDA_ID);
 
             System.out.println("Testing getConduitsOfVm()...");
-            List<Validator> conduits = pwrj.getConduitsOfVm(TEST_VIDA_ID);
+            pwrj.getConduitsOfVida(TEST_VIDA_ID);
 
             // Additional methods
             System.out.println("Testing getTotalVotingPower()...");

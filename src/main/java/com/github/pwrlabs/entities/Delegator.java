@@ -1,4 +1,4 @@
-package com.github.pwrlabs.pwrj.record.delegator;
+package com.github.pwrlabs.entities;
 
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;

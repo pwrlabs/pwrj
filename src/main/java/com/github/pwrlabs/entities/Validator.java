@@ -1,6 +1,5 @@
-package com.github.pwrlabs.pwrj.record.validator;
+package com.github.pwrlabs.entities;
 
-import com.github.pwrlabs.pwrj.record.delegator.Delegator;
 import com.github.pwrlabs.pwrj.protocol.PWRJ;
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;

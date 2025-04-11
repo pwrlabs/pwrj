@@ -6,7 +6,7 @@ import com.github.pwrlabs.pwrj.Utils.PWRHash;
 import com.github.pwrlabs.pwrj.protocol.PWRJ;
 import com.github.pwrlabs.pwrj.protocol.TransactionBuilder;
 import com.github.pwrlabs.pwrj.record.response.Response;
-import io.pwrlabs.utils.BinaryJSONKeyMapper;
+import io.pwrlabs.util.encoders.ByteArrayWrapper;
 import org.bouncycastle.crypto.AsymmetricCipherKeyPair;
 import org.bouncycastle.pqc.crypto.falcon.*;
 
@@ -15,10 +15,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 import static com.github.pwrlabs.pwrj.Utils.NewError.errorIf;
 
@@ -161,7 +158,7 @@ public class PWRFalconWallet {
         if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
-        byte[] transaction = TransactionBuilder.getFalconTransferTransaction(feePerByte, address, receiver, amount, pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+        byte[] transaction = TransactionBuilder.getTransferTransaction(feePerByte, address, receiver, amount, pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
         return getSignedTransaction(transaction);
     }
 
@@ -713,10 +710,10 @@ public class PWRFalconWallet {
     // VIDA Transactions
 
     public byte[] getSignedSetConduitModeTransaction(long vidaId, byte mode, int conduitThreshold,
-                                                     Set<byte[]> conduits, Long feePerByte) throws IOException {
+                                                     Set<byte[]> conduits, Map<ByteArrayWrapper, Long> conduitsWithVotingPower, Long feePerByte) throws IOException {
         errorIf(conduitThreshold < 0, "Conduit threshold must be non-negative");
         if(mode == 1 || mode == 2) { // COUNT_BASED or STAKE_BASED mode
-            errorIf(conduits == null || conduits.isEmpty(), "Conduit addresses must be provided for this mode");
+            errorIf((conduits == null || conduits.isEmpty()) && (conduitsWithVotingPower == null || conduitsWithVotingPower.isEmpty()), "Conduit addresses must be provided for this mode");
         }
 
         long baseFeePerByte = pwrj.getFeePerByte();
@@ -724,19 +721,19 @@ public class PWRFalconWallet {
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getSetConduitModeTransaction(
-                feePerByte, address, vidaId, mode, conduitThreshold, conduits,
+                feePerByte, address, vidaId, mode, conduitThreshold, conduits, conduitsWithVotingPower,
                 pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
 
         return getSignedTransaction(transaction);
     }
 
     public Response setConduitMode(long vidaId, byte mode, int conduitThreshold,
-                                   Set<byte[]> conduits, Long feePerByte) throws IOException {
+                                   Set<byte[]> conduits, Map<ByteArrayWrapper, Long> conduitsWithVotingPower, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
         if(response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedSetConduitModeTransaction(
-                vidaId, mode, conduitThreshold, conduits, feePerByte));
+                vidaId, mode, conduitThreshold, conduits, conduitsWithVotingPower, feePerByte));
     }
 
     public byte[] getSignedSetConduitModeWithVidaBasedTransaction(long vidaId, byte mode, int conduitThreshold,
@@ -1010,6 +1007,41 @@ public class PWRFalconWallet {
 
         return pwrj.broadcastTransaction(getSignedSetVidaToAbsolutePublicTransaction(
                 vidaId, feePerByte));
+    }
+
+    public byte[] getSignedSetPWRTransferRightsTransaction(long vidaId, boolean ownerCanTransferPWR, long feePerByte) throws IOException {
+        errorIf(vidaId == 0, "VIDA ID cannot be zero");
+
+        byte[] transaction = TransactionBuilder.getSetPWRTransferRightsTransaction(feePerByte, address, vidaId, ownerCanTransferPWR,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response setPWRTransferRights(long vidaId, boolean ownerCanTransferPWR, long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedSetPWRTransferRightsTransaction(vidaId, ownerCanTransferPWR, feePerByte));
+    }
+
+    public byte[] getSignedTransferPWRFromVidaTransaction(long vidaId, byte[] receiver, long amount, long feePerByte) throws IOException {
+        errorIf(vidaId == 0, "VIDA ID cannot be zero");
+        errorIf(receiver == null || receiver.length != 20, "Receiver address must be 20 bytes");
+        errorIf(amount <= 0, "Amount must be positive");
+
+        byte[] transaction = TransactionBuilder.getTransferPWRFromVidaTransaction(
+                feePerByte, address, vidaId, receiver, amount,
+                pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
+
+        return getSignedTransaction(transaction);
+    }
+
+    public Response transferPWRFromVida(long vidaId, byte[] receiver, long amount, long feePerByte) throws IOException {
+        Response response = makeSurePublicKeyIsSet(feePerByte);
+        if(response != null && !response.isSuccess()) return response;
+
+        return pwrj.broadcastTransaction(getSignedTransferPWRFromVidaTransaction(vidaId, receiver, amount, feePerByte));
     }
 
     public static void main(String[] args) {

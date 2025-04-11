@@ -38,9 +38,11 @@ public class FalconWalletTransactionsTest {
 
         try {
 //            testTransfer(wallet1, wallet2Address, 1000000000);
-//            testVidaDataTxn(wallet1);
-            testVidaOperations(wallet1, wallet2);
-            testSetVidaPrivate(wallet1, wallet2);
+//            testVidaDataTxn(wallet1, new Random().nextLong(), 10);
+//            testVidaOperations(wallet1, wallet2);
+//            testSetVidaPrivate(wallet1, wallet2);
+            testVidaTransferPWRByOwner(wallet1);
+            testFailedVidaTransferPWRByOwner(wallet1);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -338,6 +340,145 @@ public class FalconWalletTransactionsTest {
         //endregion
     }
 
+    private static void testVidaTransferPWRByOwner(PWRFalconWallet wallet) throws Exception {
+        long vidaId = new Random().nextLong();
+        long amountToTransfer = 1000000000;
+
+        //region - Claim VIDA ID
+        Response r = wallet.claimVidaId(vidaId, pwrj.getFeePerByte());
+        if(!r.isSuccess()) {
+            System.err.println("Claim vida id failed: " + r.getError());
+            throw new RuntimeException("Claim vida id failed: " + r.getError());
+        }
+
+        Thread.sleep(5000);
+
+        String owner = pwrj.getOwnerOfVida(vidaId);
+        if(owner == null || !owner.equalsIgnoreCase(wallet.getAddress())) {
+            throw new RuntimeException("Claim vida id failed");
+        }
+        //endregion
+
+        //region - Send PWR to vida
+        long vidaIdBalanceBefore = pwrj.getBalanceOfAddress(pwrj.getVidaIdAddress(vidaId));
+
+        r = wallet.transferPWR(pwrj.getVidaIdAddressBytea(vidaId), amountToTransfer, pwrj.getFeePerByte());
+        if (!r.isSuccess()) {
+            System.err.println("Transfer PWR to vida failed: " + r.getError());
+            throw new RuntimeException("Transfer PWR to vida failed: " + r.getError());
+        }
+
+        Thread.sleep(SLEEP_TIME_AFTER_SENDING_TXNS);
+
+        long vidaIdBalanceAfter = pwrj.getBalanceOfAddress(pwrj.getVidaIdAddress(vidaId));
+
+        if(vidaIdBalanceAfter != vidaIdBalanceBefore + amountToTransfer) {
+            System.err.println("Transfer PWR to vida failed");
+            System.out.println("Expected: " + (vidaIdBalanceBefore + amountToTransfer) + " but got: " + vidaIdBalanceAfter);
+            throw new RuntimeException("Transfer PWR to vida failed");
+        }
+        //endregion
+
+        //region - Transfer PWR from vida
+        byte[] receiverAddress = generateRandomBytes(20);
+        long amountToSendReceiver = amountToTransfer / 2;
+
+        r = wallet.transferPWRFromVida(vidaId, receiverAddress, amountToSendReceiver, pwrj.getFeePerByte());
+        if (!r.isSuccess()) {
+            System.err.println("Transfer PWR from vida failed: " + r.getError());
+            throw new RuntimeException("Transfer PWR from vida failed: " + r.getError());
+        }
+
+        Thread.sleep(SLEEP_TIME_AFTER_SENDING_TXNS);
+
+        long vidaIdBalanceAfterTransfer = pwrj.getBalanceOfAddress(pwrj.getVidaIdAddress(vidaId));
+        if(vidaIdBalanceAfterTransfer != vidaIdBalanceBefore + amountToSendReceiver) {
+            System.err.println("Transfer PWR from vida failed");
+            System.out.println("Expected: " + (vidaIdBalanceBefore + amountToSendReceiver) + " but got: " + vidaIdBalanceAfterTransfer);
+            throw new RuntimeException("Transfer PWR from vida failed");
+        }
+
+        long receiverBalance = pwrj.getBalanceOfAddress(Hex.toHexString(receiverAddress));
+        if(receiverBalance != amountToSendReceiver) {
+            System.err.println("Transfer PWR from vida failed");
+            System.out.println("Expected: " + amountToSendReceiver + " but got: " + receiverBalance);
+            throw new RuntimeException("Transfer PWR from vida failed");
+        }
+        System.out.println("Transfer PWR from vida successful");
+        //endregion
+
+
+    }
+
+    private static void testFailedVidaTransferPWRByOwner(PWRFalconWallet wallet) throws Exception {
+        long vidaId = new Random().nextLong();
+        System.out.println("Vida ID: " + vidaId);
+        long amountToTransfer = 1000000000;
+
+        //region - Claim VIDA ID
+        Response r = wallet.claimVidaId(vidaId, pwrj.getFeePerByte());
+        if(!r.isSuccess()) {
+            System.err.println("Claim vida id failed: " + r.getError());
+            throw new RuntimeException("Claim vida id failed: " + r.getError());
+        }
+
+        Thread.sleep(5000);
+
+        String owner = pwrj.getOwnerOfVida(vidaId);
+        if(owner == null || !owner.equalsIgnoreCase(wallet.getAddress())) {
+            throw new RuntimeException("Claim vida id failed");
+        }
+        //endregion
+
+        //region - Send PWR to vida
+        long vidaIdBalanceBefore = pwrj.getBalanceOfAddress(pwrj.getVidaIdAddress(vidaId));
+
+        r = wallet.transferPWR(pwrj.getVidaIdAddressBytea(vidaId), amountToTransfer, pwrj.getFeePerByte());
+        if (!r.isSuccess()) {
+            System.err.println("Transfer PWR to vida failed: " + r.getError());
+            throw new RuntimeException("Transfer PWR to vida failed: " + r.getError());
+        }
+
+        Thread.sleep(SLEEP_TIME_AFTER_SENDING_TXNS);
+
+        long vidaIdBalanceAfter = pwrj.getBalanceOfAddress(pwrj.getVidaIdAddress(vidaId));
+
+        if(vidaIdBalanceAfter != vidaIdBalanceBefore + amountToTransfer) {
+            System.err.println("Transfer PWR to vida failed");
+            System.out.println("Expected: " + (vidaIdBalanceBefore + amountToTransfer) + " but got: " + vidaIdBalanceAfter);
+            throw new RuntimeException("Transfer PWR to vida failed");
+        }
+        //endregion
+
+        //region - Remove owners rights to withraw the PWR from the vida
+        Response rr = wallet.setPWRTransferRights(vidaId, false, pwrj.getFeePerByte());
+        if(!rr.isSuccess()) {
+            System.err.println("Set PWR transfer rights failed: " + rr.getError());
+            throw new RuntimeException("Set PWR transfer rights failed: " + rr.getError());
+        } else {
+            System.out.println("Set pwr rights txn to false txn: " + rr.getTransactionHash());
+        }
+
+        Thread.sleep(SLEEP_TIME_AFTER_SENDING_TXNS);
+
+        errorIf(pwrj.isOwnerAllowedToTransferPWRFromVida(vidaId), "Owner allowed to transfer PWR, bust shouldn't be");
+        //endregion
+
+        //region - Transfer PWR from vida
+        byte[] receiverAddress = generateRandomBytes(20);
+        long amountToSendReceiver = amountToTransfer / 2;
+
+        r = wallet.transferPWRFromVida(vidaId, receiverAddress, amountToSendReceiver, pwrj.getFeePerByte());
+        if (r.isSuccess()) {
+            System.err.println("Transfer PWR from vida failed: " + r.getError());
+            throw new RuntimeException("Transfer PWR from vida failed: " + r.getError());
+        } else {
+            System.out.println("Transfer PWR from vida failed as expected: " + r.getError());
+        }
+        //endregion
+
+
+    }
     //function to generate x random bytes
     private static byte[] generateRandomBytes(int x) {
         byte[] randomBytes = new byte[x];
