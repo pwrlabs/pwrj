@@ -1,6 +1,7 @@
 package com.github.pwrlabs.entities;
 
 import com.github.pwrlabs.pwrj.Utils.Hex;
+import com.github.pwrlabs.pwrj.protocol.PWRJ;
 import io.pwrlabs.utils.BinaryJSONKeyMapper;
 import lombok.Getter;
 import org.json.JSONArray;
@@ -80,7 +81,7 @@ public abstract class FalconTransaction {
         Reflections reflections = new Reflections("com.github.pwrlabs.pwrj.record.transaction");
         Set<Class<? extends FalconTransaction>> subclasses = reflections.getSubTypesOf(FalconTransaction.class);
 
-        long identifier = json.getLong(BinaryJSONKeyMapper.IDENTIFIER);
+        int identifier = json.getInt(BinaryJSONKeyMapper.IDENTIFIER);
 
         for (Class<? extends FalconTransaction> subclass : subclasses) {
             try {
