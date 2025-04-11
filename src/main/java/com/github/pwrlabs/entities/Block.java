@@ -36,7 +36,8 @@ public class Block {
 
         JSONArray transactionHashJson = blockJson.getJSONArray(BinaryJSONKeyMapper.TRANSACTIONS);
         for (int i = 0; i < transactionHashJson.length(); i++) {
-            this.transactionHashes.add(transactionHashJson.getString(i));
+            JSONObject txnInfo = transactionHashJson.getJSONObject(i);
+            this.transactionHashes.add(txnInfo.getString(BinaryJSONKeyMapper.TRANSACTION_HASH));
         }
     }
 
