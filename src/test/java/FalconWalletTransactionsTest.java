@@ -7,6 +7,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.github.pwrlabs.pwrj.Utils.Hex;
 import static com.github.pwrlabs.pwrj.Utils.NewError.errorIf;
+
+import com.github.pwrlabs.pwrj.entities.FalconTransaction;
 import com.github.pwrlabs.pwrj.protocol.PWRJ;
 import com.github.pwrlabs.pwrj.protocol.VidaTransactionSubscription;
 import com.github.pwrlabs.pwrj.record.response.Response;
@@ -351,7 +353,7 @@ public class FalconWalletTransactionsTest {
             throw new RuntimeException("Claim vida id failed: " + r.getError());
         }
 
-        Thread.sleep(5000);
+        waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
         String owner = pwrj.getOwnerOfVida(vidaId);
         if(owner == null || !owner.equalsIgnoreCase(wallet.getAddress())) {
@@ -422,7 +424,7 @@ public class FalconWalletTransactionsTest {
             throw new RuntimeException("Claim vida id failed: " + r.getError());
         }
 
-        Thread.sleep(5000);
+        waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
         String owner = pwrj.getOwnerOfVida(vidaId);
         if(owner == null || !owner.equalsIgnoreCase(wallet.getAddress())) {
@@ -486,5 +488,27 @@ public class FalconWalletTransactionsTest {
             randomBytes[i] = (byte) (Math.random() * 255);
         }
         return randomBytes;
+    }
+
+    private static void waitUntilTransactionsIsProcessed(String txnHash) throws Exception {
+        long maxTime = 5000; // 1 minute
+        long timeNow = System.currentTimeMillis();
+
+        while (System.currentTimeMillis() - timeNow < maxTime) {
+            try {
+                FalconTransaction txn = pwrj.getTransactionByHash(txnHash);
+                if(txn != null) return;
+            } catch (Exception e) {
+
+            }
+
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        throw new Exception("Transaction not processed in time");
     }
 }

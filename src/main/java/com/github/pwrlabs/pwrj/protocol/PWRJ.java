@@ -194,7 +194,7 @@ public class PWRJ {
 
     public byte[] getPublicKeyOfAddress(String address) {
         try {
-            JSONObject object = httpGet(rpcNodeUrl + "/publicKeyOfAddress/?address=" + address);
+            JSONObject object = httpGet(rpcNodeUrl + "/publicKeyOfAddress?address=" + address);
             String publicKey = object.getString("falconPublicKey");
             if(publicKey == null || publicKey.equalsIgnoreCase("null")) return null;
             if(publicKey.startsWith("0x")) publicKey = publicKey.substring(2);
@@ -376,10 +376,6 @@ public class PWRJ {
      */
     public Block getBlockByNumber(long blockNumber) throws Exception {
         return new Block(httpGet(rpcNodeUrl + "/block/?blockNumber=" + blockNumber).getJSONObject("block"));
-    }
-
-    public Block getBlockByNumberExcludingDataAndExtraData(long blockNumber) throws Exception {
-        return new Block(httpGet(rpcNodeUrl + "/blockExcludingDataAndExtraData/?blockNumber=" + blockNumber).getJSONObject("block"));
     }
 
     public Block getBlockWithViDataTransactionsOnly(long blockNumber, long vmId) throws Exception {

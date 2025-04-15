@@ -1,3 +1,4 @@
+import com.github.pwrlabs.pwrj.entities.FalconTransaction;
 import com.github.pwrlabs.pwrj.protocol.PWRJ;
 import com.github.pwrlabs.pwrj.entities.WithdrawalOrder;
 import com.github.pwrlabs.pwrj.entities.Validator;
@@ -16,8 +17,8 @@ public class ValidatorAndDelegationTest {
     public static void main(String[] args) {
         try {
             // Create or load wallets
-            PWRFalconWallet validator = new PWRFalconWallet(pwrj );
-            PWRFalconWallet validator2 = new PWRFalconWallet(pwrj );
+            PWRFalconWallet validator = new PWRFalconWallet(pwrj);
+            PWRFalconWallet validator2 = new PWRFalconWallet(pwrj);
             PWRFalconWallet delegator = new PWRFalconWallet(pwrj);
 
             System.out.println("Validator Address: " + validator.getAddress());
@@ -48,8 +49,7 @@ public class ValidatorAndDelegationTest {
         }
     }
 
-    private static void joinAsValidator(PWRFalconWallet validator) {
-        try {
+    private static void joinAsValidator(PWRFalconWallet validator) throws Exception {
             // Get validator's balance
             long balance = pwrj.getBalanceOfAddress(validator.getAddress());
 
@@ -68,21 +68,18 @@ public class ValidatorAndDelegationTest {
                 throw new RuntimeException("Failed to join as validator: " + response.getError());
             }
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(response.getTransactionHash());
 
             Validator v = pwrj.getValidator(validator.getAddress());
             if (v == null) {
                 throw new RuntimeException("Validator not found");
             }
 
-            if(!v.getIp().equalsIgnoreCase(ipAddress)) {
+            if (!v.getIp().equalsIgnoreCase(ipAddress)) {
                 throw new RuntimeException("Validator IP mismatch. Expected: " + ipAddress + ", got: " + v.getIp());
             }
 
             System.out.println("Validator join success");
-        } catch (Exception e) {
-            throw new RuntimeException("Error joining as validator: " + e.getMessage());
-        }
     }
 
     private static void changeIp(PWRFalconWallet validator) {
@@ -95,14 +92,14 @@ public class ValidatorAndDelegationTest {
                 throw new RuntimeException("Failed to change IP: " + response.getError());
             }
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(response.getTransactionHash());
 
             Validator v = pwrj.getValidator(validator.getAddress());
             if (v == null) {
                 throw new RuntimeException("Validator not found");
             }
 
-            if(!v.getIp().equalsIgnoreCase(newIp)) {
+            if (!v.getIp().equalsIgnoreCase(newIp)) {
                 throw new RuntimeException("Validator IP mismatch. Expected: " + newIp + ", got: " + v.getIp());
             }
 
@@ -112,41 +109,36 @@ public class ValidatorAndDelegationTest {
         }
     }
 
-    private static void delegate(PWRFalconWallet delegator, PWRFalconWallet validator) {
-        try {
-            // Get delegator's balance
-            long balance = pwrj.getBalanceOfAddress(delegator.getAddress());
-            System.out.println("Delegator Balance: " + balance);
+    private static void delegate(PWRFalconWallet delegator, PWRFalconWallet validator) throws Exception {
+        // Get delegator's balance
+        long balance = pwrj.getBalanceOfAddress(delegator.getAddress());
+        System.out.println("Delegator Balance: " + balance);
 
-            if (balance < amountToDelegate) {
-                throw new RuntimeException("Not enough balance to delegate. Need at least: " + amountToDelegate);
-            }
-
-            byte[] validatorAddress = Hex.decode(validator.getAddress().substring(2)); // Remove 0x prefix
-
-            Response response = delegator.delegate(validatorAddress, amountToDelegate, pwrj.getFeePerByte());
-
-            if (!response.isSuccess()) {
-                throw new RuntimeException("Failed to delegate: " + response.getError());
-            }
-
-            // Verify delegation
-            try {
-                Thread.sleep(5000); // Wait for transaction to be processed
-                long delegatedAmount = pwrj.getDelegatedPWR(delegator.getAddress(), validator.getAddress());
-
-                if (delegatedAmount <= 0) {
-                    throw new RuntimeException("Delegation not found or amount is zero");
-                }
-
-                System.out.println("Delegated PWR amount: " + delegatedAmount);
-            } catch (Exception e) {
-                throw new RuntimeException("Error verifying delegation: " + e.getMessage());
-            }
-
-        } catch (Exception e) {
-            throw new RuntimeException("Error delegating: " + e.getMessage());
+        if (balance < amountToDelegate) {
+            throw new RuntimeException("Not enough balance to delegate. Need at least: " + amountToDelegate);
         }
+
+        byte[] validatorAddress = Hex.decode(validator.getAddress().substring(2)); // Remove 0x prefix
+
+        Response response = delegator.delegate(validatorAddress, amountToDelegate, pwrj.getFeePerByte());
+
+        if (!response.isSuccess()) {
+            throw new RuntimeException("Failed to delegate: " + response.getError());
+        } else {
+            System.out.println("Delegate transaction hash: " + response.getTransactionHash());
+        }
+
+        waitUntilTransactionsIsProcessed(response.getTransactionHash()); // Wait for transaction to be processed
+
+        Thread.sleep(5000);
+        // Verify delegation
+        long delegatedAmount = pwrj.getDelegatedPWR(delegator.getAddress(), validator.getAddress());
+
+        if (delegatedAmount <= 0) {
+            throw new RuntimeException("Delegation not found or amount is zero: " + delegatedAmount);
+        }
+
+        System.out.println("Delegated PWR amount: " + delegatedAmount);
     }
 
     private static void moveDelegation(PWRFalconWallet delegator, byte[] fromValidator, byte[] toValidator) {
@@ -165,15 +157,16 @@ public class ValidatorAndDelegationTest {
 
             if (!response.isSuccess()) {
                 throw new RuntimeException("Failed to move delegation: " + response.getError());
+            } else {
+                System.out.println("Move delegation transaction hash: " + response.getTransactionHash());
             }
-
             // Verify the move
             try {
-                Thread.sleep(5000); // Wait for transaction to be processed
+                waitUntilTransactionsIsProcessed(response.getTransactionHash()); // Wait for transaction to be processed
                 String toValidatorAddress = "0x" + Hex.toHexString(toValidator);
                 long newDelegatedAmount = pwrj.getDelegatedPWR(delegator.getAddress(), toValidatorAddress);
 
-                if(newDelegatedAmount <= 0) {
+                if (newDelegatedAmount <= 0) {
                     throw new RuntimeException("Delegation not found or amount is zero");
                 }
 
@@ -207,7 +200,7 @@ public class ValidatorAndDelegationTest {
 
             System.out.println("Withdrawal transaction hash: " + response.getTransactionHash());
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(response.getTransactionHash());
 
             byte[] txnHash = Hex.decode(response.getTransactionHash().startsWith("0x") ? response.getTransactionHash().substring(2) : response.getTransactionHash());
             WithdrawalOrder withdrawalOrder = pwrj.getWithdrawalOrder(txnHash);
@@ -232,7 +225,7 @@ public class ValidatorAndDelegationTest {
                 throw new RuntimeException("Failed to claim active node spot: " + response.getError());
             }
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(response.getTransactionHash());
 
             List<Validator> activeValidators = pwrj.getActiveValidators();
 
@@ -262,5 +255,32 @@ public class ValidatorAndDelegationTest {
         int octet3 = (int) (Math.random() * 256);
         int octet4 = (int) (Math.random() * 256);
         return octet1 + "." + octet2 + "." + octet3 + "." + octet4;
+    }
+
+    private static void waitUntilTransactionsIsProcessed(String txnHash) throws Exception {
+        long maxTime = 10000;
+        long timeNow = System.currentTimeMillis();
+
+        while (System.currentTimeMillis() - timeNow < maxTime) {
+            try {
+                FalconTransaction txn = pwrj.getTransactionByHash(txnHash);
+                if (txn != null) {
+                    if (txn.isSuccess()) return;
+                    else {
+                        throw new Exception("Transaction failed: " + txn.getErrorMessage());
+                    }
+                }
+            } catch (Exception e) {
+
+            }
+
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        throw  new Exception("Transaction not processed in time");
     }
 }

@@ -77,9 +77,6 @@ public class PWRJTest {
                 System.out.println("Testing getBlockByNumber()...");
                 Block block = pwrj.getBlockByNumber(latestBlockNumber);
 
-                System.out.println("Testing getBlockByNumberExcludingDataAndExtraData()...");
-                Block blockExcludingData = pwrj.getBlockByNumberExcludingDataAndExtraData(TEST_BLOCK_NUMBER);
-
                 System.out.println("Testing getBlockWithViDataTransactionsOnly()...");
                 Block blockWithVmData = pwrj.getBlockWithViDataTransactionsOnly(TEST_BLOCK_NUMBER, TEST_VIDA_ID);
             } catch (Exception e) {

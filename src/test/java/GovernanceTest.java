@@ -1,5 +1,6 @@
 import com.github.pwrlabs.pwrj.Utils.Falcon;
 import com.github.pwrlabs.pwrj.Utils.Hex;
+import com.github.pwrlabs.pwrj.entities.FalconTransaction;
 import com.github.pwrlabs.pwrj.protocol.PWRJ;
 import com.github.pwrlabs.pwrj.record.response.EarlyWithdrawPenaltyResponse;
 import com.github.pwrlabs.pwrj.record.response.Response;
@@ -50,14 +51,14 @@ public class GovernanceTest {
             Response r = validator.proposeChangeFeePerByte(title, description, newFeePerByte, feePerByte);
             errorIf(!r.isSuccess(), r.getError());
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
             System.out.println("Transaction hash: " + r.getTransactionHash());
             byte[] transactionHash = Hex.decode(r.getTransactionHash().startsWith("0x") ? r.getTransactionHash().substring(2) : r.getTransactionHash());
             r = validator.voteOnProposal(transactionHash, (byte) 0, pwrj.getFeePerByte());
             errorIf(!r.isSuccess(), r.getError());
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
             errorIf(pwrj.getFeePerByte() != newFeePerByte, "Failed to change fee per byte. Expected: " + newFeePerByte + ", Actual: " + pwrj.getFeePerByte());
 
@@ -81,13 +82,13 @@ public class GovernanceTest {
             Response r = validator.proposeChangeEarlyWithdrawPenalty(title, description, earlyWithdrawTime, earlyWithdrawPenalty, pwrj.getFeePerByte());
             errorIf(!r.isSuccess(), r.getError());
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
             byte[] transactionHash = Hex.decode(r.getTransactionHash().startsWith("0x") ? r.getTransactionHash().substring(2) : r.getTransactionHash());
             r = validator.voteOnProposal(transactionHash, (byte) 0, pwrj.getFeePerByte());
             errorIf(!r.isSuccess(), r.getError());
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
             EarlyWithdrawPenaltyResponse response = pwrj.getEarlyWithdrawPenalty(earlyWithdrawTime);
 
@@ -112,13 +113,13 @@ public class GovernanceTest {
             Response r = validator.proposeChangeMaxBlockSize(title, description, newMaxBlockSize, pwrj.getFeePerByte());
             errorIf(!r.isSuccess(), r.getError());
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
             byte[] transactionHash = Hex.decode(r.getTransactionHash().startsWith("0x") ? r.getTransactionHash().substring(2) : r.getTransactionHash());
             r = validator.voteOnProposal(transactionHash, (byte) 0, pwrj.getFeePerByte());
             errorIf(!r.isSuccess(), r.getError());
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
             errorIf(pwrj.getMaxBlockSize() != newMaxBlockSize, "Failed to change max block size");
 
@@ -140,13 +141,13 @@ public class GovernanceTest {
             Response r = validator.proposeChangeMaxTxnSize(title, description, newMaxTxnSize, pwrj.getFeePerByte());
             errorIf(!r.isSuccess(), r.getError());
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
             byte[] transactionHash = Hex.decode(r.getTransactionHash().startsWith("0x") ? r.getTransactionHash().substring(2) : r.getTransactionHash());
             r = validator.voteOnProposal(transactionHash, (byte) 0, pwrj.getFeePerByte());
             errorIf(!r.isSuccess(), r.getError());
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
             errorIf(pwrj.getMaxTransactionSize() != newMaxTxnSize, "Failed to change max transaction size");
 
@@ -168,13 +169,13 @@ public class GovernanceTest {
             Response r = validator.proposeChangeOverallBurnPercentage(title, description, newBurnPercentage, pwrj.getFeePerByte());
             errorIf(!r.isSuccess(), r.getError());
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
             byte[] transactionHash = Hex.decode(r.getTransactionHash().startsWith("0x") ? r.getTransactionHash().substring(2) : r.getTransactionHash());
             r = validator.voteOnProposal(transactionHash, (byte) 0, pwrj.getFeePerByte());
             errorIf(!r.isSuccess(), r.getError());
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
             errorIf(pwrj.getBurnPercentage() != newBurnPercentage, "Failed to change overall burn percentage");
 
@@ -196,13 +197,13 @@ public class GovernanceTest {
             Response r = validator.proposeChangeRewardPerYear(title, description, newRewardPerYear, pwrj.getFeePerByte());
             errorIf(!r.isSuccess(), r.getError());
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
             byte[] transactionHash = Hex.decode(r.getTransactionHash().startsWith("0x") ? r.getTransactionHash().substring(2) : r.getTransactionHash());
             r = validator.voteOnProposal(transactionHash, (byte) 0, pwrj.getFeePerByte());
             errorIf(!r.isSuccess(), r.getError());
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
             errorIf(pwrj.getPwrRewardsPerYear() != newRewardPerYear, "Failed to change reward per year. Expected: " + newRewardPerYear + ", Actual: " + pwrj.getPwrRewardsPerYear());
 
@@ -224,13 +225,13 @@ public class GovernanceTest {
             Response r = validator.proposeChangeValidatorCountLimit(title, description, newValidatorCountLimit, pwrj.getFeePerByte());
             errorIf(!r.isSuccess(), r.getError());
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
             byte[] transactionHash = Hex.decode(r.getTransactionHash().startsWith("0x") ? r.getTransactionHash().substring(2) : r.getTransactionHash());
             r = validator.voteOnProposal(transactionHash, (byte) 0, pwrj.getFeePerByte());
             errorIf(!r.isSuccess(), r.getError());
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
             errorIf(pwrj.getValidatorCountLimit() != newValidatorCountLimit, "Failed to change validator count limit");
 
@@ -252,13 +253,13 @@ public class GovernanceTest {
             Response r = validator.proposeChangeValidatorJoiningFee(title, description, newJoiningFee, pwrj.getFeePerByte());
             errorIf(!r.isSuccess(), r.getError());
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
             byte[] transactionHash = Hex.decode(r.getTransactionHash().startsWith("0x") ? r.getTransactionHash().substring(2) : r.getTransactionHash());
             r = validator.voteOnProposal(transactionHash, (byte) 0, pwrj.getFeePerByte());
             errorIf(!r.isSuccess(), r.getError());
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
             errorIf(pwrj.getValidatorJoiningFee() != newJoiningFee, "Failed to change validator joining fee");
 
@@ -281,13 +282,13 @@ public class GovernanceTest {
             Response r = validator.proposeChangeVidaIdClaimingFee(title, description, newClaimingFee, pwrj.getFeePerByte());
             errorIf(!r.isSuccess(), r.getError());
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
             byte[] transactionHash = Hex.decode(r.getTransactionHash().startsWith("0x") ? r.getTransactionHash().substring(2) : r.getTransactionHash());
             r = validator.voteOnProposal(transactionHash, (byte) 0, pwrj.getFeePerByte());
             errorIf(!r.isSuccess(), r.getError());
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
             errorIf(pwrj.getVidaIdClaimingFee() != newClaimingFee, "Failed to change VIDA ID claiming fee");
 
@@ -309,13 +310,13 @@ public class GovernanceTest {
             Response r = validator.proposeChangeVmOwnerTxnFeeShare(title, description, newFeeShare, pwrj.getFeePerByte());
             errorIf(!r.isSuccess(), r.getError());
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
             byte[] transactionHash = Hex.decode(r.getTransactionHash().startsWith("0x") ? r.getTransactionHash().substring(2) : r.getTransactionHash());
             r = validator.voteOnProposal(transactionHash, (byte) 0, pwrj.getFeePerByte());
             errorIf(!r.isSuccess(), r.getError());
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
             errorIf(pwrj.getVidaOwnerTransactionFeeShare() != newFeeShare, "Failed to change VM owner transaction fee share");
 
@@ -335,7 +336,7 @@ public class GovernanceTest {
             Response r = validator.proposeOther(title, description, pwrj.getFeePerByte());
             errorIf(!r.isSuccess(), r.getError());
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
             byte[] transactionHash = Hex.decode(r.getTransactionHash().startsWith("0x") ? r.getTransactionHash().substring(2) : r.getTransactionHash());
             r = validator.voteOnProposal(transactionHash, (byte) 0, pwrj.getFeePerByte());
@@ -346,5 +347,27 @@ public class GovernanceTest {
             e.printStackTrace();
             System.err.println("Failed to create or vote on other proposal");
         }
+    }
+
+    private static void waitUntilTransactionsIsProcessed(String txnHash) throws Exception {
+        long maxTime = 5000; // 1 minute
+        long timeNow = System.currentTimeMillis();
+
+        while (System.currentTimeMillis() - timeNow < maxTime) {
+            try {
+                FalconTransaction txn = pwrj.getTransactionByHash(txnHash);
+                if(txn != null) return;
+            } catch (Exception e) {
+
+            }
+
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        throw new Exception("Transaction not processed in time");
     }
 }

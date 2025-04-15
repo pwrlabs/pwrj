@@ -109,6 +109,9 @@ public abstract class FalconTransaction {
                 //System.out.println("Identifier: " + thisInstanceIdentifier);
 
                 if(thisInstanceIdentifier == identifier) {
+//                    System.out.println("Found subclass: " + subclass.getName());
+//                    System.out.println("Identifier: " + identifier);
+//                    System.out.println(json);
                     return subclass.getDeclaredConstructor(JSONObject.class).newInstance(json);
                 }
             } catch (Exception e) {
@@ -561,26 +564,21 @@ public abstract class FalconTransaction {
     public static class GuardianApprovalTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1021;
 
-        private final List<FalconTransaction> transactions;
+        private final List<String> transactions = new ArrayList<>();
 
         public GuardianApprovalTxn(JSONObject json) {
             super(json);
-            this.transactions = new ArrayList<>();
 
             // Parse the transactions array
             JSONArray txArray = json.getJSONArray(BinaryJSONKeyMapper.TRANSACTIONS);
             for (int i = 0; i < txArray.length(); i++) {
-                JSONObject txJson = txArray.getJSONObject(i);
-                // Would need to implement a factory method to create the correct transaction type
-                // based on the identifier or type in the JSON
-                // For this example, leaving as a placeholder
-                // this.transactions.add(FalconTransactionFactory.createFromJson(txJson));
+                String txnHash = txArray.getString(i);
+                transactions.add(txnHash);
             }
         }
 
         public GuardianApprovalTxn() {
             super();
-            this.transactions = new ArrayList<>();
         }
 
         @Override
@@ -600,12 +598,13 @@ public abstract class FalconTransaction {
 
         @Override
         public JSONObject toJson() {
+            JSONArray txnArray = new JSONArray();
+            for (String txnHash : transactions) {
+                txnArray.put(txnHash);
+            }
+
             JSONObject data = super.toJson();
-            // Converting list of transactions to JSON array
-            JSONObject[] txnArray = transactions.stream()
-                    .map(FalconTransaction::toJson)
-                    .toArray(JSONObject[]::new);
-            data.put("transactions", txnArray);
+            data.put(BinaryJSONKeyMapper.TRANSACTIONS, txnArray);
             return data;
         }
     }
@@ -669,26 +668,24 @@ public abstract class FalconTransaction {
         public static final int IDENTIFIER = 1029;
 
         private final long vidaId;
-        private final List<FalconTransaction> transactions;
+        private final List<String> transactions = new ArrayList<>();
 
         public ConduitApprovalTxn(JSONObject json) {
             super(json);
+
             this.vidaId = json.getLong(BinaryJSONKeyMapper.VIDA_ID);
-            this.transactions = new ArrayList<>();
 
             // Parse the transactions array
             JSONArray txArray = json.getJSONArray(BinaryJSONKeyMapper.TRANSACTIONS);
             for (int i = 0; i < txArray.length(); i++) {
-                JSONObject txJson = txArray.getJSONObject(i);
-                // Would need to implement a factory method here as well
-                // this.transactions.add(FalconTransactionFactory.createFromJson(txJson));
+                String txnHash = txArray.getString(i);
+                transactions.add(txnHash);
             }
         }
 
         public ConduitApprovalTxn() {
             super();
             this.vidaId = 0;
-            this.transactions = new ArrayList<>();
         }
 
         @Override
@@ -708,12 +705,14 @@ public abstract class FalconTransaction {
 
         @Override
         public JSONObject toJson() {
+            JSONArray txnArray = new JSONArray();
+            for (String txnHash : transactions) {
+                txnArray.put(txnHash);
+            }
+
             JSONObject data = super.toJson();
-            data.put("vidaId", vidaId);
-            JSONObject[] txnArray = transactions.stream()
-                    .map(FalconTransaction::toJson)
-                    .toArray(JSONObject[]::new);
-            data.put("transactions", txnArray);
+            data.put(BinaryJSONKeyMapper.VIDA_ID, vidaId);
+            data.put(BinaryJSONKeyMapper.TRANSACTIONS, txnArray);
             return data;
         }
     }
@@ -821,26 +820,27 @@ public abstract class FalconTransaction {
         private final long vidaId;
         private final byte mode;
         private final int conduitThreshold;
-        private final Set<String> conduits;
-        private final Map<String, Long> vidaConduits;
+        private final Set<String> conduits = new HashSet<>();
+        private final Map<String, Long> vidaConduits = new HashMap<>();
 
         public SetConduitModeTxn(JSONObject json) {
             super(json);
+
             this.vidaId = json.getLong(BinaryJSONKeyMapper.VIDA_ID);
             this.mode = (byte) json.getInt(BinaryJSONKeyMapper.MODE);
             this.conduitThreshold = json.getInt(BinaryJSONKeyMapper.CONDUIT_THRESHOLD);
 
             // Parse the conduits set
-            JSONArray conduitArray = json.getJSONArray(BinaryJSONKeyMapper.CONDUITS);
-            this.conduits = new HashSet<>();
-            for (int i = 0; i < conduitArray.length(); i++) {
-                this.conduits.add(conduitArray.getString(i));
+            JSONArray conduitArray = json.optJSONArray(BinaryJSONKeyMapper.CONDUITS);
+            if(conduitArray != null && !conduitArray.isEmpty()) {
+                for (int i = 0; i < conduitArray.length(); i++) {
+                    this.conduits.add(conduitArray.getString(i));
+                }
             }
 
             // Parse the vidaConduits map
             JSONObject vidaConduitObj = json.optJSONObject(BinaryJSONKeyMapper.VIDA_CONDUIT_POWERS);
-            this.vidaConduits = new HashMap<>();
-            if (vidaConduitObj != null) {
+            if (vidaConduitObj != null && !vidaConduitObj.isEmpty()) {
                 for (String key : vidaConduitObj.keySet()) {
                     this.vidaConduits.put(key, vidaConduitObj.getLong(key));
                 }
@@ -852,8 +852,6 @@ public abstract class FalconTransaction {
             this.vidaId = 0;
             this.mode = 0;
             this.conduitThreshold = 0;
-            this.conduits = new HashSet<>();
-            this.vidaConduits = new HashMap<>();
         }
 
         @Override

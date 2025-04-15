@@ -1,3 +1,4 @@
+import com.github.pwrlabs.pwrj.entities.FalconTransaction;
 import com.github.pwrlabs.pwrj.protocol.PWRJ;
 import com.github.pwrlabs.pwrj.record.response.Response;
 import com.github.pwrlabs.pwrj.wallet.PWRFalconWallet;
@@ -43,7 +44,7 @@ public class GuardiansTest {
                 System.out.println("Failed to set guardian: " + r.getError());
             }
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
             BiResult<String, Long> guardian = pwrj.getGuardianOfAddress(wallet1.getAddress());
 
@@ -88,7 +89,7 @@ public class GuardiansTest {
         }
     }
 
-    public static void testRemoveGuardianAddress(PWRFalconWallet wallet1, PWRFalconWallet guardianWallet) throws IOException, InterruptedException {
+    public static void testRemoveGuardianAddress(PWRFalconWallet wallet1, PWRFalconWallet guardianWallet) throws Exception {
         byte[] txn = wallet1.getSignedRemoveGuardianTransaction(pwrj.getFeePerByte());
 
         Response r = guardianWallet.approveAsGuardian(List.of(txn), pwrj.getFeePerByte());
@@ -96,7 +97,7 @@ public class GuardiansTest {
             throw new RuntimeException(r.getError());
         }
 
-        Thread.sleep(5000);
+        waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
         BiResult<String, Long> result = pwrj.getGuardianOfAddress(wallet1.getAddress());
 
@@ -105,5 +106,27 @@ public class GuardiansTest {
         }
 
         System.out.println("Guardian removed succesfully");
+    }
+
+    private static void waitUntilTransactionsIsProcessed(String txnHash) throws Exception {
+        long maxTime = 5000; // 1 minute
+        long timeNow = System.currentTimeMillis();
+
+        while (System.currentTimeMillis() - timeNow < maxTime) {
+            try {
+                FalconTransaction txn = pwrj.getTransactionByHash(txnHash);
+                if(txn != null) return;
+            } catch (Exception e) {
+
+            }
+
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+
+        throw new Exception("Transaction not processed in time");
     }
 }

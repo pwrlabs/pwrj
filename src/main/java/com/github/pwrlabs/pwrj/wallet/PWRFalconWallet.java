@@ -256,7 +256,7 @@ public class PWRFalconWallet {
                     try {Thread.sleep(1000);} catch (InterruptedException e) {e.printStackTrace();}
                 }
 
-                if(pwrj.getNonceOfAddress(getAddress()) == 0) {
+                if(pwrj.getPublicKeyOfAddress(getAddress()) == null) {
                     return new Response(false, null, "Failed to set public key");
                 } else {
                     System.out.println("Public key set successfully");

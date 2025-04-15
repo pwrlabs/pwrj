@@ -1,4 +1,5 @@
 import com.github.pwrlabs.pwrj.Utils.Hex;
+import com.github.pwrlabs.pwrj.entities.FalconTransaction;
 import com.github.pwrlabs.pwrj.protocol.PWRJ;
 import com.github.pwrlabs.pwrj.protocol.TransactionBuilder;
 import com.github.pwrlabs.pwrj.record.response.Response;
@@ -35,9 +36,9 @@ public class ConduitsTest {
             e.printStackTrace();
         }
 
-//        testCountBasedConduits(wallet1);
-//        testVidaBasedConduits(wallet1);
-//        testValidatorBasedConduits(wallet1);
+        testCountBasedConduits(wallet1);
+        testVidaBasedConduits(wallet1);
+        testValidatorBasedConduits(wallet1);
         testActiveValidatorBasedConduits(wallet1, activeValidator);
 
     }
@@ -60,7 +61,7 @@ public class ConduitsTest {
         Response r = wallet1.claimVidaId(vidaId, pwrj.getFeePerByte());
         if(!r.isSuccess()) throw new Exception("Failed to claim vida id: " + r.getError());
 
-        Thread.sleep(5000);
+        waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
         String vidaOwner = pwrj.getOwnerOfVida(vidaId);
         if(!vidaOwner.startsWith("0x")) vidaOwner = "0x" + vidaOwner;
@@ -79,7 +80,7 @@ public class ConduitsTest {
             System.out.println("Conduits set txn sent: " + r.getTransactionHash());
         }
 
-        Thread.sleep(5000);
+        waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
         Map<ByteArrayWrapper, Long> conduitsVotingPower = pwrj.getConduitsOfVida(vidaId);
         if (conduitsVotingPower == null || conduitsVotingPower.isEmpty()) throw new Exception("Failed to get conduits of vida");
@@ -114,7 +115,7 @@ public class ConduitsTest {
         System.out.println("Vida ID: " + vidaId);
         Response r = wallet.claimVidaId(vidaId, pwrj.getFeePerByte());
         if(!r.isSuccess()) throw new Exception("Failed to claim vida id: " + r.getError());
-        Thread.sleep(5000);
+        waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
         String vidaOwner = pwrj.getOwnerOfVida(vidaId);
         if(!vidaOwner.startsWith("0x")) vidaOwner = "0x" + vidaOwner;
@@ -134,7 +135,7 @@ public class ConduitsTest {
             System.out.println("Conduits set txn sent: " + r.getTransactionHash());
         }
 
-        Thread.sleep(5000);
+        waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
         Map<ByteArrayWrapper, Long> conduitsVotingPower = pwrj.getConduitsOfVida(vidaId);
         if (conduitsVotingPower == null || conduitsVotingPower.isEmpty()) throw new Exception("Failed to get conduits of vida");
@@ -166,6 +167,8 @@ public class ConduitsTest {
             Response r = wallet.transferPWR(conduitWallet.getByteaAddress(), amountToSendToEachConduit, pwrj.getFeePerByte());
             if(!r.isSuccess()) throw new Exception("Failed to transfer PWR to conduit wallet: " + r.getError());
 
+            waitUntilTransactionsIsProcessed(r.getTransactionHash());
+
             System.out.println("Conduit wallet " + i + ": " + conduitWallet.getAddress());
 
             conduits.add(conduitWallet);
@@ -175,7 +178,7 @@ public class ConduitsTest {
             Response rr = conduit.joinAsValidator(pwrj.getFeePerByte(), generateRandomIP());
             if(!rr.isSuccess()) throw new Exception("Failed to join as validator: " + rr.getError());
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(rr.getTransactionHash());
 
             Validator v = pwrj.getValidator(conduit.getAddress());
             errorIf(v == null, "Failed to join as validator");
@@ -183,7 +186,7 @@ public class ConduitsTest {
             rr = conduit.delegate(conduit.getByteaAddress(), amountToSendToEachConduit / 2, pwrj.getFeePerByte());
             if(!rr.isSuccess()) throw new Exception("Failed to delegate: " + rr.getError());
 
-            Thread.sleep(5000);
+            waitUntilTransactionsIsProcessed(rr.getTransactionHash());
 
             long delegation = pwrj.getDelegatedPWR(conduit.getAddress(), conduit.getAddress());
             errorIf(delegation == 0, "Failed to delegate");
@@ -204,7 +207,7 @@ public class ConduitsTest {
             System.out.println("Conduits set txn sent: " + r.getTransactionHash());
         }
 
-        Thread.sleep(5000);
+        waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
         Map<ByteArrayWrapper, Long> conduitsVotingPower = pwrj.getConduitsOfVida(vidaId);
         if (conduitsVotingPower == null || conduitsVotingPower.isEmpty()) throw new Exception("Failed to get conduits of vida");
@@ -239,7 +242,7 @@ public class ConduitsTest {
             System.out.println("Conduits set txn sent: " + r.getTransactionHash());
         }
 
-        Thread.sleep(5000);
+        waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
         Map<ByteArrayWrapper, Long> conduitsVotingPower = pwrj.getConduitsOfVida(vidaId);
         if (conduitsVotingPower == null || conduitsVotingPower.isEmpty()) throw new Exception("Failed to get conduits of vida");
@@ -266,7 +269,7 @@ public class ConduitsTest {
         Response r = wallet.claimVidaId(vidaId, pwrj.getFeePerByte());
         if(!r.isSuccess()) throw new Exception("Failed to claim vida id: " + r.getError());
 
-        Thread.sleep(5000);
+        waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
         String vidaOwner = pwrj.getOwnerOfVida(vidaId);
         if(!vidaOwner.startsWith("0x")) vidaOwner = "0x" + vidaOwner;
@@ -280,7 +283,7 @@ public class ConduitsTest {
         Response r = wallet1.transferPWR(pwrj.getVidaIdAddressBytea(vidaId), 1000000000, pwrj.getFeePerByte());
         if(!r.isSuccess()) throw new Exception("Failed to fund vida: " + r.getError());
 
-        Thread.sleep(5000);
+        waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
         long vidaBalance = pwrj.getBalanceOfAddress(pwrj.getVidaIdAddress(vidaId));
         if(vidaBalance != 1000000000) throw new Exception("Failed to fund vida. Expected 1000000000, got " + vidaBalance);
@@ -296,7 +299,7 @@ public class ConduitsTest {
             if(!r.isSuccess()) throw new Exception("Failed to sign transaction: " + r.getError());
         }
 
-        Thread.sleep(5000);
+        waitUntilTransactionsIsProcessed(r.getTransactionHash());
 
         long vidaBalanceAfter = pwrj.getBalanceOfAddress(pwrj.getVidaIdAddress(vidaId));
         long receiverBalance = pwrj.getBalanceOfAddress(Hex.toHexString(receiver));
@@ -319,5 +322,30 @@ public class ConduitsTest {
     private static String generateRandomIP() {
         Random random = new Random();
         return random.nextInt(256) + "." + random.nextInt(256) + "." + random.nextInt(256) + "." + random.nextInt(256);
+    }
+
+    private static void waitUntilTransactionsIsProcessed(String txnHash) throws Exception {
+        long maxTime = 10000;
+        long timeNow = System.currentTimeMillis();
+
+        while (System.currentTimeMillis() - timeNow < maxTime) {
+            try {
+                FalconTransaction txn = pwrj.getTransactionByHash(txnHash);
+                if(txn != null) {
+                    if(txn.isSuccess()) return;
+                    else throw new Exception("Transaction failed: " + txn.getErrorMessage());
+                }
+            } catch (Exception e) {
+
+            }
+
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        
+        throw new Exception("Transaction not processed in time");
     }
 }
