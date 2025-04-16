@@ -15,7 +15,7 @@
 //    private static void giveTokensToValidator(String validator) throws IOException {
 //        if(!validator.startsWith("0x")) validator = "0x" + validator;
 //
-//        pwrj.httpGet("http://localhost:8085/giveTokensToValidatorNode/?validatorAddress=" + validator);
+//        pwrj.httpGet("http://localhost:8085/giveTokensToValidatorNode?validatorAddress=" + validator);
 //    }
 //
 //    private static String generateRandomIp() {

@@ -64,7 +64,7 @@ import com.github.pwrlabs.pwrj.*;
 
 **Set your RPC node:**
 ```java
-PWRJ.setRpcNodeUrl("https://pwrrpc.pwrlabs.io/");
+PWRJ.setRpcNodeUrl("https://pwrrpc.pwrlabs.io");
 ```
 
 **Generate a new wallet:** 

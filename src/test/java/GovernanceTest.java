@@ -17,7 +17,7 @@ public class GovernanceTest {
     // Note: The wallet initialization has changed. We need to use AsymmetricCipherKeyPair
     // instead of directly using a private key.
     private static final String PRIVATE_KEY_HEX = "1648717022721337370284939639895780772097759458487621889076665061529456636895";
-    private static final PWRJ pwrj = new PWRJ("http://localhost:8085/");
+    private static final PWRJ pwrj = new PWRJ("http://localhost:8085");
 
     public static void main(String[] args) throws Exception {
         // Create wallet with proper key pair initialization

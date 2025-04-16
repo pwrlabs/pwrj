@@ -10,6 +10,7 @@ import com.github.pwrlabs.pwrj.entities.WithdrawalOrder;
 import com.github.pwrlabs.pwrj.entities.Validator;
 import io.pwrlabs.util.encoders.BiResult;
 import io.pwrlabs.util.encoders.ByteArrayWrapper;
+import kotlin.Pair;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.http.client.config.RequestConfig;
@@ -164,7 +165,7 @@ public class PWRJ {
     public byte getChainId() {
         if(chainId == (byte)-1) {
             try {
-                JSONObject object = httpGet(rpcNodeUrl + "/chainId/");
+                JSONObject object = httpGet(rpcNodeUrl + "/chainId");
                 chainId = (byte) object.getInt("chainId");
             } catch (Exception e) {
                 throw new RuntimeException("Failed to get chain ID from the RPC node: " + e.getMessage());
@@ -184,11 +185,11 @@ public class PWRJ {
      * @return The fee-per-byte rate.
      */
     public long getFeePerByte() throws IOException {
-        return httpGet(rpcNodeUrl + "/feePerByte/").getLong("feePerByte");
+        return httpGet(rpcNodeUrl + "/feePerByte").getLong("feePerByte");
     }
 
     public short getBlockchainVersion() throws IOException {
-        return (short) httpGet(rpcNodeUrl + "/blockchainVersion/").getInt("blockchainVersion");
+        return (short) httpGet(rpcNodeUrl + "/blockchainVersion").getInt("blockchainVersion");
     }
 
 
@@ -218,7 +219,7 @@ public class PWRJ {
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
     public int getNonceOfAddress(String address) throws IOException {
-        return httpGet(rpcNodeUrl + "/nonceOfUser/?userAddress=" + address).getInt("nonce");
+        return httpGet(rpcNodeUrl + "/nonceOfUser?userAddress=" + address).getInt("nonce");
     }
 
     /**
@@ -234,7 +235,7 @@ public class PWRJ {
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
     public long getBalanceOfAddress(String address) throws IOException {
-        return httpGet(rpcNodeUrl + "/balanceOf/?userAddress=" + address).getLong("balance");
+        return httpGet(rpcNodeUrl + "/balanceOf?userAddress=" + address).getLong("balance");
     }
 
     /**
@@ -246,7 +247,7 @@ public class PWRJ {
      * @throws IOException If there is an error during the HTTP request to the RPC node
      */
     public BiResult<String, Long> getGuardianOfAddress(String address) throws IOException {
-        JSONObject object = httpGet(rpcNodeUrl + "/guardianOf/?userAddress=" + address);
+        JSONObject object = httpGet(rpcNodeUrl + "/guardianOf?userAddress=" + address);
 
         if(object.getBoolean("isGuarded")) {
             return new BiResult<>(object.getString("guardian"), object.getLong("expiryDate"));
@@ -268,83 +269,83 @@ public class PWRJ {
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
     public long getBlocksCount() throws IOException {
-        return httpGet(rpcNodeUrl + "/blocksCount/").getLong("blocksCount");
+        return httpGet(rpcNodeUrl + "/blocksCount").getLong("blocksCount");
     }
 
     public int getMaxBlockSize() throws IOException {
-        return httpGet(rpcNodeUrl + "/maxBlockSize/").getInt("maxBlockSize");
+        return httpGet(rpcNodeUrl + "/maxBlockSize").getInt("maxBlockSize");
     }
 
     public int getMaxTransactionSize() throws IOException {
-        return httpGet(rpcNodeUrl + "/maxTransactionSize/").getInt("maxTransactionSize");
+        return httpGet(rpcNodeUrl + "/maxTransactionSize").getInt("maxTransactionSize");
     }
 
     public int getValidatorCountLimit() throws IOException {
-        return httpGet(rpcNodeUrl + "/validatorCountLimit/").getInt("validatorCountLimit");
+        return httpGet(rpcNodeUrl + "/validatorCountLimit").getInt("validatorCountLimit");
     }
 
     public int getValidatorSlashingFee() throws IOException {
-        return httpGet(rpcNodeUrl + "/validatorSlashingFee/").getInt("validatorSlashingFee");
+        return httpGet(rpcNodeUrl + "/validatorSlashingFee").getInt("validatorSlashingFee");
     }
 
     public int getVidaOwnerTransactionFeeShare() throws IOException {
-        return httpGet(rpcNodeUrl + "/vmOwnerTransactionFeeShare/").getInt("vmOwnerTransactionFeeShare");
+        return httpGet(rpcNodeUrl + "/vmOwnerTransactionFeeShare").getInt("vmOwnerTransactionFeeShare");
     }
 
     public int getBurnPercentage() throws IOException {
-        return httpGet(rpcNodeUrl + "/burnPercentage/").getInt("burnPercentage");
+        return httpGet(rpcNodeUrl + "/burnPercentage").getInt("burnPercentage");
     }
 
     public int getValidatorOperationalFee() throws IOException {
-        return httpGet(rpcNodeUrl + "/validatorOperationalFee/").getInt("validatorOperationalFee");
+        return httpGet(rpcNodeUrl + "/validatorOperationalFee").getInt("validatorOperationalFee");
     }
 
     public long getBlockNumber() throws IOException {
-        return httpGet(rpcNodeUrl + "/blockNumber/").getLong("blockNumber");
+        return httpGet(rpcNodeUrl + "/blockNumber").getLong("blockNumber");
     }
 
     public long getBlockTimestamp() throws IOException {
-        return httpGet(rpcNodeUrl + "/blockTimestamp/").getLong("blockTimestamp");
+        return httpGet(rpcNodeUrl + "/blockTimestamp").getLong("blockTimestamp");
     }
 
     public long getTotalVotingPower() throws IOException {
-        return httpGet(rpcNodeUrl + "/totalVotingPower/").getLong("totalVotingPower");
+        return httpGet(rpcNodeUrl + "/totalVotingPower").getLong("totalVotingPower");
     }
 
     public long getPwrRewardsPerYear() throws IOException {
-        return httpGet(rpcNodeUrl + "/pwrRewardsPerYear/").getLong("pwrRewardsPerYear");
+        return httpGet(rpcNodeUrl + "/pwrRewardsPerYear").getLong("pwrRewardsPerYear");
     }
 
     public long getWithdrawalLockTime() throws IOException {
-        return httpGet(rpcNodeUrl + "/withdrawalLockTime/").getLong("withdrawalLockTime");
+        return httpGet(rpcNodeUrl + "/withdrawalLockTime").getLong("withdrawalLockTime");
     }
 
     public long getValidatorJoiningFee() throws IOException {
-        return httpGet(rpcNodeUrl + "/validatorJoiningFee/").getLong("validatorJoiningFee");
+        return httpGet(rpcNodeUrl + "/validatorJoiningFee").getLong("validatorJoiningFee");
     }
 
     public long getMaxGuardianTime() throws IOException {
-        return httpGet(rpcNodeUrl + "/maxGuardianTime/").getLong("maxGuardianTime");
+        return httpGet(rpcNodeUrl + "/maxGuardianTime").getLong("maxGuardianTime");
     }
 
     public long getVidaIdClaimingFee() throws IOException {
-        return httpGet(rpcNodeUrl + "/vidaIdClaimingFee/").getLong("vidaIdClaimingFee");
+        return httpGet(rpcNodeUrl + "/vidaIdClaimingFee").getLong("vidaIdClaimingFee");
     }
 
     public long getProposalFee() throws IOException {
-        return httpGet(rpcNodeUrl + "/proposalFee/").getLong("proposalFee");
+        return httpGet(rpcNodeUrl + "/proposalFee").getLong("proposalFee");
     }
 
     public long getProposalValidityTime() throws IOException {
-        return httpGet(rpcNodeUrl + "/proposalValidityTime/").getLong("proposalValidityTime");
+        return httpGet(rpcNodeUrl + "/proposalValidityTime").getLong("proposalValidityTime");
     }
 
     public long getMinimumDelegatingAmount() throws IOException {
-        return httpGet(rpcNodeUrl + "/minimumDelegatingAmount/").getLong("minimumDelegatingAmount");
+        return httpGet(rpcNodeUrl + "/minimumDelegatingAmount").getLong("minimumDelegatingAmount");
     }
 
     public long getEcdsaVerificationFee() throws IOException {
-        return httpGet(rpcNodeUrl + "/ecdsaVerificationFee/").getLong("ecdsaVerificationFee");
+        return httpGet(rpcNodeUrl + "/ecdsaVerificationFee").getLong("ecdsaVerificationFee");
     }
 
     /**
@@ -375,15 +376,27 @@ public class PWRJ {
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
     public Block getBlockByNumber(long blockNumber) throws Exception {
-        return new Block(httpGet(rpcNodeUrl + "/block/?blockNumber=" + blockNumber).getJSONObject("block"));
+        return new Block(httpGet(rpcNodeUrl + "/block?blockNumber=" + blockNumber).getJSONObject("block"));
     }
 
-    public Block getBlockWithViDataTransactionsOnly(long blockNumber, long vmId) throws Exception {
-        return new Block(httpGet(rpcNodeUrl + "/blockWithVmDataTransactionsOnly/?blockNumber=" + blockNumber + "&vmId=" + vmId).getJSONObject("block"));
+    public BiResult<Block, List<FalconTransaction>> getBlockWithViDataTransactionsOnly(long blockNumber, long vmId) throws Exception {
+        JSONObject object = httpGet(rpcNodeUrl + "/blockWithVmDataTransactions?blockNumber=" + blockNumber + "&vmId=" + vmId);
+
+        Block block = new Block(object.getJSONObject("block"));
+        JSONArray transactionsArray = object.getJSONArray("transactions");
+
+        List<FalconTransaction> transactions = new ArrayList<>();
+        for (int i = 0; i < transactionsArray.length(); i++) {
+            JSONObject transactionObject = transactionsArray.getJSONObject(i);
+            FalconTransaction transaction = FalconTransaction.fromJson(transactionObject);
+            transactions.add(transaction);
+        }
+
+        return new BiResult<>(block, transactions);
     }
 
     public FalconTransaction getTransactionByHash(String hash) throws Exception {
-        JSONObject object = httpGet(rpcNodeUrl + "/transactionByHash/?transactionHash=" + hash).getJSONObject("transaction");
+        JSONObject object = httpGet(rpcNodeUrl + "/transactionByHash?transactionHash=" + hash).getJSONObject("transaction");
         return FalconTransaction.fromJson(object);
     }
 
@@ -406,11 +419,11 @@ public class PWRJ {
     }
 
     public String getProposalStatus(String proposalHash) throws IOException {
-        return httpGet(rpcNodeUrl + "/proposalStatus/?proposalHash=" + proposalHash).getString("status");
+        return httpGet(rpcNodeUrl + "/proposalStatus?proposalHash=" + proposalHash).getString("status");
     }
 
     public FalconTransaction.PayableVidaDataTxn[] getVidaDataTransactions(long startingBlock, long endingBlock, long vidaId) throws IOException {
-        JSONObject object = httpGet(rpcNodeUrl + "/getVidaTransactions/?startingBlock=" + startingBlock + "&endingBlock=" + endingBlock + "&vidaId=" + vidaId);
+        JSONObject object = httpGet(rpcNodeUrl + "/getVidaTransactions?startingBlock=" + startingBlock + "&endingBlock=" + endingBlock + "&vidaId=" + vidaId);
 
         JSONArray Transactions = object.getJSONArray("transactions");
         FalconTransaction.PayableVidaDataTxn[] TransactionsArray = new FalconTransaction.PayableVidaDataTxn[Transactions.length()];
@@ -424,7 +437,7 @@ public class PWRJ {
     }
 
     public FalconTransaction.PayableVidaDataTxn[] getVidaDataTransactionsFilterByBytePrefix(long startingBlock, long endingBlock, long vidaId, byte[] prefix) throws IOException {
-        JSONObject object = httpGet(rpcNodeUrl + "/getVmTransactionsSortByBytePrefix/?startingBlock=" + startingBlock + "&endingBlock=" + endingBlock + "&vidaId=" + vidaId + "&bytePrefix=" + Hex.toHexString(prefix));
+        JSONObject object = httpGet(rpcNodeUrl + "/getVmTransactionsSortByBytePrefix?startingBlock=" + startingBlock + "&endingBlock=" + endingBlock + "&vidaId=" + vidaId + "&bytePrefix=" + Hex.toHexString(prefix));
 
         JSONArray Transactions = object.getJSONArray("transactions");
         FalconTransaction.PayableVidaDataTxn[] TransactionsArray = new FalconTransaction.PayableVidaDataTxn[Transactions.length()];
@@ -438,7 +451,7 @@ public class PWRJ {
     }
 
     public TransactionForGuardianApproval isTransactionValidForGuardianApproval(String transaction) throws Exception {
-        JSONObject object = httpPost(rpcNodeUrl + "/isTransactionValidForGuardianApproval/", new JSONObject().put("transaction", transaction));
+        JSONObject object = httpPost(rpcNodeUrl + "/isTransactionValidForGuardianApproval", new JSONObject().put("transaction", transaction));
 
         boolean valid = object.getBoolean("valid");
         if(valid) {
@@ -460,7 +473,7 @@ public class PWRJ {
         return isTransactionValidForGuardianApproval(Hex.toHexString(Transaction));
     }
     public long getActiveVotingPower() throws IOException {
-        return httpGet(rpcNodeUrl + "/activeVotingPower/").getLong("activeVotingPower");
+        return httpGet(rpcNodeUrl + "/activeVotingPower").getLong("activeVotingPower");
     }
 
     /**
@@ -475,7 +488,7 @@ public class PWRJ {
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
     public int getTotalValidatorsCount() throws IOException {
-        return httpGet(rpcNodeUrl + "/totalValidatorsCount/").getInt("validatorsCount");
+        return httpGet(rpcNodeUrl + "/totalValidatorsCount").getInt("validatorsCount");
     }
 
     /**
@@ -490,7 +503,7 @@ public class PWRJ {
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
     public int getStandbyValidatorsCount() throws IOException {
-        return httpGet(rpcNodeUrl + "/standbyValidatorsCount/").getInt("validatorsCount");
+        return httpGet(rpcNodeUrl + "/standbyValidatorsCount").getInt("validatorsCount");
     }
 
     /**
@@ -505,7 +518,7 @@ public class PWRJ {
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
     public int getActiveValidatorsCount() throws IOException {
-        return httpGet(rpcNodeUrl + "/activeValidatorsCount/").getInt("validatorsCount");
+        return httpGet(rpcNodeUrl + "/activeValidatorsCount").getInt("validatorsCount");
     }
 
     /**
@@ -517,7 +530,7 @@ public class PWRJ {
      * @return The total number of delegators.
      */
     public int getTotalDelegatorsCount() throws IOException {
-        return httpGet(rpcNodeUrl + "/totalDelegatorsCount/").getInt("delegatorsCount");
+        return httpGet(rpcNodeUrl + "/totalDelegatorsCount").getInt("delegatorsCount");
     }
 
     /**
@@ -532,7 +545,7 @@ public class PWRJ {
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
     public List<Validator> getAllValidators() throws IOException {
-        JSONObject object = httpGet(rpcNodeUrl + "/allValidators/");
+        JSONObject object = httpGet(rpcNodeUrl + "/allValidators");
         JSONArray validators = object.getJSONArray("validators");
         List<Validator> validatorsList = new ArrayList<>();
 
@@ -586,7 +599,7 @@ public class PWRJ {
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
     public List<Validator> getStandbyValidators() throws IOException {
-        JSONObject object = httpGet(rpcNodeUrl + "/standbyValidators/");
+        JSONObject object = httpGet(rpcNodeUrl + "/standbyValidators");
         JSONArray validators = object.getJSONArray("validators");
         List<Validator> validatorsList = new ArrayList<>();
 
@@ -640,7 +653,7 @@ public class PWRJ {
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
     public List<Validator> getActiveValidators() throws IOException {
-        JSONObject object = httpGet(rpcNodeUrl + "/activeValidators/");
+        JSONObject object = httpGet(rpcNodeUrl + "/activeValidators");
         JSONArray validators = object.getJSONArray("validators");
         List<Validator> validatorsList = new ArrayList<>();
 
@@ -683,7 +696,7 @@ public class PWRJ {
     }
 
     public List<Validator> getDelegatees(String address) throws IOException {
-        JSONObject object = httpGet(rpcNodeUrl + "/delegateesOfUser/?userAddress=" + address);
+        JSONObject object = httpGet(rpcNodeUrl + "/delegateesOfUser?userAddress=" + address);
         System.out.println(object);
         JSONArray validators = object.getJSONArray("validators");
         List<Validator> validatorsList = new ArrayList<>();
@@ -707,7 +720,7 @@ public class PWRJ {
     }
 
     public Validator getValidator(String validatorAddress) throws IOException {
-        JSONObject object = httpGet(rpcNodeUrl + "/validator/?validatorAddress=" + validatorAddress);
+        JSONObject object = httpGet(rpcNodeUrl + "/validator?validatorAddress=" + validatorAddress);
         JSONObject validatorObject = object.getJSONObject("validator");
         Validator validator = Validator.builder()
                 .address(validatorObject.optString("address", "0x"))
@@ -723,15 +736,15 @@ public class PWRJ {
     }
 
     public long getDelegatedPWR(String delegatorAddress, String validatorAddress) throws IOException {
-        return httpGet(rpcNodeUrl + "/validator/delegator/delegatedPWROfAddress/?userAddress=" + delegatorAddress + "&validatorAddress=" + validatorAddress).getLong("delegatedPWR");
+        return httpGet(rpcNodeUrl + "/validator/delegator/delegatedPWROfAddress?userAddress=" + delegatorAddress + "&validatorAddress=" + validatorAddress).getLong("delegatedPWR");
     }
 
     public long getSharesOfDelegator(String delegatorAddress, String validatorAddress) throws IOException {
-        return httpGet(rpcNodeUrl + "/validator/delegator/sharesOfAddress/?userAddress=" + delegatorAddress + "&validatorAddress=" + validatorAddress).getLong("shares");
+        return httpGet(rpcNodeUrl + "/validator/delegator/sharesOfAddress?userAddress=" + delegatorAddress + "&validatorAddress=" + validatorAddress).getLong("shares");
     }
 
     public BigDecimal getShareValue(String validator) throws IOException {
-        return httpGet(rpcNodeUrl + "/validator/shareValue/?validatorAddress=" + validator).getBigDecimal("shareValue");
+        return httpGet(rpcNodeUrl + "/validator/shareValue?validatorAddress=" + validator).getBigDecimal("shareValue");
     }
 
 
@@ -747,7 +760,7 @@ public class PWRJ {
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
     public String getOwnerOfVida(long vidaId) throws IOException {
-        JSONObject response = httpGet(rpcNodeUrl + "/ownerOfVidaId/?vidaId=" + vidaId);
+        JSONObject response = httpGet(rpcNodeUrl + "/ownerOfVidaId?vidaId=" + vidaId);
 
         if(response.optBoolean("claimed", false)) {
             return response.getString("owner");
@@ -793,7 +806,7 @@ public class PWRJ {
 
     public Boolean isVidaPrivate(long vidaId) {
         try {
-            JSONObject response = httpGet(rpcNodeUrl + "/isVidaPrivate/?vidaId=" + vidaId);
+            JSONObject response = httpGet(rpcNodeUrl + "/isVidaPrivate?vidaId=" + vidaId);
             return response.getBoolean("isPrivate");
         } catch (Exception e) {
             e.printStackTrace();
@@ -839,11 +852,11 @@ public class PWRJ {
     }
 
     public boolean areConduitsAllowedToTransferPWRFromVida(long vidaId) throws IOException {
-        return httpGet(rpcNodeUrl + "/areConduitsAllowedToTransferPWRFromVida/?vidaId=" + vidaId).getBoolean("allowed");
+        return httpGet(rpcNodeUrl + "/areConduitsAllowedToTransferPWRFromVida?vidaId=" + vidaId).getBoolean("allowed");
     }
 
     public EarlyWithdrawPenaltyResponse getEarlyWithdrawPenalty(long withdrawTime) throws IOException {
-        JSONObject response = httpGet(rpcNodeUrl + "/earlyWithdrawPenalty/?withdrawTime=" + withdrawTime);
+        JSONObject response = httpGet(rpcNodeUrl + "/earlyWithdrawPenalty?withdrawTime=" + withdrawTime);
 
         boolean earlyWithdrawAvailable = response.getBoolean("earlyWithdrawAvailable");
         long penalty = earlyWithdrawAvailable ? response.getLong("penalty") : 0;
@@ -852,7 +865,7 @@ public class PWRJ {
     }
 
     public Map<Long, Long> getAllEarlyWithdrawPenalties() throws IOException {
-        JSONObject response = httpGet(rpcNodeUrl + "/allEarlyWithdrawPenalties/");
+        JSONObject response = httpGet(rpcNodeUrl + "/allEarlyWithdrawPenalties");
 
         JSONObject penaltiesObj = response.getJSONObject("earlyWithdrawPenalties");
         Map<Long, Long> penalties = new HashMap<>();
@@ -902,7 +915,7 @@ public class PWRJ {
             // Create HttpClient with the timeout
             CloseableHttpClient client = HttpClientBuilder.create().setDefaultRequestConfig(config).build();
 
-            HttpPost postRequest = new HttpPost(rpcNodeUrl + "/broadcast/");
+            HttpPost postRequest = new HttpPost(rpcNodeUrl + "/broadcast");
 
             JSONObject json = new JSONObject();
             json.put("transaction", Hex.toHexString(transaction));

@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class GuardiansTest {
-    private static final PWRJ pwrj = new PWRJ("http://localhost:8085/");
+    private static final PWRJ pwrj = new PWRJ("http://46.101.151.203:8085");
 
     public static void main(String[] args) {
         System.out.println(Long.MAX_VALUE);
@@ -29,6 +29,7 @@ public class GuardiansTest {
             testSettingGuardian(wallet1, guardianWallet);
             testSendingAGuardedTransaction(wallet1, guardianWallet);
             testRemoveGuardianAddress(wallet1, guardianWallet);
+            System.out.println("Test completed successfully");
         } catch (Exception e) {
             e.printStackTrace();
         }

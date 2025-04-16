@@ -11,7 +11,7 @@ import java.math.BigInteger;
 import java.util.List;
 
 public class ValidatorAndDelegationTest {
-    private static final PWRJ pwrj = new PWRJ("http://localhost:8085/");
+    private static final PWRJ pwrj = new PWRJ("http://localhost:8085");
     private static long amountToDelegate;
 
     public static void main(String[] args) {

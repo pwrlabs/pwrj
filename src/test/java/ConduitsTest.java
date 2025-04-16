@@ -12,7 +12,7 @@ import java.util.*;
 import static com.github.pwrlabs.pwrj.Utils.NewError.errorIf;
 
 public class ConduitsTest {
-    private static final PWRJ pwrj = new PWRJ("http://localhost:8085/");
+    private static final PWRJ pwrj = new PWRJ("http://localhost:8085");
     private static final long amountToSendToEachConduit = 10000000000L;
 
     public enum ConduitMode {

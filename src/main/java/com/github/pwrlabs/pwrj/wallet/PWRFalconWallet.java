@@ -1045,7 +1045,7 @@ public class PWRFalconWallet {
     }
 
     public static void main(String[] args) {
-        PWRJ prj = new PWRJ("https://pwrrpc.pwrlabs.io/");
+        PWRJ prj = new PWRJ("https://pwrrpc.pwrlabs.io");
         PWRFalconWallet wallet = new PWRFalconWallet(prj);
 //
 //        int longestSignatureSize = 0;

@@ -38,7 +38,7 @@ public class Validator {
         try {
             HttpClient client = HttpClients.createDefault();
 
-            HttpGet request = new HttpGet(pwrj.getRpcNodeUrl() + "/validator/delegatorsOfValidator/?validatorAddress=0x" + address);
+            HttpGet request = new HttpGet(pwrj.getRpcNodeUrl() + "/validator/delegatorsOfValidator?validatorAddress=0x" + address);
             HttpResponse response = client.execute(request);
 
             //System.out.printf(EntityUtils.toString(response.getEntity()));
