@@ -380,7 +380,7 @@ public class PWRJ {
     }
 
     public BiResult<Block, List<FalconTransaction>> getBlockWithViDataTransactionsOnly(long blockNumber, long vmId) throws Exception {
-        JSONObject object = httpGet(rpcNodeUrl + "/blockWithVmDataTransactions?blockNumber=" + blockNumber + "&vmId=" + vmId);
+        JSONObject object = httpGet(rpcNodeUrl + "/blockWithVidaDataTransactions?blockNumber=" + blockNumber + "&vmId=" + vmId);
 
         Block block = new Block(object.getJSONObject("block"));
         JSONArray transactionsArray = object.getJSONArray("transactions");
@@ -437,7 +437,7 @@ public class PWRJ {
     }
 
     public FalconTransaction.PayableVidaDataTxn[] getVidaDataTransactionsFilterByBytePrefix(long startingBlock, long endingBlock, long vidaId, byte[] prefix) throws IOException {
-        JSONObject object = httpGet(rpcNodeUrl + "/getVmTransactionsSortByBytePrefix?startingBlock=" + startingBlock + "&endingBlock=" + endingBlock + "&vidaId=" + vidaId + "&bytePrefix=" + Hex.toHexString(prefix));
+        JSONObject object = httpGet(rpcNodeUrl + "/getVidaTransactionsSortByBytePrefix?startingBlock=" + startingBlock + "&endingBlock=" + endingBlock + "&vidaId=" + vidaId + "&bytePrefix=" + Hex.toHexString(prefix));
 
         JSONArray Transactions = object.getJSONArray("transactions");
         FalconTransaction.PayableVidaDataTxn[] TransactionsArray = new FalconTransaction.PayableVidaDataTxn[Transactions.length()];
