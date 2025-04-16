@@ -36,10 +36,12 @@ public class Block {
         this.proposer = blockJson.getString(BinaryJSONKeyMapper.PROPOSER);
         this.processedWithoutCriticalErrors = blockJson.getBoolean(BinaryJSONKeyMapper.PROCESS_WITHOUT_CRITICAL_ERRORS);
 
-        JSONArray transactionHashJson = blockJson.getJSONArray(BinaryJSONKeyMapper.TRANSACTIONS);
-        for (int i = 0; i < transactionHashJson.length(); i++) {
-            JSONObject txnInfo = transactionHashJson.getJSONObject(i);
-            this.transactionHashes.add(txnInfo.getString(BinaryJSONKeyMapper.TRANSACTION_HASH));
+        JSONArray transactionHashJson = blockJson.optJSONArray(BinaryJSONKeyMapper.TRANSACTIONS);
+        if(transactionHashJson != null && !transactionHashJson.isEmpty()) {
+            for (int i = 0; i < transactionHashJson.length(); i++) {
+                JSONObject txnInfo = transactionHashJson.getJSONObject(i);
+                this.transactionHashes.add(txnInfo.getString(BinaryJSONKeyMapper.TRANSACTION_HASH));
+            }
         }
     }
 
