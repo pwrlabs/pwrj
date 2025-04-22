@@ -373,12 +373,14 @@ public abstract class FalconTransaction {
         private final String validator;
         private final BigInteger sharesAmount;
         private final long withdrawnPwr;
+        private final long remainingDelegatedPWR;
 
         public WithdrawTxn(JSONObject json) {
             super(json);
             this.validator = json.getString(BinaryJSONKeyMapper.VALIDATOR_ADDRESS);
             this.sharesAmount = new BigInteger(json.getString(BinaryJSONKeyMapper.SHARES_AMOUNT));
             this.withdrawnPwr = json.getLong(BinaryJSONKeyMapper.WITHDRAWN_PWR);
+            this.remainingDelegatedPWR = json.getLong(BinaryJSONKeyMapper.REMAINING_DELEGATED_PWR);
         }
 
         public WithdrawTxn() {
@@ -386,6 +388,7 @@ public abstract class FalconTransaction {
             this.validator = null;
             this.sharesAmount = BigInteger.ZERO;
             this.withdrawnPwr = 0;
+            this.remainingDelegatedPWR = 0;
         }
 
         @Override
@@ -777,6 +780,7 @@ public abstract class FalconTransaction {
         private final String toValidator;
         private final BigInteger sharesAmount;
         private final long pwrAmount;
+        private final long remainingDelegatedPWR;
 
         public MoveStakeTxn(JSONObject json) {
             super(json);
@@ -784,6 +788,7 @@ public abstract class FalconTransaction {
             this.toValidator = json.getString(BinaryJSONKeyMapper.TO_VALIDATOR_ADDRESS);
             this.sharesAmount = new BigInteger(json.getString(BinaryJSONKeyMapper.SHARES_AMOUNT));
             this.pwrAmount = json.getLong(BinaryJSONKeyMapper.AMOUNT);
+            this.remainingDelegatedPWR = json.getLong(BinaryJSONKeyMapper.REMAINING_DELEGATED_PWR);
         }
 
         public MoveStakeTxn() {
@@ -792,6 +797,7 @@ public abstract class FalconTransaction {
             this.toValidator = null;
             this.sharesAmount = BigInteger.ZERO;
             this.pwrAmount = 0;
+            this.remainingDelegatedPWR = 0;
         }
 
         @Override
