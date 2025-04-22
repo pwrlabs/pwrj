@@ -773,12 +773,14 @@ public abstract class FalconTransaction {
         private final String fromValidator;
         private final String toValidator;
         private final BigInteger sharesAmount;
+        private final long pwrAmount;
 
         public MoveStakeTxn(JSONObject json) {
             super(json);
             this.fromValidator = json.getString(BinaryJSONKeyMapper.FROM_VALIDATOR_ADDRESS);
             this.toValidator = json.getString(BinaryJSONKeyMapper.TO_VALIDATOR_ADDRESS);
             this.sharesAmount = new BigInteger(json.getString(BinaryJSONKeyMapper.SHARES_AMOUNT));
+            this.pwrAmount = json.getLong(BinaryJSONKeyMapper.AMOUNT);
         }
 
         public MoveStakeTxn() {
@@ -786,6 +788,7 @@ public abstract class FalconTransaction {
             this.fromValidator = null;
             this.toValidator = null;
             this.sharesAmount = BigInteger.ZERO;
+            this.pwrAmount = 0;
         }
 
         @Override
