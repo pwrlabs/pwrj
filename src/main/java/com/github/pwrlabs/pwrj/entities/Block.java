@@ -5,6 +5,7 @@ import lombok.Getter;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +21,7 @@ public class Block {
     private final String previousBlockHash;
     private final String rootHash;
     private final String proposer;
+    private final BigInteger newSharesPerSpark;
     private List<String> transactionHashes = new ArrayList<>();
     private final boolean processedWithoutCriticalErrors;
 
@@ -34,6 +36,7 @@ public class Block {
         this.previousBlockHash = blockJson.getString(BinaryJSONKeyMapper.PREVIOUS_BLOCK_HASH);
         this.rootHash = blockJson.getString(BinaryJSONKeyMapper.ROOT_HASH);
         this.proposer = blockJson.getString(BinaryJSONKeyMapper.PROPOSER);
+        this.newSharesPerSpark = blockJson.getBigInteger(BinaryJSONKeyMapper.NEW_SHARES_PER_SPARK);
         this.processedWithoutCriticalErrors = blockJson.getBoolean(BinaryJSONKeyMapper.PROCESS_WITHOUT_CRITICAL_ERRORS);
 
         JSONArray transactionHashJson = blockJson.optJSONArray(BinaryJSONKeyMapper.TRANSACTIONS);
