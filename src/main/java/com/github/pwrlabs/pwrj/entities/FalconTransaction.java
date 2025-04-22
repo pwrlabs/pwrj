@@ -372,17 +372,20 @@ public abstract class FalconTransaction {
 
         private final String validator;
         private final BigInteger sharesAmount;
+        private final long withdrawnPwr;
 
         public WithdrawTxn(JSONObject json) {
             super(json);
             this.validator = json.getString(BinaryJSONKeyMapper.VALIDATOR_ADDRESS);
             this.sharesAmount = new BigInteger(json.getString(BinaryJSONKeyMapper.SHARES_AMOUNT));
+            this.withdrawnPwr = json.getLong(BinaryJSONKeyMapper.WITHDRAWN_PWR);
         }
 
         public WithdrawTxn() {
             super();
             this.validator = null;
             this.sharesAmount = BigInteger.ZERO;
+            this.withdrawnPwr = 0;
         }
 
         @Override
