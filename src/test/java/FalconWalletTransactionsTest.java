@@ -18,7 +18,7 @@ import org.w3c.dom.ls.LSInput;
 //this class is for testing all transactions on PWR Chain
 //It's focused on testing the transactions and the soundness of their execution
 public class FalconWalletTransactionsTest {
-    private static final PWRJ pwrj = new PWRJ("http://localhost:8085");
+    private static final PWRJ pwrj = new PWRJ("http://46.101.151.203:8085");
     private static final int SLEEP_TIME_AFTER_SENDING_TXNS = 6000;
 
     public static void main(String[] args) {

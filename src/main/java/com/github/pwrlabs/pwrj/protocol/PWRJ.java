@@ -890,6 +890,40 @@ public class PWRJ {
     }
 
     /**
+     * Retrieves transactions from a specific block that match the provided identifiers.
+     *
+     * @param blockNumber The block number to retrieve transactions from
+     * @param identifiers A list of transaction identifiers to filter by
+     * @return A pair containing the Block object and the list of matching FalconTransaction objects
+     * @throws IOException If there's an issue with the network or stream handling
+     * @throws Exception If there's an error parsing the response
+     */
+    public BiResult<Block, List<FalconTransaction>> getTransactionsByIdentifiers(long blockNumber, List<Integer> identifiers) throws Exception {
+        JSONObject body = new JSONObject();
+        body.put("blockNumber", blockNumber);
+
+        JSONArray identifiersArray = new JSONArray();
+        for (Integer identifier : identifiers) {
+            identifiersArray.put(identifier);
+        }
+        body.put("identifiers", identifiersArray);
+
+        JSONObject response = httpPost(rpcNodeUrl + "/getTransactionsByIdentifiers", body);
+
+        Block block = new Block(response.getJSONObject("block"));
+        JSONArray transactionsArray = response.getJSONArray("transactions");
+
+        List<FalconTransaction> transactions = new ArrayList<>();
+        for (int i = 0; i < transactionsArray.length(); i++) {
+            JSONObject transactionObject = transactionsArray.getJSONObject(i);
+            FalconTransaction transaction = FalconTransaction.fromJson(transactionObject);
+            transactions.add(transaction);
+        }
+
+        return new BiResult<>(block, transactions);
+    }
+
+    /**
      * Broadcasts a transaction to the network via a specified RPC node.
      *
      * <p>This method serializes the provided transaction as a hex string and sends
@@ -960,5 +994,4 @@ public class PWRJ {
     public VidaTransactionSubscription subscribeToVidaTransactions(PWRJ pwrj, long vidaId, long startingBlock, VidaTransactionHandler handler) throws IOException {
         return subscribeToVidaTransactions(pwrj, vidaId, startingBlock, handler, 100);
     }
-
 }
