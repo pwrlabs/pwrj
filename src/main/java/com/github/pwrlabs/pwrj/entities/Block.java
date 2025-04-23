@@ -12,7 +12,7 @@ import java.util.List;
 @Getter
 public class Block {
     private final long blockNumber;
-    private final long timeStamp;
+    private final long timestamp;
     private final long blockReward;
     private final long burnedFees;
     private final int blockSize;
@@ -27,7 +27,7 @@ public class Block {
 
     public Block(JSONObject blockJson) {
         this.blockNumber = blockJson.getLong(BinaryJSONKeyMapper.BLOCK_NUMBER);
-        this.timeStamp = blockJson.getLong(BinaryJSONKeyMapper.TIME_STAMP);
+        this.timestamp = blockJson.getLong(BinaryJSONKeyMapper.TIME_STAMP);
         this.blockReward = blockJson.getLong(BinaryJSONKeyMapper.BLOCK_REWARD);
         this.burnedFees = blockJson.getLong(BinaryJSONKeyMapper.BURNED_FEES);
         this.blockSize = blockJson.getInt(BinaryJSONKeyMapper.SIZE);
