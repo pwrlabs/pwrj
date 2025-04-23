@@ -379,17 +379,22 @@ public class PWRJ {
         return new Block(httpGet(rpcNodeUrl + "/block?blockNumber=" + blockNumber).getJSONObject("block"));
     }
 
-    public BiResult<Block, List<FalconTransaction>> getBlockWithViDataTransactionsOnly(long blockNumber, long vmId) throws Exception {
+    public BiResult<Block, List<FalconTransaction.PayableVidaDataTxn>> getBlockWithViDataTransactionsOnly(long blockNumber, long vmId) throws Exception {
         JSONObject object = httpGet(rpcNodeUrl + "/blockWithVidaDataTransactions?blockNumber=" + blockNumber + "&vmId=" + vmId);
 
         Block block = new Block(object.getJSONObject("block"));
         JSONArray transactionsArray = object.getJSONArray("transactions");
 
-        List<FalconTransaction> transactions = new ArrayList<>();
+        List<FalconTransaction.PayableVidaDataTxn> transactions = new ArrayList<>();
         for (int i = 0; i < transactionsArray.length(); i++) {
             JSONObject transactionObject = transactionsArray.getJSONObject(i);
             FalconTransaction transaction = FalconTransaction.fromJson(transactionObject);
-            transactions.add(transaction);
+
+            if(transaction instanceof FalconTransaction.PayableVidaDataTxn payableVidaDataTxn) {
+                transactions.add(payableVidaDataTxn);
+            } else {
+                throw new IllegalArgumentException("Transaction is not of type PayableVidaDataTxn");
+            }
         }
 
         return new BiResult<>(block, transactions);
