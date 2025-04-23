@@ -131,8 +131,9 @@ public class PWRFalconWallet {
     }
 
     public byte[] getSignedTransaction(byte[] transaction) {
-        byte[] txnHash = PWRHash.hash256(transaction);
-        byte[] signature = sign(txnHash);
+        //TODO revert this if tests fail
+        //byte[] txnHash = PWRHash.hash256(transaction);
+        byte[] signature = sign(transaction);
 
         ByteBuffer buffer = ByteBuffer.allocate(2 + signature.length + transaction.length);
         buffer.put(transaction);
