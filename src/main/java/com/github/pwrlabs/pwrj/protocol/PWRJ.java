@@ -380,7 +380,7 @@ public class PWRJ {
     }
 
     public BiResult<Block, List<FalconTransaction.PayableVidaDataTxn>> getBlockWithViDataTransactionsOnly(long blockNumber, long vmId) throws Exception {
-        JSONObject object = httpGet(rpcNodeUrl + "/blockWithVidaDataTransactions?blockNumber=" + blockNumber + "&vmId=" + vmId);
+        JSONObject object = httpGet(rpcNodeUrl + "/blockWithVidaDataTransactions?blockNumber=" + blockNumber + "&vidaId=" + vmId);
 
         Block block = new Block(object.getJSONObject("block"));
         JSONArray transactionsArray = object.getJSONArray("transactions");
