@@ -37,16 +37,24 @@ public class Falcon {
 
     public static boolean verify512(byte[] message, byte[] signature, byte[] publicKey) {
         try {
-            FalconPublicKeyParameters publicKeyParams = new FalconPublicKeyParameters(params512, publicKey);
+            // Handle the case where the public key includes the 0x09 prefix
+            byte[] processedKey = publicKey;
+            if (publicKey.length == 897 && publicKey[0] == 0x09) {
+                processedKey = new byte[publicKey.length - 1];
+                System.arraycopy(publicKey, 1, processedKey, 0, processedKey.length);
+            }
+
+            FalconPublicKeyParameters publicKeyParams = new FalconPublicKeyParameters(params512, processedKey);
             FalconSigner signer = new FalconSigner();
             signer.init(false, publicKeyParams);
             return signer.verifySignature(message, signature);
         } catch (Exception e) {
-            // Handle any potential exceptions during key conversion or verification
+            e.printStackTrace();
             return false;
         }
     }
 
+    //TODO check for any prefix mismatch with other tools and fix it like we did in 512
     public static boolean verify1024(byte[] message, byte[] signature, byte[] publicKey) {
         try {
             FalconPublicKeyParameters publicKeyParams = new FalconPublicKeyParameters(params1024, publicKey);
@@ -54,6 +62,7 @@ public class Falcon {
             signer.init(false, publicKeyParams);
             return signer.verifySignature(message, signature);
         } catch (Exception e) {
+            e.printStackTrace();
             // Handle any potential exceptions during key conversion or verification
             return false;
         }
