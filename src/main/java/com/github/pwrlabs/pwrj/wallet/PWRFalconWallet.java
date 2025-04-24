@@ -1057,6 +1057,7 @@ public class PWRFalconWallet {
 
     public static void main(String[] args) {
         PWRFalconWallet wallet = new PWRFalconWallet(12, null);
+        System.out.println("address: " + wallet.getAddress());
 
         System.out.println(wallet.getAddress());
 
@@ -1066,5 +1067,8 @@ public class PWRFalconWallet {
         byte[] publicKey = wallet.getPublicKey();
 
         System.out.println(Falcon.verify512(message, signature, publicKey));
+
+        PWRFalconWallet wallet2 = new PWRFalconWallet(wallet.getSeedPhrase(), null);
+        System.out.println("address: " + wallet2.getAddress());
     }
 }
