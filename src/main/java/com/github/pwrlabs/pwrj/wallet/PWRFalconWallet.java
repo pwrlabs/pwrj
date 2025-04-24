@@ -1,5 +1,6 @@
 package com.github.pwrlabs.pwrj.wallet;
 
+import com.github.pwrlabs.pwrj.Utils.AES256;
 import com.github.pwrlabs.pwrj.Utils.Falcon;
 import com.github.pwrlabs.pwrj.Utils.Hex;
 import com.github.pwrlabs.pwrj.Utils.PWRHash;
@@ -16,31 +17,71 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
 import java.util.*;
 
 import static com.github.pwrlabs.pwrj.Utils.NewError.errorIf;
 
 import org.bouncycastle.pqc.crypto.falcon.FalconPrivateKeyParameters;
 import org.bouncycastle.pqc.crypto.falcon.FalconPublicKeyParameters;
+import org.web3j.crypto.MnemonicUtils;
+
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 
 public class PWRFalconWallet {
 
     private final AsymmetricCipherKeyPair keyPair;
+    private final String seedPhrase;
     private PWRJ pwrj;
     private byte[] address;
 
-    public PWRFalconWallet(PWRJ pwrj) {
-        this.pwrj = pwrj;
-        this.keyPair = Falcon.generateKeyPair512();
+    public PWRFalconWallet(int wordCount, PWRJ pwrj) {
+        if (wordCount != 12 && wordCount != 15 && wordCount != 18 && wordCount != 21 && wordCount != 24) {
+            throw new IllegalArgumentException("Word count must be one of 12, 15, 18, 21, or 24");
+        }
 
+        this.pwrj = pwrj;
+
+        // Calculate entropy bytes based on word count
+        int entropyBytes;
+        switch (wordCount) {
+            case 12: entropyBytes = 16; break; // 128 bits
+            case 15: entropyBytes = 20; break; // 160 bits
+            case 18: entropyBytes = 24; break; // 192 bits
+            case 21: entropyBytes = 28; break; // 224 bits
+            case 24: entropyBytes = 32; break; // 256 bits
+            default: throw new IllegalArgumentException("Invalid word count");
+        }
+
+        // Generate random entropy
+        byte[] entropy = new byte[entropyBytes];
+        new SecureRandom().nextBytes(entropy);
+
+        // Use Web3j's MnemonicUtils to create the mnemonic
+        String phrase = MnemonicUtils.generateMnemonic(entropy);
+        System.out.println("Mnemonic Phrase: " + phrase);
+        byte[] seed = MnemonicUtils.generateSeed(phrase, "");
+
+        keyPair = Falcon.generateKeyPair512FromSeed(seed);
         FalconPublicKeyParameters publicKey = (FalconPublicKeyParameters) keyPair.getPublic();
         byte[] hash = PWRHash.hash224(publicKey.getH());
         address = Arrays.copyOfRange(hash, 0, 20);
+
+        seedPhrase = phrase;
     }
 
-    public PWRFalconWallet(PWRJ pwrj, AsymmetricCipherKeyPair keyPair) {
+    private PWRFalconWallet(String seedPhrase, PWRJ pwrj) {
         this.pwrj = pwrj;
-        this.keyPair = keyPair;
+        this.seedPhrase = seedPhrase;
+
+        byte[] seed = MnemonicUtils.generateSeed(seedPhrase, "");
+        keyPair = Falcon.generateKeyPair512FromSeed(seed);
 
         FalconPublicKeyParameters publicKey = (FalconPublicKeyParameters) keyPair.getPublic();
         byte[] hash = PWRHash.hash224(publicKey.getH());
@@ -53,26 +94,11 @@ public class PWRFalconWallet {
      * @param filePath Path to the file where the wallet will be stored.
      * @throws IOException if there's an error writing to the file.
      */
-    public void storeWallet(String filePath) throws IOException {
-        // Cast to FalconPrivateKeyParameters and FalconPublicKeyParameters
-        FalconPrivateKeyParameters falconPrivKey = (FalconPrivateKeyParameters) keyPair.getPrivate();
+    public void storeWallet(String filePath, String password) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
+        //Encrypt seed phrase
+        byte[] encryptedSeed = AES256.encrypt(seedPhrase.getBytes(StandardCharsets.UTF_8), password);
 
-        byte[] g = falconPrivKey.getG();
-        byte[] f = falconPrivKey.getSpolyf();
-        byte[] F = falconPrivKey.getSpolyF();
-        byte[] publicKeyBytes = falconPrivKey.getPublicKey();
-
-        ByteBuffer buffer = ByteBuffer.allocate(4 + g.length + 4 + f.length + 4 + F.length + 4 + publicKeyBytes.length);
-        buffer.putInt((short) g.length);
-        buffer.put(g);
-        buffer.putInt((short) f.length);
-        buffer.put(f);
-        buffer.putInt((short) F.length);
-        buffer.put(F);
-        buffer.putInt((short) publicKeyBytes.length);
-        buffer.put(publicKeyBytes);
-
-        Files.write(Paths.get(filePath), buffer.array());
+        Files.write(Paths.get(filePath), encryptedSeed);
     }
 
     /**
@@ -83,35 +109,18 @@ public class PWRFalconWallet {
      * @return a new PWRFalcon512Wallet with the loaded key pair.
      * @throws IOException if there's an error reading the file or parsing the keys.
      */
-    public static PWRFalconWallet loadWallet(PWRJ pwrj, String filePath) throws IOException {
-        byte[] data = Files.readAllBytes(Paths.get(filePath));
-        if(data == null) throw new IOException("File is empty");
+    public static PWRFalconWallet loadWallet(PWRJ pwrj, String filePath, String password) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
+        File file = new File(filePath);
+        if (!file.exists()) {
+            throw new FileNotFoundException("Wallet file not found: " + filePath);
+        }
 
-        ByteBuffer buffer = ByteBuffer.wrap(data);
-        int gLength = buffer.getInt();
-        byte[] g = new byte[gLength];
-        buffer.get(g);
+        byte[] encryptedSeed = Files.readAllBytes(file.toPath());
+        byte[] decryptedSeed = AES256.decrypt(encryptedSeed, password);
 
-        int fLength = buffer.getInt();
-        byte[] f = new byte[fLength];
-        buffer.get(f);
-
-        int FLength = buffer.getInt();
-        byte[] F = new byte[FLength];
-        buffer.get(F);
-
-        int publicKeyLength = buffer.getInt();
-        byte[] publicKeyBytes = new byte[publicKeyLength];
-        buffer.get(publicKeyBytes);
-
-        FalconParameters p = FalconParameters.falcon_512;
-        FalconPrivateKeyParameters falconPrivKey = new FalconPrivateKeyParameters(p, f, g, F, publicKeyBytes);
-        FalconPublicKeyParameters falconPubKey = new FalconPublicKeyParameters(p, publicKeyBytes);
-        AsymmetricCipherKeyPair keyPair = new AsymmetricCipherKeyPair(falconPubKey, falconPrivKey);
-
-        return new PWRFalconWallet(pwrj, keyPair);
+        String seedPhrase = new String(decryptedSeed, StandardCharsets.UTF_8);
+        return new PWRFalconWallet(seedPhrase, pwrj);
     }
-
 
     public String getAddress() {
         return "0x" + Hex.toHexString(address);
@@ -1045,11 +1054,15 @@ public class PWRFalconWallet {
     }
 
     public static void main(String[] args) {
-        byte[] message = "Hello".getBytes(StandardCharsets.UTF_8);
+        PWRFalconWallet wallet = new PWRFalconWallet(12, null);
 
-        byte[] signature512 = Hex.decode("3900000000000000000000000000000000000000000000000000000000000000000000000000000000596739dd57065566bf21f9832e78345e038f7979530e0522dd16c422891d098cc2c1185a840678b4aa6af9a684c9f91a3f06edb375725132d310f16e71776f84cb1a93f296c7615886d7252a27f3fce210b7ed2d63f74d18903afc0652866455bf440ee3eec23dd04ce75983d448d0b2fb60932ebb1c97998ad0b6c38bf38de80cdd7bdb68cec14b342641cd45eaddcfc7e9c741d9c32736276c030c353a4d6d7cdf59669b6086330696ebb38997f9ad1f024c56c9d521f6d3c2d15ff56b8570a0a2f4ae248b98b5aaec2a316dcb3edd1abef19eec54260afd4f19c54a920649714af0ef3af47c23f7048f13dc63ab643dbb3f44c6e081d8ba29c5d1a088fb158e53bceddde708ca9ee1601ab416ddd7e967cfafdfdb0025030ed92e6ece3165dec261ede2e847d81e9266a26e7d344a88a0b1c91ccbff1993e7584788c97b10779a0045a1db4659818f20adc1d97794a1f56588911fcd8d1435cdc62254683ae12fc32b702849bfce2e09a61db78a3032a408c324db05add78fb5a45b7c8d796ced1f6d0e6be04e6f49ffe7c1b54d720adcac399198e540700f46e566b1c60d8d9a042187de8e72b73b4726d19a2fda5765a7beb1aaa1564de9162ec29080c2d998b1b47ab11669c0a0c29b394ba8994b26c8d46feda5a27bd335323e9af0491b3b7af2e4e59c542345b9cc08d5cd7ff6f4ddaa35d6a444d7180e1093e0f5f1c6b55d91711bc357a72b548b4e0604c92168e3198f3a6dc193941b290458d7b6b17e76e8d6f135cd6d9c9ab2b49c146394cdcfa12f4f14a3b26e3195c0b3f2b6d1158521de3a2e018c70a9aa36b5fe7ffebbec99acf9b7ecbaa6a5d173430d9f90c7cbaca64861a0");
-        byte[] publicKey512 = Hex.decode("09752027b748482e60bc36eaae6abe27282ac6bf0b3c0255d31afea44f9a8a8be5d85bd58a869cb95e2ff83d2dfd09ac850a2ff8499695aaf924f225017025527b89cf73df29b907c6da9287500a6808f0812e03b3a0c2046962a9b997a68df966cea1135e7b29e6ebfd8df0e2a4ca1b95469d957106ea274c76a6b0e8c6628fc002485c6f322ad0ec90ef4a0576ad6d9aec543b93fd98172247957a5ddf78c2df5774ccf91498ad9c63b892c206495c0a8eb3cb552e2f5fe58851a36e5d9651bf151ac2e282507b1271a076a00e21d38e2c0f1ac6d66606e36b52b102a22a5e4d23a2584059d6c953f4ff4380af9c3cfe5744459a2c3c297bb280ad5e7c76c18252e7754a16c29793cc9a7aaaf071a4c9fb78b5ced57ce1c67c54b751b026a82d042a89368f0b4b99403aeb5b9b253a8a1443574a7d5aef17446b429ea8527878d1d818dea841696e417ae923e29e927069566fc66d08fe7aa6e5b25f00df83a5d4c01a4b4bbf991152f9c42a2d486915bb1bb429c18ab2996c3a8b291af93c09a07e804905cf2fad27eca5e0082e2538fc6812bc9ed504a638e9ca68b54b158f0b2905ce58e1220af58784689638107a971b210a7ae8e05573abcaacd0f421b3278e76a6105960afc1b2d7369fd67f99b6542fcc864c05f1aa070d21bdc0b9f092a3ef3a05acf8a766693d2ef856bc04e966b646e834c9a36fe6625335883f917414f3e84c65bb0e2e033bd8c35f586e24910b3110ceb665b44cf589e1afda8a27e48b1a215bff45c36555f98842ad8d8dfabeb149639068c53184dc5c91a2890a744cc26560cd89c8a1869170786ba904c8628cace2c609210940e62b95395fdfa6d47e5028ab954b66bc9377a096944dc7d17a94d82710ff84daa06a84a5706a2605a1383d8823fb820411860905d6614cbbfaa4b9ad9cdd0ceed944eaaa3f4ac9d668a4e53a7dcaba444c17086c2161d2755a0565487b97bfc6245668905700d4af9da8e7a8580f68a284b239f1ebc972443119df6cf22c12e106a85e6d693a0dc0ffd86d11d6cbaa4eced6a8a95899949f84bc184ae14350d37d069a8703540220ed162647a5191d0ec1b1c34f1534d03c11face4f8a625a001286d410697858f258a28d32b8953249a1b7968fdaeb988731419ce00482de9369d4f6ee263c9b60fd31efceff5c6aac61886751b1e20794a397132f122cb293d757396486a205ae96bf2280f92f518206b92d511358d7988dbc8484503f8c8c9065589043");
+        System.out.println(wallet.getAddress());
 
-        System.out.println("Verifying 512 with 512 signature verification: " + Falcon.verify512(message, signature512, publicKey512));
+        byte[] message = "Hello, world!".getBytes(StandardCharsets.UTF_8);
+
+        byte[] signature = wallet.sign(message);
+        byte[] publicKey = wallet.getPublicKey();
+
+        System.out.println(Falcon.verify512(message, signature, publicKey));
     }
 }

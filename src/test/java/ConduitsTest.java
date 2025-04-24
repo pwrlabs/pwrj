@@ -23,7 +23,7 @@ public class ConduitsTest {
     }
 
     public static void main(String[] args) throws Exception {
-        PWRFalconWallet wallet1 = new PWRFalconWallet(pwrj);
+        PWRFalconWallet wallet1 = new PWRFalconWallet(12, pwrj);
         PWRFalconWallet activeValidator = PWRFalconWallet.loadWallet(pwrj, "wallet");
 
         System.out.println("Wallet 1: " + wallet1.getAddress());
@@ -46,7 +46,7 @@ public class ConduitsTest {
     private static void testCountBasedConduits(PWRFalconWallet wallet1) throws Exception {
         List<PWRFalconWallet> conduits = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
-            PWRFalconWallet conduitWallet = new PWRFalconWallet(pwrj);
+            PWRFalconWallet conduitWallet = new PWRFalconWallet(12, pwrj);
 
             Response r = wallet1.transferPWR(conduitWallet.getByteaAddress(), 1000000000, pwrj.getFeePerByte());
             if(!r.isSuccess()) throw new Exception("Failed to transfer PWR to conduit wallet: " + r.getError());
@@ -101,7 +101,7 @@ public class ConduitsTest {
     private static void testVidaBasedConduits(PWRFalconWallet wallet) throws Exception {
         List<PWRFalconWallet> conduits = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
-            PWRFalconWallet conduitWallet = new PWRFalconWallet(pwrj);
+            PWRFalconWallet conduitWallet = new PWRFalconWallet(12, pwrj);
 
             Response r = wallet.transferPWR(conduitWallet.getByteaAddress(), 1000000000, pwrj.getFeePerByte());
             if(!r.isSuccess()) throw new Exception("Failed to transfer PWR to conduit wallet: " + r.getError());
@@ -162,7 +162,7 @@ public class ConduitsTest {
     private static void testValidatorBasedConduits(PWRFalconWallet wallet) throws Exception {
         List<PWRFalconWallet> conduits = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
-            PWRFalconWallet conduitWallet = new PWRFalconWallet(pwrj);
+            PWRFalconWallet conduitWallet = new PWRFalconWallet(12, pwrj);
 
             Response r = wallet.transferPWR(conduitWallet.getByteaAddress(), amountToSendToEachConduit, pwrj.getFeePerByte());
             if(!r.isSuccess()) throw new Exception("Failed to transfer PWR to conduit wallet: " + r.getError());

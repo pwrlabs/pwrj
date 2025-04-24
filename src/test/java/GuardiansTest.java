@@ -12,8 +12,8 @@ public class GuardiansTest {
 
     public static void main(String[] args) {
         System.out.println(Long.MAX_VALUE);
-        PWRFalconWallet wallet1 = new PWRFalconWallet(pwrj);
-        PWRFalconWallet guardianWallet = new PWRFalconWallet(pwrj);
+        PWRFalconWallet wallet1 = new PWRFalconWallet(12, pwrj);
+        PWRFalconWallet guardianWallet = new PWRFalconWallet(12, pwrj);
 
         System.out.println("Wallet 1: " + wallet1.getAddress());
         System.out.println("Guardian: " + guardianWallet.getAddress());
@@ -71,7 +71,7 @@ public class GuardiansTest {
     }
 
     private static void testSendingAGuardedTransaction(PWRFalconWallet wallet1, PWRFalconWallet guardianWallet) throws IOException, InterruptedException {
-        PWRFalconWallet receiverWallet = new PWRFalconWallet(pwrj);
+        PWRFalconWallet receiverWallet = new PWRFalconWallet(12, pwrj);
         long amount = 1000;
         byte[] signedTxn = wallet1.getSignedTransferTransaction(receiverWallet.getByteaAddress(), amount, pwrj.getFeePerByte());
 

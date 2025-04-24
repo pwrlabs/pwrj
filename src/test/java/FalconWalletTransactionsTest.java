@@ -22,8 +22,8 @@ public class FalconWalletTransactionsTest {
     private static final int SLEEP_TIME_AFTER_SENDING_TXNS = 6000;
 
     public static void main(String[] args) {
-        PWRFalconWallet wallet1 = new PWRFalconWallet(pwrj);
-        PWRFalconWallet wallet2 = new PWRFalconWallet(pwrj);
+        PWRFalconWallet wallet1 = new PWRFalconWallet(12, pwrj);
+        PWRFalconWallet wallet2 = new PWRFalconWallet(12, pwrj);
 
         byte[] wallet2Address = Hex.decode(wallet2.getAddress().startsWith("0x") ? wallet2.getAddress().substring(2) : wallet2.getAddress());
 

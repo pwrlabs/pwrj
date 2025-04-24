@@ -17,9 +17,9 @@ public class ValidatorAndDelegationTest {
     public static void main(String[] args) {
         try {
             // Create or load wallets
-            PWRFalconWallet validator = new PWRFalconWallet(pwrj);
-            PWRFalconWallet validator2 = new PWRFalconWallet(pwrj);
-            PWRFalconWallet delegator = new PWRFalconWallet(pwrj);
+            PWRFalconWallet validator = new PWRFalconWallet(12, pwrj);
+            PWRFalconWallet validator2 = new PWRFalconWallet(12, pwrj);
+            PWRFalconWallet delegator = new PWRFalconWallet(12, pwrj);
 
             System.out.println("Validator Address: " + validator.getAddress());
             System.out.println("Validator2 Address: " + validator2.getAddress());

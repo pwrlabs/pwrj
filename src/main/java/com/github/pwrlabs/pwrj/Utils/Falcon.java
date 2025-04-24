@@ -21,6 +21,21 @@ public class Falcon {
         return keyPairGen.generateKeyPair();
     }
 
+    /**
+     * Generate a deterministic Falcon-512 key pair from a seed
+     * @param seed The seed bytes to derive the key pair from
+     * @return The generated key pair
+     */
+    public static AsymmetricCipherKeyPair generateKeyPair512FromSeed(byte[] seed) {
+        // Create a deterministic random source from the seed
+        SecureRandom random = new SecureRandom(seed);
+
+        FalconKeyPairGenerator keyPairGen = new FalconKeyPairGenerator();
+        FalconKeyGenerationParameters keyGenParams = new FalconKeyGenerationParameters(random, params512);
+        keyPairGen.init(keyGenParams);
+        return keyPairGen.generateKeyPair();
+    }
+
     public static  AsymmetricCipherKeyPair generateKeyPair1024() {
         FalconKeyPairGenerator keyPairGen = new FalconKeyPairGenerator();
         FalconKeyGenerationParameters keyGenParams = new FalconKeyGenerationParameters(new SecureRandom(), params1024);
