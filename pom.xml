@@ -73,13 +73,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- Bouncy Castle Provider -->
-<!--        <dependency>-->
-<!--            <groupId>org.bouncycastle</groupId>-->
-<!--            <artifactId>bcprov-jdk15on</artifactId>-->
-<!--            <version>1.68</version>-->
-<!--        </dependency>-->
-
         <dependency>
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>

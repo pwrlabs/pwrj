@@ -22,26 +22,26 @@ public class ConduitsTest {
         ACTIVE_VALIDATOR_ONLY // Only active PWR Chain validators can manage it with voting power equal to their PWR Chain voting power
     }
 
-    public static void main(String[] args) throws Exception {
-        PWRFalconWallet wallet1 = new PWRFalconWallet(12, pwrj);
-        PWRFalconWallet activeValidator = PWRFalconWallet.loadWallet(pwrj, "wallet");
-
-        System.out.println("Wallet 1: " + wallet1.getAddress());
-
-        // Wait until user clicks enter
-        System.out.println("Please supply wallet 1 with funds and press enter to continue...");
-        try {
-            System.in.read();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        testCountBasedConduits(wallet1);
-        testVidaBasedConduits(wallet1);
-        testValidatorBasedConduits(wallet1);
-        testActiveValidatorBasedConduits(wallet1, activeValidator);
-
-    }
+//    public static void main(String[] args) throws Exception {
+//        PWRFalconWallet wallet1 = new PWRFalconWallet(12, pwrj);
+//        PWRFalconWallet activeValidator = PWRFalconWallet.loadWallet(pwrj, "wallet");
+//
+//        System.out.println("Wallet 1: " + wallet1.getAddress());
+//
+//        // Wait until user clicks enter
+//        System.out.println("Please supply wallet 1 with funds and press enter to continue...");
+//        try {
+//            System.in.read();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//
+//        testCountBasedConduits(wallet1);
+//        testVidaBasedConduits(wallet1);
+//        testValidatorBasedConduits(wallet1);
+//        testActiveValidatorBasedConduits(wallet1, activeValidator);
+//
+//    }
 
     private static void testCountBasedConduits(PWRFalconWallet wallet1) throws Exception {
         List<PWRFalconWallet> conduits = new ArrayList<>();

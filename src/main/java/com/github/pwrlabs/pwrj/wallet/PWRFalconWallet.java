@@ -65,7 +65,6 @@ public class PWRFalconWallet {
 
         // Use Web3j's MnemonicUtils to create the mnemonic
         String phrase = MnemonicUtils.generateMnemonic(entropy);
-        System.out.println("Mnemonic Phrase: " + phrase);
         byte[] seed = MnemonicUtils.generateSeed(phrase, "");
 
         keyPair = Falcon.generateKeyPair512FromSeed(seed);

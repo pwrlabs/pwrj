@@ -19,26 +19,26 @@ public class GovernanceTest {
     private static final String PRIVATE_KEY_HEX = "1648717022721337370284939639895780772097759458487621889076665061529456636895";
     private static final PWRJ pwrj = new PWRJ("http://localhost:8085");
 
-    public static void main(String[] args) throws Exception {
-        // Create wallet with proper key pair initialization
-        PWRFalconWallet validator = PWRFalconWallet.loadWallet(pwrj, "wallet");
-
-        // Uncomment tests as needed
-         testChangeFeePerByteProposalTxn(validator, pwrj);
-         testChangeEarlyWithdrawPenaltyProposalTxn(validator, pwrj);
-         testChangeMaxBlockSizeProposalTxn(validator, pwrj);
-         testChangeMaxTxnSizeProposalTxn(validator, pwrj);
-         testChangeOverallBurnPercentageProposalTxn(validator, pwrj);
-         testChangeRewardPerYearProposalTxn(validator, pwrj);
-         testChangeValidatorCountLimitProposalTxn(validator, pwrj);
-         testChangeValidatorJoiningFeeProposalTxn(validator, pwrj);
-         testChangeVidaIdClaimingFeeProposalTxn(validator, pwrj);
-         testChangeVmOwnerTxnFeeShareProposalTxn(validator, pwrj);
-         testOtherProposalTxn(validator, pwrj);
-
-        System.out.println("All tests completed successfully");
-
-    }
+//    public static void main(String[] args) throws Exception {
+//        // Create wallet with proper key pair initialization
+//        PWRFalconWallet validator = PWRFalconWallet.loadWallet(pwrj, "wallet");
+//
+//        // Uncomment tests as needed
+//         testChangeFeePerByteProposalTxn(validator, pwrj);
+//         testChangeEarlyWithdrawPenaltyProposalTxn(validator, pwrj);
+//         testChangeMaxBlockSizeProposalTxn(validator, pwrj);
+//         testChangeMaxTxnSizeProposalTxn(validator, pwrj);
+//         testChangeOverallBurnPercentageProposalTxn(validator, pwrj);
+//         testChangeRewardPerYearProposalTxn(validator, pwrj);
+//         testChangeValidatorCountLimitProposalTxn(validator, pwrj);
+//         testChangeValidatorJoiningFeeProposalTxn(validator, pwrj);
+//         testChangeVidaIdClaimingFeeProposalTxn(validator, pwrj);
+//         testChangeVmOwnerTxnFeeShareProposalTxn(validator, pwrj);
+//         testOtherProposalTxn(validator, pwrj);
+//
+//        System.out.println("All tests completed successfully");
+//
+//    }
 
     private static void testChangeFeePerByteProposalTxn(PWRFalconWallet validator, PWRJ pwrj) {
         try {
