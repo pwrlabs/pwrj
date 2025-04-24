@@ -35,7 +35,6 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 public class PWRFalconWallet {
-
     private final AsymmetricCipherKeyPair keyPair;
     private final String seedPhrase;
     private PWRJ pwrj;
@@ -123,6 +122,10 @@ public class PWRFalconWallet {
 
     public String getAddress() {
         return "0x" + Hex.toHexString(address);
+    }
+
+    public String getSeedPhrase() {
+        return seedPhrase;
     }
 
     public byte[] getByteaAddress() {
