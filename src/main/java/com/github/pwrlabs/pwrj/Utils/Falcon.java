@@ -59,18 +59,5 @@ public class Falcon {
         }
     }
 
-
-
-    public static void main(String[] args) throws Exception {
-
-        //generate falcon wallet and output public keyy length
-
-        AsymmetricCipherKeyPair keyPair = generateKeyPair1024();
-        FalconPrivateKeyParameters privateKey = (FalconPrivateKeyParameters) keyPair.getPrivate();
-        FalconPublicKeyParameters publicKey = (FalconPublicKeyParameters) keyPair.getPublic();
-        byte[] pk = publicKey.getH();
-        System.out.println("Public key length: " + pk.length);
-
-    }
 }
 
