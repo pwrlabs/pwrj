@@ -28,6 +28,8 @@ import static com.github.pwrlabs.pwrj.Utils.NewError.errorIf;
 
 import org.bouncycastle.pqc.crypto.falcon.FalconPrivateKeyParameters;
 import org.bouncycastle.pqc.crypto.falcon.FalconPublicKeyParameters;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.web3j.crypto.MnemonicUtils;
 
 import javax.crypto.BadPaddingException;
@@ -35,6 +37,7 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
 public class PWRFalconWallet {
+    private static final Logger log = LoggerFactory.getLogger(PWRFalconWallet.class);
     private final AsymmetricCipherKeyPair keyPair;
     private final String seedPhrase;
     private PWRJ pwrj;
@@ -65,6 +68,7 @@ public class PWRFalconWallet {
         // Use Web3j's MnemonicUtils to create the mnemonic
         String phrase = MnemonicUtils.generateMnemonic(entropy);
         byte[] seed = MnemonicUtils.generateSeed(phrase, "");
+        System.out.println("Seed phrase length: " + seed.length);
 
         keyPair = Falcon.generateKeyPair512FromSeed(seed);
         FalconPublicKeyParameters publicKey = (FalconPublicKeyParameters) keyPair.getPublic();
@@ -79,6 +83,8 @@ public class PWRFalconWallet {
         this.seedPhrase = seedPhrase;
 
         byte[] seed = MnemonicUtils.generateSeed(seedPhrase, "");
+        System.out.println("Seed: " + Hex.toHexString(seed));
+        System.out.println("Seed length : " + seed.length);
         keyPair = Falcon.generateKeyPair512FromSeed(seed);
 
         FalconPublicKeyParameters publicKey = (FalconPublicKeyParameters) keyPair.getPublic();
@@ -1056,19 +1062,21 @@ public class PWRFalconWallet {
     }
 
     public static void main(String[] args) {
-        PWRFalconWallet wallet = new PWRFalconWallet(12, null);
+        //new PWRFalconWallet(12, null);
+        PWRFalconWallet wallet = new PWRFalconWallet("demand april length soap cash concert shuffle result force mention fringe slim", null);
         System.out.println("address: " + wallet.getAddress());
+        System.out.println("public key: " + Hex.toHexString(wallet.getPublicKey()));
 
-        System.out.println(wallet.getAddress());
-
-        byte[] message = "Hello, world!".getBytes(StandardCharsets.UTF_8);
-
-        byte[] signature = wallet.sign(message);
-        byte[] publicKey = wallet.getPublicKey();
-
-        System.out.println(Falcon.verify512(message, signature, publicKey));
-
-        PWRFalconWallet wallet2 = new PWRFalconWallet(wallet.getSeedPhrase(), null);
-        System.out.println("address: " + wallet2.getAddress());
+//        System.out.println(wallet.getAddress());
+//
+//        byte[] message = "Hello, world!".getBytes(StandardCharsets.UTF_8);
+//
+//        byte[] signature = wallet.sign(message);
+//        byte[] publicKey = wallet.getPublicKey();
+//
+//        System.out.println(Falcon.verify512(message, signature, publicKey));
+//
+//        PWRFalconWallet wallet2 = new PWRFalconWallet(wallet.getSeedPhrase(), null);
+//        System.out.println("address: " + wallet2.getAddress());
     }
 }

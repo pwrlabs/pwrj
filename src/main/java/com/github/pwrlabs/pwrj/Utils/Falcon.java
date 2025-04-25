@@ -31,15 +31,21 @@ public class Falcon {
         // Create a deterministic pseudo-random generator from the seed
         try {
             // Get SHA1PRNG instance which has more predictable behavior with seeds
-            SecureRandom deterministicRandom = SecureRandom.getInstance("SHA1PRNG");
-            // Set the seed to completely initialize the state (rather than just adding entropy)
+            SecureRandom deterministicRandom = new DeterministicSecureRandom(seed);
+            byte[] bytes = new byte[48];
+            deterministicRandom.nextBytes(bytes);
+            System.out.println("Secure random 48 bytes:" + Hex.toHexString(bytes));
+
+            deterministicRandom = new DeterministicSecureRandom(seed);
             deterministicRandom.setSeed(seed);
+
 
             FalconKeyPairGenerator keyPairGen = new FalconKeyPairGenerator();
             FalconKeyGenerationParameters keyGenParams = new FalconKeyGenerationParameters(deterministicRandom, params512);
             keyPairGen.init(keyGenParams);
             return keyPairGen.generateKeyPair();
         } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
             throw new RuntimeException("SHA1PRNG not available", e);
         }
     }
