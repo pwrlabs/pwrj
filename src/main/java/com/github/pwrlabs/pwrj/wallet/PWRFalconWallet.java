@@ -68,7 +68,6 @@ public class PWRFalconWallet {
         // Use Web3j's MnemonicUtils to create the mnemonic
         String phrase = MnemonicUtils.generateMnemonic(entropy);
         byte[] seed = MnemonicUtils.generateSeed(phrase, "");
-        System.out.println("Seed phrase length: " + seed.length);
 
         keyPair = Falcon.generateKeyPair512FromSeed(seed);
         FalconPublicKeyParameters publicKey = (FalconPublicKeyParameters) keyPair.getPublic();
@@ -83,8 +82,6 @@ public class PWRFalconWallet {
         this.seedPhrase = seedPhrase;
 
         byte[] seed = MnemonicUtils.generateSeed(seedPhrase, "");
-        System.out.println("Seed: " + Hex.toHexString(seed));
-        System.out.println("Seed length : " + seed.length);
         keyPair = Falcon.generateKeyPair512FromSeed(seed);
 
         FalconPublicKeyParameters publicKey = (FalconPublicKeyParameters) keyPair.getPublic();

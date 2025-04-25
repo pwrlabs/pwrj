@@ -34,7 +34,6 @@ public class Falcon {
             SecureRandom deterministicRandom = new DeterministicSecureRandom(seed);
             byte[] bytes = new byte[48];
             deterministicRandom.nextBytes(bytes);
-            System.out.println("Secure random 48 bytes:" + Hex.toHexString(bytes));
 
             deterministicRandom = new DeterministicSecureRandom(seed);
             deterministicRandom.setSeed(seed);
