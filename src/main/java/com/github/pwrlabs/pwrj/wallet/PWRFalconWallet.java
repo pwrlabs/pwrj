@@ -94,6 +94,7 @@ public class PWRFalconWallet {
         this.seedPhrase = seedPhrase;
 
         byte[] seed = MnemonicUtils.generateSeed(seedPhrase, "");
+        if(walletNumber > 0) seed = new BigInteger(1, seed).add(BigInteger.valueOf(walletNumber)).toByteArray();
         keyPair = Falcon.generateKeyPair512FromSeed(seed);
 
         FalconPublicKeyParameters publicKey = (FalconPublicKeyParameters) keyPair.getPublic();
