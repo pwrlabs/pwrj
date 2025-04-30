@@ -89,6 +89,18 @@ public class PWRFalconWallet {
         address = Arrays.copyOfRange(hash, 0, 20);
     }
 
+    private PWRFalconWallet(String seedPhrase, int walletNumber, PWRJ pwrj) {
+        this.pwrj = pwrj;
+        this.seedPhrase = seedPhrase;
+
+        byte[] seed = MnemonicUtils.generateSeed(seedPhrase, "");
+        keyPair = Falcon.generateKeyPair512FromSeed(seed);
+
+        FalconPublicKeyParameters publicKey = (FalconPublicKeyParameters) keyPair.getPublic();
+        byte[] hash = PWRHash.hash224(publicKey.getH());
+        address = Arrays.copyOfRange(hash, 0, 20);
+    }
+
     /**
      * Stores the wallet's key pair to disk in PEM format.
      *
@@ -1060,9 +1072,11 @@ public class PWRFalconWallet {
 
     public static void main(String[] args) {
         //new PWRFalconWallet(12, null);
-        PWRFalconWallet wallet = new PWRFalconWallet("demand april length soap cash concert shuffle result force mention fringe slim", null);
-        System.out.println("address: " + wallet.getAddress());
-        System.out.println("public key: " + Hex.toHexString(wallet.getPublicKey()));
+        PWRFalconWallet wallet1 = new PWRFalconWallet("demand april length soap cash concert shuffle result force mention fringe slim", 0, null);
+        PWRFalconWallet wallet2 = new PWRFalconWallet("demand april length soap cash concert shuffle result force mention fringe slim", 1, null);
+
+        System.out.println("Address 0: " + wallet1.getAddress());
+        System.out.println("Address 1: " + wallet2.getAddress());
 
 //        System.out.println(wallet.getAddress());
 //

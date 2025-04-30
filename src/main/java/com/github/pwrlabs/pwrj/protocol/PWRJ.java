@@ -126,8 +126,8 @@ public class PWRJ {
         return Hex.decode(hexAddress);
     }
 
-    public String getVidaIdAddress(long vmId) {
-        return Hex.toHexString(getVidaIdAddressBytea(vmId));
+    public String getVidaIdAddress(long vidaId) {
+        return Hex.toHexString(getVidaIdAddressBytea(vidaId));
     }
 
     public static boolean isVidaAddress(String address) {
@@ -142,10 +142,10 @@ public class PWRJ {
             BigInteger maxLong = BigInteger.valueOf(Long.MAX_VALUE);
             BigInteger minLong = BigInteger.valueOf(Long.MIN_VALUE);
 
-            BigInteger vmId = new BigInteger(address);
-            if (negative) vmId = vmId.negate();
+            BigInteger vidaId = new BigInteger(address);
+            if (negative) vidaId = vidaId.negate();
 
-            if (vmId.compareTo(maxLong) > 0 || vmId.compareTo(minLong) < 0) return false;
+            if (vidaId.compareTo(maxLong) > 0 || vidaId.compareTo(minLong) < 0) return false;
 
             return true;
         } catch (NumberFormatException e) {
@@ -289,7 +289,7 @@ public class PWRJ {
     }
 
     public int getVidaOwnerTransactionFeeShare() throws IOException {
-        return httpGet(rpcNodeUrl + "/vmOwnerTransactionFeeShare").getInt("vmOwnerTransactionFeeShare");
+        return httpGet(rpcNodeUrl + "/vidaOwnerTransactionFeeShare").getInt("vidaOwnerTransactionFeeShare");
     }
 
     public int getBurnPercentage() throws IOException {
@@ -379,8 +379,8 @@ public class PWRJ {
         return new Block(httpGet(rpcNodeUrl + "/block?blockNumber=" + blockNumber).getJSONObject("block"));
     }
 
-    public BiResult<Block, List<FalconTransaction.PayableVidaDataTxn>> getBlockWithViDataTransactionsOnly(long blockNumber, long vmId) throws Exception {
-        JSONObject object = httpGet(rpcNodeUrl + "/blockWithVidaDataTransactions?blockNumber=" + blockNumber + "&vidaId=" + vmId);
+    public BiResult<Block, List<FalconTransaction.PayableVidaDataTxn>> getBlockWithViDataTransactionsOnly(long blockNumber, long vidaId) throws Exception {
+        JSONObject object = httpGet(rpcNodeUrl + "/blockWithVidaDataTransactions?blockNumber=" + blockNumber + "&vidaId=" + vidaId);
 
         Block block = new Block(object.getJSONObject("block"));
         JSONArray transactionsArray = object.getJSONArray("transactions");
@@ -754,13 +754,13 @@ public class PWRJ {
 
 
     /**
-     * Queries the RPC node to get the owner of a specific VM.
+     * Queries the RPC node to get the owner of a specific VIDA.
      *
      * <p>If the RPC node returns an unsuccessful status or if there's any network error,
      * appropriate exceptions will be thrown.</p>
      *
-     * @param vidaId The ID of the VM for which to fetch the owner.
-     * @return The owner of the specified VM.
+     * @param vidaId The ID of the VIDA for which to fetch the owner.
+     * @return The owner of the specified VIDA.
      * @throws IOException If there's an issue with the network or stream handling.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */

@@ -16,7 +16,6 @@ public class Block {
     private final long blockReward;
     private final long burnedFees;
     private final int blockSize;
-    private final int blockchainVersion;
     private final String blockHash;
     private final String previousBlockHash;
     private final String rootHash;
@@ -31,7 +30,6 @@ public class Block {
         this.blockReward = blockJson.getLong(BinaryJSONKeyMapper.BLOCK_REWARD);
         this.burnedFees = blockJson.getLong(BinaryJSONKeyMapper.BURNED_FEES);
         this.blockSize = blockJson.getInt(BinaryJSONKeyMapper.SIZE);
-        this.blockchainVersion = blockJson.getInt(BinaryJSONKeyMapper.BLOCKCHAIN_VERSION);
         this.blockHash = blockJson.getString(BinaryJSONKeyMapper.BLOCK_HASH);
         this.previousBlockHash = blockJson.getString(BinaryJSONKeyMapper.PREVIOUS_BLOCK_HASH);
         this.rootHash = blockJson.getString(BinaryJSONKeyMapper.ROOT_HASH);
