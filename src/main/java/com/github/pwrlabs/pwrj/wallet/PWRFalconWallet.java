@@ -77,7 +77,7 @@ public class PWRFalconWallet {
         seedPhrase = phrase;
     }
 
-    private PWRFalconWallet(String seedPhrase, PWRJ pwrj) {
+    public PWRFalconWallet(String seedPhrase, PWRJ pwrj) {
         this.pwrj = pwrj;
         this.seedPhrase = seedPhrase;
 
@@ -89,7 +89,7 @@ public class PWRFalconWallet {
         address = Arrays.copyOfRange(hash, 0, 20);
     }
 
-    private PWRFalconWallet(String seedPhrase, int walletNumber, PWRJ pwrj) {
+    public PWRFalconWallet(String seedPhrase, int walletNumber, PWRJ pwrj) {
         this.pwrj = pwrj;
         this.seedPhrase = seedPhrase;
 
@@ -1069,26 +1069,5 @@ public class PWRFalconWallet {
         if(response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedTransferPWRFromVidaTransaction(vidaId, receiver, amount, feePerByte));
-    }
-
-    public static void main(String[] args) {
-        //new PWRFalconWallet(12, null);
-        PWRFalconWallet wallet1 = new PWRFalconWallet("demand april length soap cash concert shuffle result force mention fringe slim", 0, null);
-        PWRFalconWallet wallet2 = new PWRFalconWallet("demand april length soap cash concert shuffle result force mention fringe slim", 1, null);
-
-        System.out.println("Address 0: " + wallet1.getAddress());
-        System.out.println("Address 1: " + wallet2.getAddress());
-
-//        System.out.println(wallet.getAddress());
-//
-//        byte[] message = "Hello, world!".getBytes(StandardCharsets.UTF_8);
-//
-//        byte[] signature = wallet.sign(message);
-//        byte[] publicKey = wallet.getPublicKey();
-//
-//        System.out.println(Falcon.verify512(message, signature, publicKey));
-//
-//        PWRFalconWallet wallet2 = new PWRFalconWallet(wallet.getSeedPhrase(), null);
-//        System.out.println("address: " + wallet2.getAddress());
     }
 }
