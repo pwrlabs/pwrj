@@ -21,7 +21,7 @@ public class Validator {
     private final String ip;
     private final boolean isBadActor;
     private final long votingPower;
-    private final long shares;
+    private final BigInteger shares;
     private final int delegatorsCount;
     private final String status;
 
@@ -30,10 +30,11 @@ public class Validator {
         this.ip = object.optString("ip", null);
         this.isBadActor = object.optBoolean("isBadActor", false);
         this.votingPower = object.optLong("votingPower", 0);
-        this.shares = object.optLong("shares", 0);
+        this.shares = object.optBigInteger("shares", BigInteger.valueOf(0));
         this.delegatorsCount = object.optInt("delegatorsCount", 0);
         this.status = object.optString("status", null);
     }
+
     public List<Delegator> getDelegators(PWRJ pwrj) {
         try {
             HttpClient client = HttpClients.createDefault();
@@ -50,8 +51,8 @@ public class Validator {
                 List<Delegator> delegatorsList = new LinkedList<>();
 
                 for (String delegatorAddress: delegators.keySet()) {
-                    long shares = delegators.optLong(delegatorAddress, 0);
-                    long delegatedPWR = BigInteger.valueOf(shares).multiply(BigInteger.valueOf(this.votingPower)).divide(BigInteger.valueOf(this.shares)).longValue();
+                    BigInteger shares = delegators.optBigInteger(delegatorAddress, BigInteger.valueOf(0));
+                    long delegatedPWR = shares.compareTo(BigInteger.valueOf(0)) == 0 ? 0 : shares.divide(getSharesPerSpark()).longValue();
 
                     Delegator d = Delegator.builder()
                             .address(delegatorAddress)
@@ -77,5 +78,15 @@ public class Validator {
         }
 
     }
+
+    public BigInteger getSharesPerSpark() {
+        if (shares.compareTo(BigInteger.valueOf(0)) == 0) return BigInteger.valueOf(1000000000);
+        else return shares.divide(BigInteger.valueOf(getVotingPower()));
+    }
+
+    public static void main(String[] args) {
+        System.out.println("ho");
+    }
+
 
 }

@@ -557,18 +557,8 @@ public class PWRJ {
         for(int i = 0; i < validators.length(); i++) {
             JSONObject validatorObject = validators.getJSONObject(i);
             //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
-            long votingPower, totalShares;
-            if(validatorObject.has("votingPower")) {
-                votingPower = validatorObject.getLong("votingPower");
-            } else {
-                votingPower = 0L;
-            }
-
-            if(validatorObject.has("totalShares")) {
-                totalShares = validatorObject.getLong("totalShares");
-            } else {
-                totalShares = 0L;
-            }
+            long votingPower = validatorObject.optLong("votingPower", 0L);
+            BigInteger totalShares = validatorObject.optBigInteger("totalShares", BigInteger.valueOf(0));
 
             int delegatorsCount;
             if(validatorObject.has("delegatorsCount")) {
@@ -611,18 +601,8 @@ public class PWRJ {
         for(int i = 0; i < validators.length(); i++) {
             JSONObject validatorObject = validators.getJSONObject(i);
             //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
-            long votingPower, totalShares;
-            if(validatorObject.has("votingPower")) {
-                votingPower = validatorObject.getLong("votingPower");
-            } else {
-                votingPower = 0L;
-            }
-
-            if(validatorObject.has("totalShares")) {
-                totalShares = validatorObject.getLong("totalShares");
-            } else {
-                totalShares = 0L;
-            }
+            long votingPower = validatorObject.optLong("votingPower", 0L);
+            BigInteger totalShares = validatorObject.optBigInteger("totalShares", BigInteger.valueOf(0));
 
             int delegatorsCount;
             if(validatorObject.has("delegatorsCount")) {
@@ -665,18 +645,8 @@ public class PWRJ {
         for(int i = 0; i < validators.length(); i++) {
             JSONObject validatorObject = validators.getJSONObject(i);
             //public Validator(String address, String ip, boolean badActor, long votingPower, long shares, int delegatorsCount) {
-            long votingPower, totalShares;
-            if(validatorObject.has("votingPower")) {
-                votingPower = validatorObject.getLong("votingPower");
-            } else {
-                votingPower = 0L;
-            }
-
-            if(validatorObject.has("totalShares")) {
-                totalShares = validatorObject.getLong("totalShares");
-            } else {
-                totalShares = 0L;
-            }
+            long votingPower = validatorObject.optLong("votingPower", 0L);
+            BigInteger totalShares = validatorObject.optBigInteger("totalShares", BigInteger.valueOf(0));
 
             int delegatorsCount;
             if(validatorObject.has("delegatorsCount")) {
@@ -714,7 +684,7 @@ public class PWRJ {
                     .ip(validatorObject.optString("ip", ""))
                     .isBadActor(validatorObject.optBoolean("badActor", false))
                     .votingPower(validatorObject.optLong("votingPower", 0))
-                    .shares(validatorObject.optLong("totalShares", 0))
+                    .shares(validatorObject.optBigInteger("totalShares", BigInteger.valueOf(0)))
                     .delegatorsCount(validatorObject.optInt("delegatorsCount", 0))
                     .status(validatorObject.optString("status", "unknown"))
                     .build();
@@ -732,7 +702,7 @@ public class PWRJ {
                 .ip(validatorObject.optString("ip", ""))
                 .isBadActor(validatorObject.optBoolean("badActor", false))
                 .votingPower(validatorObject.optLong("votingPower", 0))
-                .shares(validatorObject.optLong("totalShares", 0))
+                .shares(validatorObject.optBigInteger("totalShares", BigInteger.valueOf(0)))
                 .delegatorsCount(validatorObject.optInt("delegatorsCount", 0))
                 .status(validatorObject.optString("status", "unknown"))
                 .build();
