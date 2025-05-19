@@ -35,58 +35,8 @@ public class Validator {
         this.status = object.optString("status", null);
     }
 
-    public List<Delegator> getDelegators(PWRJ pwrj) {
-        try {
-            HttpClient client = HttpClients.createDefault();
-
-            HttpGet request = new HttpGet(pwrj.getRpcNodeUrl() + "/validator/delegatorsOfValidator?validatorAddress=0x" + address);
-            HttpResponse response = client.execute(request);
-
-            //System.out.printf(EntityUtils.toString(response.getEntity()));
-
-            if (response.getStatusLine().getStatusCode() == 200) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                System.out.println(object.toString());
-                JSONObject delegators = object.getJSONObject("delegators");
-                List<Delegator> delegatorsList = new LinkedList<>();
-
-                for (String delegatorAddress: delegators.keySet()) {
-                    BigInteger shares = delegators.optBigInteger(delegatorAddress, BigInteger.valueOf(0));
-                    long delegatedPWR = shares.compareTo(BigInteger.valueOf(0)) == 0 ? 0 : shares.divide(getSharesPerSpark()).longValue();
-
-                    Delegator d = Delegator.builder()
-                            .address(delegatorAddress)
-                            .validatorAddress(address)
-                            .shares(shares)
-                            .delegatedPWR(delegatedPWR)
-                            .build();
-
-                    delegatorsList.add(d);
-                }
-
-                return delegatorsList;
-            } else if (response.getStatusLine().getStatusCode() == 400) {
-                JSONObject object = new JSONObject(EntityUtils.toString(response.getEntity()));
-                throw new RuntimeException("Failed with HTTP error 400 and message: " + object.getString("message"));
-            } else {
-                throw new RuntimeException("Failed with HTTP error code : " + response.getStatusLine().getStatusCode());
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new LinkedList<>();
-        }
-
-    }
-
     public BigInteger getSharesPerSpark() {
         if (shares.compareTo(BigInteger.valueOf(0)) == 0) return BigInteger.valueOf(1000000000);
         else return shares.divide(BigInteger.valueOf(getVotingPower()));
     }
-
-    public static void main(String[] args) {
-        System.out.println("ho");
-    }
-
-
 }

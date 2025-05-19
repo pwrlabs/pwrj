@@ -25,6 +25,7 @@ import java.math.BigDecimal;
 //import java.net.http.HttpClient;
 //import java.net.http.HttpResponse;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.http.client.methods.HttpGet;
@@ -968,5 +969,83 @@ public class PWRJ {
 
     public VidaTransactionSubscription subscribeToVidaTransactions(PWRJ pwrj, long vidaId, long startingBlock, VidaTransactionHandler handler) throws IOException {
         return subscribeToVidaTransactions(pwrj, vidaId, startingBlock, handler, 100);
+    }
+
+    public static Map<ByteArrayWrapper /*Validator Address*/, Long /*APY*/> calculateActiveValidatorsApy() throws Exception {
+        PWRJ pwrj = new PWRJ("https://pwrrpc.pwrlabs.io");
+
+        List<Validator> activeValidators = pwrj.getActiveValidators();
+        long latestBlockNumber = pwrj.getLatestBlockNumber();
+        long latestBlockTimeStamp = pwrj.getBlockTimestamp();
+        long sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
+        long yearInMs = 365 * 24 * 60 * 60 * 1000;
+
+        Map<ByteArrayWrapper /*ValidatorAddress*/, BigInteger /*Realtime shares per spark*/> validatorSharesPerSpark = new HashMap<>();
+        Map<ByteArrayWrapper /*Validator Address*/, BiResult<Long /*Timestamp*/, BigInteger /*Shares Per Spark*/>> validatorData = new HashMap<>();
+
+        long blockToCheck = latestBlockNumber;
+        while (true) {
+            blockToCheck -= 1;
+            if(blockToCheck < 1) break;
+
+            Block block = pwrj.getBlockByNumber(blockToCheck);
+            if(block.getTimestamp() < latestBlockTimeStamp - sevenDaysInMs) break;
+
+            byte[] proposer = io.pwrlabs.util.encoders.Hex.decode(block.getProposer().startsWith("0x") ? block.getProposer().substring(2) : block.getProposer());
+            validatorData.put(new ByteArrayWrapper(proposer), new BiResult<>(block.getTimestamp(), block.getNewSharesPerSpark()));
+
+            System.out.println("Checked block " + block.getBlockNumber());
+        }
+
+        Map<ByteArrayWrapper /*Validator Address*/, Long /*APY*/> validatorSevenDayYield = new HashMap<>();
+        for (ByteArrayWrapper validatorAddress: validatorData.keySet()) {
+            BiResult<Long, BigInteger> data = validatorData.get(validatorAddress);
+
+            long currentTimeStamp = latestBlockTimeStamp;
+            BigInteger currentSharesPerSpark = validatorSharesPerSpark.get(validatorAddress);
+
+            long earliestTimeStamp = data.getFirst();
+            BigInteger earliestSharesPerSpark = data.getSecond();
+
+            // Skip if missing data or invalid values
+            if (currentSharesPerSpark == null || earliestSharesPerSpark == null ||
+                    earliestSharesPerSpark.compareTo(BigInteger.ZERO) <= 0) {
+                continue;
+            }
+
+            // Calculate time difference in milliseconds
+            long timeDiffMs = currentTimeStamp - earliestTimeStamp;
+
+            // Skip if time difference is too small
+            if (timeDiffMs <= 0) {
+                continue;
+            }
+
+            // Calculate growth: (currentShares - earliestShares) / earliestShares
+            BigDecimal sharesDiff = new BigDecimal(currentSharesPerSpark.subtract(earliestSharesPerSpark));
+            BigDecimal growth = sharesDiff.divide(new BigDecimal(earliestSharesPerSpark), 18, RoundingMode.HALF_UP);
+
+            // Calculate APY using compound interest formula: ((1 + growth) ^ (yearInMs / timeDiffMs)) - 1
+            BigDecimal timeRatio = new BigDecimal(yearInMs).divide(new BigDecimal(timeDiffMs), 18, RoundingMode.HALF_UP);
+
+            // Calculate APY
+            double apy = Math.pow(1 + growth.doubleValue(), timeRatio.doubleValue()) - 1;
+
+            // Convert to basis points (1% = 100 basis points)
+            long apyInBps = (long)(apy * 10000);
+
+            validatorSevenDayYield.put(validatorAddress, apyInBps);
+        }
+
+        return validatorSevenDayYield;
+    }
+
+    public static void main(String[] args) throws Exception {
+        Map<ByteArrayWrapper, Long> apy = calculateActiveValidatorsApy();
+
+        //output results
+        for (Map.Entry<ByteArrayWrapper, Long> entry : apy.entrySet()) {
+            System.out.println("Validator Address: " + Hex.toHexString(entry.getKey().data()) + ", APY: " + entry.getValue() + " bps");
+        }
     }
 }
