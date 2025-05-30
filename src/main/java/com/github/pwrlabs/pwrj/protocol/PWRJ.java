@@ -968,7 +968,9 @@ public class PWRJ {
     }
 
     public VidaTransactionSubscription subscribeToVidaTransactions(PWRJ pwrj, long vidaId, long startingBlock, VidaTransactionHandler handler) throws IOException {
-        return subscribeToVidaTransactions(pwrj, vidaId, startingBlock, handler, 100);
+        VidaTransactionSubscription sub = subscribeToVidaTransactions(pwrj, vidaId, startingBlock, handler, 100);
+        sub.start();
+        return sub;
     }
 
     public static Map<ByteArrayWrapper /*Validator Address*/, Long /*APY*/> calculateActiveValidatorsApy() throws Exception {
