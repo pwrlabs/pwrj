@@ -1076,20 +1076,7 @@ public class PWRFalconWallet {
         PWRFalconWallet wallet = new PWRFalconWallet(12, pwrj);
         System.out.println("Address: " + wallet.getAddress());
 
-        //wait for user to click enter
-        System.out.println("Press enter to continue...");
-        try {
-            System.in.read();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        System.out.println("Seed phrase: " + wallet.getSeedPhrase());
 
-        byte[] validator = Hex.decode("186cbf6e8c854469dd27297d07072e2b2c2cd76c");
-        Response response = wallet.delegate(validator, 10000000000L, pwrj.getFeePerByte());
-        if(response.isSuccess()) {
-            System.out.println("Delegation successful");
-        } else {
-            System.out.println("Delegation failed: " + response.getError());
-        }
     }
 }

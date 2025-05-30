@@ -39,4 +39,19 @@ public class Validator {
         if (shares.compareTo(BigInteger.valueOf(0)) == 0) return BigInteger.valueOf(1000000000);
         else return shares.divide(BigInteger.valueOf(getVotingPower()));
     }
+
+    public static void main(String[] args) throws Exception {
+        PWRJ pwrj = new PWRJ("https://pwrrpc.pwrlabs.io");
+        List<Validator> validators = pwrj.getAllValidators();
+        for (Validator validator : validators) {
+            System.out.println("Address: " + validator.getAddress());
+            System.out.println("IP: " + validator.getIp());
+            System.out.println("Is Bad Actor: " + validator.isBadActor());
+            System.out.println("Voting Power: " + validator.getVotingPower());
+            System.out.println("Shares: " + validator.getShares());
+            System.out.println("Delegators Count: " + validator.getDelegatorsCount());
+            System.out.println("Status: " + validator.getStatus());
+            System.out.println();
+        }
+    }
 }

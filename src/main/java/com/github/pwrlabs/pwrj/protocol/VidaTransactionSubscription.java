@@ -16,7 +16,8 @@ public class VidaTransactionSubscription {
     private long latestCheckedBlock;
     private VidaTransactionHandler handler;
 
-    AtomicBoolean pause = new AtomicBoolean(false), stop = new AtomicBoolean(false);
+    AtomicBoolean wantsToPause = new AtomicBoolean(false), stop = new AtomicBoolean(false);
+    AtomicBoolean paused = new AtomicBoolean(false);
 
     public VidaTransactionSubscription(PWRJ pwrj, long vidaId, long startingBlock, VidaTransactionHandler handler, long pollInterval) {
         this.pwrj = pwrj;
@@ -32,14 +33,17 @@ public class VidaTransactionSubscription {
             return;
         } else {
             running.set(true);
-            pause.set(false);
+            wantsToPause.set(false);
             stop.set(false);
         }
 
         latestCheckedBlock = this.startingBlock - 1;
         Thread thread = new Thread(() -> {
             while (true && !stop.get()) {
-                if(pause.get()) continue;
+                if(wantsToPause.get()) {
+                    if(!paused.get()) paused.set(true);
+                    continue;
+                }
                 try {
                     long latestBlock = pwrj.getLatestBlockNumber();
                     if(latestBlock == latestCheckedBlock) continue;
@@ -71,11 +75,19 @@ public class VidaTransactionSubscription {
     }
 
     public void pause() {
-        pause.set(true);
+        wantsToPause.set(true);
+
+        while (!paused.get()) {
+            try {
+                Thread.sleep(10); // Wait until paused is set to false
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt(); // Restore interrupted status
+            }
+        }
     }
 
     public void resume() {
-        pause.set(false);
+        wantsToPause.set(false);
     }
 
     public void stop() {
@@ -87,7 +99,7 @@ public class VidaTransactionSubscription {
     }
 
     public boolean isPaused() {
-        return pause.get();
+        return wantsToPause.get();
     }
 
     public boolean isStopped() {
