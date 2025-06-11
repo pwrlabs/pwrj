@@ -20,12 +20,12 @@ public class Main {
     }
 
     public static void spamThatBoy() throws Exception {
-        PWRJ pwrj = new PWRJ("https://pwrrpc.pwrlabs.io");
-        PWRFalconWallet wallet = new PWRFalconWallet("clarify wink august decrease visit bring glide poverty color turtle crush rocket", pwrj);
+        PWRJ pwrj = new PWRJ("http://46.101.151.203:8085");
+        PWRFalconWallet wallet = new PWRFalconWallet("media domain action float tooth wagon tilt more spend spike mother below", pwrj);
 
         int bytesPerSecond = 5000000;
 
-        int bytesPerWallet = 1000000; // 10kB per wallet
+        int bytesPerWallet = 500000; // 10kB per wallet
         int walletsCount = bytesPerSecond / bytesPerWallet;
         System.out.println("Creating " + walletsCount + " wallets with " + bytesPerWallet + " bytes each...");
         List<PWRFalconWallet> wallets = new ArrayList<>();

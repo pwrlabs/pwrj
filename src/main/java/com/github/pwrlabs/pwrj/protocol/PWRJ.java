@@ -345,10 +345,6 @@ public class PWRJ {
         return httpGet(rpcNodeUrl + "/minimumDelegatingAmount").getLong("minimumDelegatingAmount");
     }
 
-    public long getEcdsaVerificationFee() throws IOException {
-        return httpGet(rpcNodeUrl + "/ecdsaVerificationFee").getLong("ecdsaVerificationFee");
-    }
-
     /**
      * Retrieves the number of the latest block from the RPC node.
      *
@@ -525,18 +521,6 @@ public class PWRJ {
      */
     public int getActiveValidatorsCount() throws IOException {
         return httpGet(rpcNodeUrl + "/activeValidatorsCount").getInt("validatorsCount");
-    }
-
-    /**
-     * Queries the RPC node to get the total number of delegators.
-     *
-     * <p>If the RPC node returns an unsuccessful status or if there's any network error,
-     * appropriate exceptions will be thrown.</p>
-     *
-     * @return The total number of delegators.
-     */
-    public int getTotalDelegatorsCount() throws IOException {
-        return httpGet(rpcNodeUrl + "/totalDelegatorsCount").getInt("delegatorsCount");
     }
 
     /**
@@ -825,10 +809,6 @@ public class PWRJ {
 
     public boolean isOwnerAllowedToTransferPWRFromVida(long vidaId) throws IOException {
         return httpGet(rpcNodeUrl + "/isOwnerAllowedToTransferPWRFromVida?vidaId=" + vidaId).getBoolean("allowed");
-    }
-
-    public boolean areConduitsAllowedToTransferPWRFromVida(long vidaId) throws IOException {
-        return httpGet(rpcNodeUrl + "/areConduitsAllowedToTransferPWRFromVida?vidaId=" + vidaId).getBoolean("allowed");
     }
 
     public EarlyWithdrawPenaltyResponse getEarlyWithdrawPenalty(long withdrawTime) throws IOException {
