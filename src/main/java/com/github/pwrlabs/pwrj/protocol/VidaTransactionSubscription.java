@@ -24,6 +24,13 @@ public class VidaTransactionSubscription {
         this.vidaId = vidaId;
         this.startingBlock = startingBlock;
         this.handler = handler;
+
+        //add shutdown hook
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            logger.info("Shutting down VidaTransactionSubscription for VIDA-ID: " + vidaId);
+            pause();
+            logger.info("VidaTransactionSubscription for VIDA-ID: " + vidaId + " has been stopped.");
+        }));
     }
 
     AtomicBoolean running = new AtomicBoolean(false);
@@ -91,6 +98,7 @@ public class VidaTransactionSubscription {
     }
 
     public void stop() {
+        pause();
         stop.set(true);
     }
 
