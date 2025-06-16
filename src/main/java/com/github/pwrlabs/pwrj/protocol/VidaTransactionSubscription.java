@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 
 public class VidaTransactionSubscription {
     private static final Logger logger = LoggerFactory.getLogger(VidaTransactionSubscription.class);
@@ -13,17 +14,21 @@ public class VidaTransactionSubscription {
     private PWRJ pwrj;
     private long vidaId;
     private long startingBlock;
+    private long pollInterval;
     private long latestCheckedBlock;
     private VidaTransactionHandler handler;
+    private final Function<Long /*Block Number*/, Void> blockSaver; //Used to save the latest block number to a database or file
 
     AtomicBoolean wantsToPause = new AtomicBoolean(false), stop = new AtomicBoolean(false);
     AtomicBoolean paused = new AtomicBoolean(false);
 
-    public VidaTransactionSubscription(PWRJ pwrj, long vidaId, long startingBlock, VidaTransactionHandler handler, long pollInterval) {
+    public VidaTransactionSubscription(PWRJ pwrj, long vidaId, long startingBlock, VidaTransactionHandler handler, long pollInterval, Function<Long, Void> blockSaver) {
         this.pwrj = pwrj;
         this.vidaId = vidaId;
         this.startingBlock = startingBlock;
+        this.pollInterval = pollInterval;
         this.handler = handler;
+        this.blockSaver = blockSaver;
 
         //add shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -64,13 +69,14 @@ public class VidaTransactionSubscription {
                     }
 
                     latestCheckedBlock = maxBlockToCheck;
+                    blockSaver.apply(latestCheckedBlock);
                 } catch (Exception e) {
                     e.printStackTrace();
                     logger.error("Failed to fetch and process VM data transactions: " + e.getMessage());
                     logger.error("Fetching and processing VM data transactions has stopped");
                     break;
                 } finally {
-                    try { Thread.sleep(100); } catch (Exception e) {}
+                    try { Thread.sleep(pollInterval); } catch (Exception e) {}
                 }
             }
 

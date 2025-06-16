@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory;
 import org.web3j.crypto.Hash;
 
 import java.util.*;
+import java.util.function.Function;
 
 public class PWRJ {
     private static final Logger logger = LoggerFactory.getLogger(PWRJ.class);
@@ -941,14 +942,14 @@ public class PWRJ {
         return jsonObject.has(key) ? jsonObject.get(key) : defaultValue;
     }
 
-    public VidaTransactionSubscription subscribeToVidaTransactions(PWRJ pwrj, long vidaId, long startingBlock, VidaTransactionHandler handler, long pollInterval) throws IOException {
-        VidaTransactionSubscription i = new VidaTransactionSubscription(pwrj, vidaId, startingBlock, handler, pollInterval);
+    public VidaTransactionSubscription subscribeToVidaTransactions(PWRJ pwrj, long vidaId, long startingBlock, long pollInterval, Function<Long, Void> blockSaver, VidaTransactionHandler handler) throws IOException {
+        VidaTransactionSubscription i = new VidaTransactionSubscription(pwrj, vidaId, startingBlock, handler, pollInterval, blockSaver);
         i.start();
         return i;
     }
 
-    public VidaTransactionSubscription subscribeToVidaTransactions(PWRJ pwrj, long vidaId, long startingBlock, VidaTransactionHandler handler) throws IOException {
-        VidaTransactionSubscription sub = subscribeToVidaTransactions(pwrj, vidaId, startingBlock, handler, 100);
+    public VidaTransactionSubscription subscribeToVidaTransactions(PWRJ pwrj, long vidaId, long startingBlock, Function<Long, Void> blockSaver, VidaTransactionHandler handler) throws IOException {
+        VidaTransactionSubscription sub = subscribeToVidaTransactions(pwrj, vidaId, startingBlock, 100, blockSaver, handler);
         sub.start();
         return sub;
     }
