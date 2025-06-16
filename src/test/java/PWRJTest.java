@@ -128,9 +128,6 @@ public class PWRJTest {
             System.out.println("Testing getActiveValidatorsCount()...");
             int activeValidatorsCount = pwrj.getActiveValidatorsCount();
 
-            System.out.println("Testing getTotalDelegatorsCount()...");
-            int totalDelegatorsCount = pwrj.getTotalDelegatorsCount();
-
             System.out.println("Testing getAllValidators()...");
             List<Validator> allValidators = pwrj.getAllValidators();
 
@@ -207,9 +204,6 @@ public class PWRJTest {
 
             System.out.println("Testing getMinimumDelegatingAmount()...");
             long minimumDelegatingAmount = pwrj.getMinimumDelegatingAmount();
-
-            System.out.println("Testing getEcdsaVerificationFee()...");
-            long ecdsaVerificationFee = pwrj.getEcdsaVerificationFee();
 
             System.out.println("Testing getEarlyWithdrawPenalty()...");
             EarlyWithdrawPenaltyResponse earlyWithdrawPenalty = pwrj.getEarlyWithdrawPenalty(TEST_WITHDRAW_TIME);
