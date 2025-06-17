@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
 public class VidaTransactionSubscription {
@@ -16,7 +17,7 @@ public class VidaTransactionSubscription {
     private long vidaId;
     private long startingBlock;
     private long pollInterval;
-    private long latestCheckedBlock;
+    private AtomicLong latestCheckedBlock = new AtomicLong(1);
     private VidaTransactionHandler handler;
     private final Function<Long /*Block Number*/, Void> blockSaver; //Used to save the latest block number to a database or file
 
@@ -40,6 +41,7 @@ public class VidaTransactionSubscription {
     }
 
     AtomicBoolean running = new AtomicBoolean(false);
+
     public synchronized void start() {
         if (running.get()) {
             logger.error("IvaTransactionSubscription is already running");
@@ -50,7 +52,7 @@ public class VidaTransactionSubscription {
             stop.set(false);
         }
 
-        latestCheckedBlock = this.startingBlock - 1;
+        latestCheckedBlock.set(this.startingBlock - 1);
         Thread thread = new Thread(() -> {
             while (true && !stop.get()) {
                 if(wantsToPause.get()) {
@@ -59,11 +61,11 @@ public class VidaTransactionSubscription {
                 }
                 try {
                     long latestBlock = pwrj.getLatestBlockNumber();
-                    if(latestBlock == latestCheckedBlock) continue;
+                    if(latestBlock == latestCheckedBlock.get()) continue;
 
-                    long maxBlockToCheck = Math.min(latestBlock, latestCheckedBlock + 1000);
+                    long maxBlockToCheck = Math.min(latestBlock, latestCheckedBlock.get() + 1000);
 
-                    FalconTransaction.PayableVidaDataTxn[] transactions = pwrj.getVidaDataTransactions(latestCheckedBlock + 1, maxBlockToCheck, vidaId);
+                    FalconTransaction.PayableVidaDataTxn[] transactions = pwrj.getVidaDataTransactions(latestCheckedBlock.get() + 1, maxBlockToCheck, vidaId);
 
                     for (FalconTransaction.PayableVidaDataTxn transaction : transactions) {
                         try {
@@ -74,9 +76,9 @@ public class VidaTransactionSubscription {
                         }
                     }
 
-                    latestCheckedBlock = maxBlockToCheck;
+                    latestCheckedBlock.set(maxBlockToCheck);
                     try {
-                        blockSaver.apply(latestCheckedBlock);
+                        blockSaver.apply(latestCheckedBlock.get());
                     } catch (Exception e) {
                         logger.error("Failed to save latest checked block: " + latestCheckedBlock + " - " + e.getMessage());
                         e.printStackTrace();
@@ -97,6 +99,10 @@ public class VidaTransactionSubscription {
 
         thread.setName("IvaTransactionSubscription:IVA-ID-" + vidaId);
         thread.start();
+    }
+
+    public void setLatestCheckedBlock(long blockNumber) {
+        latestCheckedBlock.set(blockNumber);
     }
 
     public void pause() {
@@ -133,7 +139,7 @@ public class VidaTransactionSubscription {
     }
 
     public long getLatestCheckedBlock() {
-        return latestCheckedBlock;
+        return latestCheckedBlock.get();
     }
 
     public long getStartingBlock() {
