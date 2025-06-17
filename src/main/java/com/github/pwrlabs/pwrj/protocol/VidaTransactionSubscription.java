@@ -5,6 +5,7 @@ import com.github.pwrlabs.pwrj.entities.FalconTransaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 
@@ -65,16 +66,27 @@ public class VidaTransactionSubscription {
                     FalconTransaction.PayableVidaDataTxn[] transactions = pwrj.getVidaDataTransactions(latestCheckedBlock + 1, maxBlockToCheck, vidaId);
 
                     for (FalconTransaction.PayableVidaDataTxn transaction : transactions) {
-                        handler.processIvaTransactions(transaction);
+                        try {
+                            handler.processIvaTransactions(transaction);
+                        } catch (Exception e) {
+                            logger.error("Failed to process VIDA transaction: " + transaction.getTransactionHash() + " - " + e.getMessage());
+                            e.printStackTrace();
+                        }
                     }
 
                     latestCheckedBlock = maxBlockToCheck;
-                    blockSaver.apply(latestCheckedBlock);
-                } catch (Exception e) {
+                    try {
+                        blockSaver.apply(latestCheckedBlock);
+                    } catch (Exception e) {
+                        logger.error("Failed to save latest checked block: " + latestCheckedBlock + " - " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                } catch (IOException e) {
+                    logger.error("Failed to fetch VIDA transactions: " + e.getMessage());
                     e.printStackTrace();
-                    logger.error("Failed to fetch and process VM data transactions: " + e.getMessage());
-                    logger.error("Fetching and processing VM data transactions has stopped");
-                    break;
+                } catch (Exception e) {
+                    logger.error("Unexpected error in VidaTransactionSubscription: " + e.getMessage());
+                    e.printStackTrace();
                 } finally {
                     try { Thread.sleep(pollInterval); } catch (Exception e) {}
                 }
