@@ -77,11 +77,13 @@ public class VidaTransactionSubscription {
                     }
 
                     latestCheckedBlock.set(maxBlockToCheck);
-                    try {
-                        blockSaver.apply(latestCheckedBlock.get());
-                    } catch (Exception e) {
-                        logger.error("Failed to save latest checked block: " + latestCheckedBlock + " - " + e.getMessage());
-                        e.printStackTrace();
+                    if(blockSaver != null) {
+                        try {
+                            blockSaver.apply(latestCheckedBlock.get());
+                        } catch (Exception e) {
+                            logger.error("Failed to save latest checked block: " + latestCheckedBlock + " - " + e.getMessage());
+                            e.printStackTrace();
+                        }
                     }
                 } catch (IOException e) {
                     logger.error("Failed to fetch VIDA transactions: " + e.getMessage());
