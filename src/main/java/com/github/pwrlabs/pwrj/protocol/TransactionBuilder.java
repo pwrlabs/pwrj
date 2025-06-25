@@ -11,6 +11,9 @@ import java.util.Set;
 
 import static com.github.pwrlabs.pwrj.Utils.NewError.errorIf;
 
+/**
+ * TransactionBuilder class.
+ */
 public class TransactionBuilder {
 
     private static byte[] getFalconTransactionBase(int identifier, int nonce, byte chainId, long feePerByte, byte[] sender) {
@@ -24,6 +27,15 @@ public class TransactionBuilder {
     }
 
     //region - Falcon Transactions
+/**
+ * getSetPublicKeyTransaction method.
+ * @param feePerByte parameter
+ * @param publicKey parameter
+ * @param sender parameter
+ * @param nonce parameter
+ * @param chainId parameter
+ * @return value
+ */
     public static byte[] getSetPublicKeyTransaction(long feePerByte, byte[] publicKey, byte[] sender, int nonce, byte chainId) {
         byte[] transactionBase = getFalconTransactionBase(1001, nonce, chainId, feePerByte, sender);
         ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 2 + publicKey.length);
@@ -34,6 +46,15 @@ public class TransactionBuilder {
         return buffer.array();
     }
 
+/**
+ * getFalconJoinAsValidatorTransaction method.
+ * @param feePerByte parameter
+ * @param sender parameter
+ * @param ip parameter
+ * @param nonce parameter
+ * @param chainId parameter
+ * @return value
+ */
     public static byte[] getFalconJoinAsValidatorTransaction(long feePerByte, byte[] sender, String ip, int nonce, byte chainId) {
         byte[] transactionBase = getFalconTransactionBase(1002, nonce, chainId, feePerByte, sender);
         byte[] ipBytes = ip.getBytes(StandardCharsets.UTF_8);
@@ -46,6 +67,16 @@ public class TransactionBuilder {
         return buffer.array();
     }
 
+/**
+ * getFalconDelegateTransaction method.
+ * @param feePerByte parameter
+ * @param sender parameter
+ * @param validator parameter
+ * @param pwrAmount parameter
+ * @param nonce parameter
+ * @param chainId parameter
+ * @return value
+ */
     public static byte[] getFalconDelegateTransaction(long feePerByte, byte[] sender, byte[] validator, long pwrAmount, int nonce, byte chainId) {
         byte[] transactionBase = getFalconTransactionBase(1003, nonce, chainId, feePerByte, sender);
         ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 20 + 8);
@@ -56,6 +87,15 @@ public class TransactionBuilder {
         return buffer.array();
     }
 
+/**
+ * getFalconChangeIpTransaction method.
+ * @param feePerByte parameter
+ * @param sender parameter
+ * @param newIp parameter
+ * @param nonce parameter
+ * @param chainId parameter
+ * @return value
+ */
     public static byte[] getFalconChangeIpTransaction(long feePerByte, byte[] sender, String newIp, int nonce, byte chainId) {
         byte[] transactionBase = getFalconTransactionBase(1004, nonce, chainId, feePerByte, sender);
         byte[] ipBytes = newIp.getBytes(StandardCharsets.UTF_8);
@@ -68,11 +108,29 @@ public class TransactionBuilder {
         return buffer.array();
     }
 
+/**
+ * getFalconClaimActiveNodeSpotTransaction method.
+ * @param feePerByte parameter
+ * @param sender parameter
+ * @param nonce parameter
+ * @param chainId parameter
+ * @return value
+ */
     public static byte[] getFalconClaimActiveNodeSpotTransaction(long feePerByte, byte[] sender, int nonce, byte chainId) {
         byte[] transactionBase = getFalconTransactionBase(1005, nonce, chainId, feePerByte, sender);
         return transactionBase;
     }
 
+/**
+ * getTransferTransaction method.
+ * @param feePerByte parameter
+ * @param sender parameter
+ * @param receiver parameter
+ * @param amount parameter
+ * @param nonce parameter
+ * @param chainId parameter
+ * @return value
+ */
     public static byte[] getTransferTransaction(long feePerByte, byte[] sender, byte[] receiver, long amount, int nonce, byte chainId) {
         byte[] transactionBase = getFalconTransactionBase(1006, nonce, chainId, feePerByte, sender);
         ByteBuffer buffer = ByteBuffer.allocate(transactionBase.length + 20 + 8);
@@ -309,6 +367,14 @@ public class TransactionBuilder {
         return buffer.array();
     }
 
+/**
+ * getRemoveGuardianTransaction method.
+ * @param feePerByte parameter
+ * @param sender parameter
+ * @param nonce parameter
+ * @param chainId parameter
+ * @return value
+ */
     public static byte[] getRemoveGuardianTransaction(long feePerByte, byte[] sender, int nonce, byte chainId) {
         byte[] transactionBase = getFalconTransactionBase(1022, nonce, chainId, feePerByte, sender);
         return transactionBase;

@@ -5,6 +5,9 @@ import lombok.Getter;
 import org.json.JSONObject;
 
 @Getter
+/**
+ * WithdrawalOrder class.
+ */
 public class WithdrawalOrder {
     private final byte[] hash;
     private final byte[] address;
@@ -24,6 +27,10 @@ public class WithdrawalOrder {
         complete = object.getBoolean("complete");
     }
 
+/**
+ * toJson method.
+ * @return value
+ */
     public JSONObject toJson() {
         JSONObject object = new JSONObject();
         object.put("hash", Hex.toHexString(hash));

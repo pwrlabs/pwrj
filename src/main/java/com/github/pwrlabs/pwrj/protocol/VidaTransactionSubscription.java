@@ -10,6 +10,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
+/**
+ * VidaTransactionSubscription class.
+ */
 public class VidaTransactionSubscription {
     private static final Logger logger = LoggerFactory.getLogger(VidaTransactionSubscription.class);
 
@@ -42,6 +45,9 @@ public class VidaTransactionSubscription {
 
     AtomicBoolean running = new AtomicBoolean(false);
 
+/**
+ * start method.
+ */
     public synchronized void start() {
         if (running.get()) {
             logger.error("IvaTransactionSubscription is already running");
@@ -103,10 +109,17 @@ public class VidaTransactionSubscription {
         thread.start();
     }
 
+/**
+ * setLatestCheckedBlock method.
+ * @param blockNumber parameter
+ */
     public void setLatestCheckedBlock(long blockNumber) {
         latestCheckedBlock.set(blockNumber);
     }
 
+/**
+ * pause method.
+ */
     public void pause() {
         wantsToPause.set(true);
 
@@ -119,43 +132,81 @@ public class VidaTransactionSubscription {
         }
     }
 
+/**
+ * resume method.
+ */
     public void resume() {
         wantsToPause.set(false);
     }
 
+/**
+ * stop method.
+ */
     public void stop() {
         pause();
         stop.set(true);
     }
 
+/**
+ * isRunning method.
+ * @return value
+ */
     public boolean isRunning() {
         return running.get();
     }
 
+/**
+ * isPaused method.
+ * @return value
+ */
     public boolean isPaused() {
         return wantsToPause.get();
     }
 
+/**
+ * isStopped method.
+ * @return value
+ */
     public boolean isStopped() {
         return stop.get();
     }
 
+/**
+ * getLatestCheckedBlock method.
+ * @return value
+ */
     public long getLatestCheckedBlock() {
         return latestCheckedBlock.get();
     }
 
+/**
+ * getStartingBlock method.
+ * @return value
+ */
     public long getStartingBlock() {
         return startingBlock;
     }
 
+/**
+ * getVidaId method.
+ * @return value
+ */
     public long getVidaId() {
         return vidaId;
     }
 
+/**
+ * getHandler method.
+ * @return value
+ */
     public VidaTransactionHandler getHandler() {
         return handler;
     }
 
+/**
+ * getPwrj method.
+ * @return value
+ */
     public PWRJ getPwrj() {
         return pwrj;
     }

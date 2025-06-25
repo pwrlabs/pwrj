@@ -13,12 +13,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Main class.
+ */
 public class Main {
 
+/**
+ * main method.
+ * @param args parameter
+ * @throws Exception exception
+ */
     public static void main(String[] args) throws Exception {
         spamThatBoy();
     }
 
+/**
+ * spamThatBoy method.
+ * @throws Exception exception
+ */
     public static void spamThatBoy() throws Exception {
         PWRJ pwrj = new PWRJ("http://46.101.151.203:8085");
         PWRFalconWallet wallet = new PWRFalconWallet("media domain action float tooth wagon tilt more spend spike mother below", pwrj);
@@ -74,6 +86,9 @@ public class Main {
             Thread.sleep(1500);
         }
     }
+/**
+ * delegateToOurBoys method.
+ */
     public static void delegateToOurBoys() {
         PWRJ pwrj = new PWRJ("https://pwrrpc.pwrlabs.io");
 
@@ -100,11 +115,20 @@ public class Main {
 
     }
     //get random long
+/**
+ * getRandomLong method.
+ * @return value
+ */
     public static long getRandomLong() {
         return System.currentTimeMillis() + (long) (Math.random() * 1000000);
     }
 
     //get random x bytes array
+/**
+ * getRandomBytes method.
+ * @param length parameter
+ * @return value
+ */
     public static byte[] getRandomBytes(int length) {
         byte[] bytes = new byte[length];
         for (int i = 0; i < length; i++) {
