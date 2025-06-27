@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Getter
+/**
+ * Block class.
+ */
 public class Block {
     private final long blockNumber;
     private final long timestamp;
@@ -46,11 +49,19 @@ public class Block {
         }
     }
 
+/**
+ * getTransactionHashes method.
+ * @return value
+ */
     public List<String> getTransactionHashes() {
         if(transactionHashes == null) return new ArrayList<>();
         else return transactionHashes;
     }
 
+/**
+ * getTransactionCount method.
+ * @return value
+ */
     public int getTransactionCount() {
         if(transactionHashes == null) return 0;
         else return transactionHashes.size();

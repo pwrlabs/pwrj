@@ -16,6 +16,9 @@ import java.util.List;
 
 @Getter
 @SuperBuilder
+/**
+ * Validator class.
+ */
 public class Validator {
     private final String address;
     private final String ip;
@@ -35,11 +38,20 @@ public class Validator {
         this.status = object.optString("status", null);
     }
 
+/**
+ * getSharesPerSpark method.
+ * @return value
+ */
     public BigInteger getSharesPerSpark() {
         if (shares.compareTo(BigInteger.valueOf(0)) == 0) return BigInteger.valueOf(1000000000);
         else return shares.divide(BigInteger.valueOf(getVotingPower()));
     }
 
+/**
+ * main method.
+ * @param args parameter
+ * @throws Exception exception
+ */
     public static void main(String[] args) throws Exception {
         PWRJ pwrj = new PWRJ("https://pwrrpc.pwrlabs.io");
         List<Validator> validators = pwrj.getAllValidators();

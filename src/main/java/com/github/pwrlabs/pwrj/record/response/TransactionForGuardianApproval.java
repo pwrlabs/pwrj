@@ -6,6 +6,9 @@ import lombok.experimental.SuperBuilder;
 
 @Getter
 @SuperBuilder
+/**
+ * TransactionForGuardianApproval class.
+ */
 public class TransactionForGuardianApproval {
     private boolean valid;
     private String guardianAddress;

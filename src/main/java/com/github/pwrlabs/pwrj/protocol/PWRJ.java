@@ -41,6 +41,9 @@ import org.web3j.crypto.Hash;
 import java.util.*;
 import java.util.function.Function;
 
+/**
+ * PWRJ class.
+ */
 public class PWRJ {
     private static final Logger logger = LoggerFactory.getLogger(PWRJ.class);
     @Getter @Setter
@@ -55,6 +58,12 @@ public class PWRJ {
     private byte chainId = (byte) -1;
     private long ecdsaVerificationFee = 10000;
 
+/**
+ * httpGet method.
+ * @param url parameter
+ * @return value
+ * @throws IOException exception
+ */
     public JSONObject httpGet(String url) throws IOException {
         // Create custom request configuration
         RequestConfig requestConfig = RequestConfig.custom()
@@ -82,6 +91,13 @@ public class PWRJ {
         }
     }
 
+/**
+ * httpPost method.
+ * @param url parameter
+ * @param body parameter
+ * @return value
+ * @throws IOException exception
+ */
     public JSONObject httpPost(String url, @NotNull JSONObject body) throws IOException {
         // Create custom request configuration
         RequestConfig requestConfig = RequestConfig.custom()
@@ -114,6 +130,11 @@ public class PWRJ {
         }
     }
 
+/**
+ * getVidaIdAddressBytea method.
+ * @param vidaId parameter
+ * @return value
+ */
     public byte[] getVidaIdAddressBytea(long vidaId) {
         String hexAddress = vidaId >= 0 ? "1" : "0";
         if (vidaId < 0) vidaId = -vidaId;
@@ -128,10 +149,20 @@ public class PWRJ {
         return Hex.decode(hexAddress);
     }
 
+/**
+ * getVidaIdAddress method.
+ * @param vidaId parameter
+ * @return value
+ */
     public String getVidaIdAddress(long vidaId) {
         return Hex.toHexString(getVidaIdAddressBytea(vidaId));
     }
 
+/**
+ * isVidaAddress method.
+ * @param address parameter
+ * @return value
+ */
     public static boolean isVidaAddress(String address) {
         try {
             if (address == null || (address.length() != 40 && address.length() != 42)) return false;
@@ -160,10 +191,18 @@ public class PWRJ {
      *
      * @return The URL of the RPC node.
      */
+/**
+ * getRpcNodeUrl method.
+ * @return value
+ */
     public String getRpcNodeUrl() {
         return rpcNodeUrl;
     }
 
+/**
+ * getChainId method.
+ * @return value
+ */
     public byte getChainId() {
         if(chainId == (byte)-1) {
             try {
@@ -177,6 +216,10 @@ public class PWRJ {
         return chainId;
     }
 
+/**
+ * setChainId method.
+ * @param id parameter
+ */
     public void setChainId(byte id) {
         chainId = id;
     }
@@ -186,15 +229,30 @@ public class PWRJ {
      *
      * @return The fee-per-byte rate.
      */
+/**
+ * getFeePerByte method.
+ * @return value
+ * @throws IOException exception
+ */
     public long getFeePerByte() throws IOException {
         return httpGet(rpcNodeUrl + "/feePerByte").getLong("feePerByte");
     }
 
+/**
+ * getBlockchainVersion method.
+ * @return value
+ * @throws IOException exception
+ */
     public short getBlockchainVersion() throws IOException {
         return (short) httpGet(rpcNodeUrl + "/blockchainVersion").getInt("blockchainVersion");
     }
 
 
+/**
+ * getPublicKeyOfAddress method.
+ * @param address parameter
+ * @return value
+ */
     public byte[] getPublicKeyOfAddress(String address) {
         try {
             JSONObject object = httpGet(rpcNodeUrl + "/publicKeyOfAddress?address=" + address);
@@ -220,6 +278,12 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
+/**
+ * getNonceOfAddress method.
+ * @param address parameter
+ * @return value
+ * @throws IOException exception
+ */
     public int getNonceOfAddress(String address) throws IOException {
         return httpGet(rpcNodeUrl + "/nonceOfUser?userAddress=" + address).getInt("nonce");
     }
@@ -236,6 +300,12 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
+/**
+ * getBalanceOfAddress method.
+ * @param address parameter
+ * @return value
+ * @throws IOException exception
+ */
     public long getBalanceOfAddress(String address) throws IOException {
         return httpGet(rpcNodeUrl + "/balanceOf?userAddress=" + address).getLong("balance");
     }
@@ -248,6 +318,12 @@ public class PWRJ {
      *         or null if the address is not guarded
      * @throws IOException If there is an error during the HTTP request to the RPC node
      */
+/**
+ * getGuardianOfAddress method.
+ * @param address parameter
+ * @return value
+ * @throws IOException exception
+ */
     public BiResult<String, Long> getGuardianOfAddress(String address) throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/guardianOf?userAddress=" + address);
 
@@ -270,78 +346,173 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
+/**
+ * getBlocksCount method.
+ * @return value
+ * @throws IOException exception
+ */
     public long getBlocksCount() throws IOException {
         return httpGet(rpcNodeUrl + "/blocksCount").getLong("blocksCount");
     }
 
+/**
+ * getMaxBlockSize method.
+ * @return value
+ * @throws IOException exception
+ */
     public int getMaxBlockSize() throws IOException {
         return httpGet(rpcNodeUrl + "/maxBlockSize").getInt("maxBlockSize");
     }
 
+/**
+ * getMaxTransactionSize method.
+ * @return value
+ * @throws IOException exception
+ */
     public int getMaxTransactionSize() throws IOException {
         return httpGet(rpcNodeUrl + "/maxTransactionSize").getInt("maxTransactionSize");
     }
 
+/**
+ * getValidatorCountLimit method.
+ * @return value
+ * @throws IOException exception
+ */
     public int getValidatorCountLimit() throws IOException {
         return httpGet(rpcNodeUrl + "/validatorCountLimit").getInt("validatorCountLimit");
     }
 
+/**
+ * getValidatorSlashingFee method.
+ * @return value
+ * @throws IOException exception
+ */
     public int getValidatorSlashingFee() throws IOException {
         return httpGet(rpcNodeUrl + "/validatorSlashingFee").getInt("validatorSlashingFee");
     }
 
+/**
+ * getVidaOwnerTransactionFeeShare method.
+ * @return value
+ * @throws IOException exception
+ */
     public int getVidaOwnerTransactionFeeShare() throws IOException {
         return httpGet(rpcNodeUrl + "/vidaOwnerTransactionFeeShare").getInt("vidaOwnerTransactionFeeShare");
     }
 
+/**
+ * getBurnPercentage method.
+ * @return value
+ * @throws IOException exception
+ */
     public int getBurnPercentage() throws IOException {
         return httpGet(rpcNodeUrl + "/burnPercentage").getInt("burnPercentage");
     }
 
+/**
+ * getValidatorOperationalFee method.
+ * @return value
+ * @throws IOException exception
+ */
     public int getValidatorOperationalFee() throws IOException {
         return httpGet(rpcNodeUrl + "/validatorOperationalFee").getInt("validatorOperationalFee");
     }
 
+/**
+ * getBlockNumber method.
+ * @return value
+ * @throws IOException exception
+ */
     public long getBlockNumber() throws IOException {
         return httpGet(rpcNodeUrl + "/blockNumber").getLong("blockNumber");
     }
 
+/**
+ * getBlockTimestamp method.
+ * @return value
+ * @throws IOException exception
+ */
     public long getBlockTimestamp() throws IOException {
         return httpGet(rpcNodeUrl + "/blockTimestamp").getLong("blockTimestamp");
     }
 
+/**
+ * getTotalVotingPower method.
+ * @return value
+ * @throws IOException exception
+ */
     public long getTotalVotingPower() throws IOException {
         return httpGet(rpcNodeUrl + "/totalVotingPower").getLong("totalVotingPower");
     }
 
+/**
+ * getPwrRewardsPerYear method.
+ * @return value
+ * @throws IOException exception
+ */
     public long getPwrRewardsPerYear() throws IOException {
         return httpGet(rpcNodeUrl + "/pwrRewardsPerYear").getLong("pwrRewardsPerYear");
     }
 
+/**
+ * getWithdrawalLockTime method.
+ * @return value
+ * @throws IOException exception
+ */
     public long getWithdrawalLockTime() throws IOException {
         return httpGet(rpcNodeUrl + "/withdrawalLockTime").getLong("withdrawalLockTime");
     }
 
+/**
+ * getValidatorJoiningFee method.
+ * @return value
+ * @throws IOException exception
+ */
     public long getValidatorJoiningFee() throws IOException {
         return httpGet(rpcNodeUrl + "/validatorJoiningFee").getLong("validatorJoiningFee");
     }
 
+/**
+ * getMaxGuardianTime method.
+ * @return value
+ * @throws IOException exception
+ */
     public long getMaxGuardianTime() throws IOException {
         return httpGet(rpcNodeUrl + "/maxGuardianTime").getLong("maxGuardianTime");
     }
 
+/**
+ * getVidaIdClaimingFee method.
+ * @return value
+ * @throws IOException exception
+ */
     public long getVidaIdClaimingFee() throws IOException {
         return httpGet(rpcNodeUrl + "/vidaIdClaimingFee").getLong("vidaIdClaimingFee");
     }
 
+/**
+ * getProposalFee method.
+ * @return value
+ * @throws IOException exception
+ */
     public long getProposalFee() throws IOException {
         return httpGet(rpcNodeUrl + "/proposalFee").getLong("proposalFee");
     }
 
+/**
+ * getProposalValidityTime method.
+ * @return value
+ * @throws IOException exception
+ */
     public long getProposalValidityTime() throws IOException {
         return httpGet(rpcNodeUrl + "/proposalValidityTime").getLong("proposalValidityTime");
     }
 
+/**
+ * getMinimumDelegatingAmount method.
+ * @return value
+ * @throws IOException exception
+ */
     public long getMinimumDelegatingAmount() throws IOException {
         return httpGet(rpcNodeUrl + "/minimumDelegatingAmount").getLong("minimumDelegatingAmount");
     }
@@ -357,6 +528,11 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If there are issues retrieving the total count of blocks.
      */
+/**
+ * getLatestBlockNumber method.
+ * @return value
+ * @throws IOException exception
+ */
     public long getLatestBlockNumber() throws IOException {
         return getBlocksCount() - 1;
     }
@@ -373,10 +549,23 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
+/**
+ * getBlockByNumber method.
+ * @param blockNumber parameter
+ * @return value
+ * @throws Exception exception
+ */
     public Block getBlockByNumber(long blockNumber) throws Exception {
         return new Block(httpGet(rpcNodeUrl + "/block?blockNumber=" + blockNumber).getJSONObject("block"));
     }
 
+/**
+ * getBlockWithViDataTransactionsOnly method.
+ * @param blockNumber parameter
+ * @param vidaId parameter
+ * @return value
+ * @throws Exception exception
+ */
     public BiResult<Block, List<FalconTransaction.PayableVidaDataTxn>> getBlockWithViDataTransactionsOnly(long blockNumber, long vidaId) throws Exception {
         JSONObject object = httpGet(rpcNodeUrl + "/blockWithVidaDataTransactions?blockNumber=" + blockNumber + "&vidaId=" + vidaId);
 
@@ -398,11 +587,23 @@ public class PWRJ {
         return new BiResult<>(block, transactions);
     }
 
+/**
+ * getTransactionByHash method.
+ * @param hash parameter
+ * @return value
+ * @throws Exception exception
+ */
     public FalconTransaction getTransactionByHash(String hash) throws Exception {
         JSONObject object = httpGet(rpcNodeUrl + "/transactionByHash?transactionHash=" + hash).getJSONObject("transaction");
         return FalconTransaction.fromJson(object);
     }
 
+/**
+ * getTransactionsByHashes method.
+ * @param hashes parameter
+ * @return value
+ * @throws Exception exception
+ */
     public List<FalconTransaction> getTransactionsByHashes(List<String> hashes) throws Exception {
         JSONArray hashesArray = new JSONArray();
         for (String hash : hashes) {
@@ -421,10 +622,24 @@ public class PWRJ {
         return transactions;
     }
 
+/**
+ * getProposalStatus method.
+ * @param proposalHash parameter
+ * @return value
+ * @throws IOException exception
+ */
     public String getProposalStatus(String proposalHash) throws IOException {
         return httpGet(rpcNodeUrl + "/proposalStatus?proposalHash=" + proposalHash).getString("status");
     }
 
+/**
+ * getVidaDataTransactions method.
+ * @param startingBlock parameter
+ * @param endingBlock parameter
+ * @param vidaId parameter
+ * @return value
+ * @throws IOException exception
+ */
     public FalconTransaction.PayableVidaDataTxn[] getVidaDataTransactions(long startingBlock, long endingBlock, long vidaId) throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/getVidaTransactions?startingBlock=" + startingBlock + "&endingBlock=" + endingBlock + "&vidaId=" + vidaId);
 
@@ -439,6 +654,15 @@ public class PWRJ {
         return TransactionsArray;
     }
 
+/**
+ * getVidaDataTransactionsFilterByBytePrefix method.
+ * @param startingBlock parameter
+ * @param endingBlock parameter
+ * @param vidaId parameter
+ * @param prefix parameter
+ * @return value
+ * @throws IOException exception
+ */
     public FalconTransaction.PayableVidaDataTxn[] getVidaDataTransactionsFilterByBytePrefix(long startingBlock, long endingBlock, long vidaId, byte[] prefix) throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/getVidaTransactionsSortByBytePrefix?startingBlock=" + startingBlock + "&endingBlock=" + endingBlock + "&vidaId=" + vidaId + "&bytePrefix=" + Hex.toHexString(prefix));
 
@@ -453,6 +677,12 @@ public class PWRJ {
         return TransactionsArray;
     }
 
+/**
+ * isTransactionValidForGuardianApproval method.
+ * @param transaction parameter
+ * @return value
+ * @throws Exception exception
+ */
     public TransactionForGuardianApproval isTransactionValidForGuardianApproval(String transaction) throws Exception {
         JSONObject object = httpPost(rpcNodeUrl + "/isTransactionValidForGuardianApproval", new JSONObject().put("transaction", transaction));
 
@@ -472,9 +702,20 @@ public class PWRJ {
                     .build();
         }
     }
+/**
+ * isTransactionValidForGuardianApproval method.
+ * @param Transaction parameter
+ * @return value
+ * @throws Exception exception
+ */
     public TransactionForGuardianApproval isTransactionValidForGuardianApproval(byte[] Transaction) throws Exception {
         return isTransactionValidForGuardianApproval(Hex.toHexString(Transaction));
     }
+/**
+ * getActiveVotingPower method.
+ * @return value
+ * @throws IOException exception
+ */
     public long getActiveVotingPower() throws IOException {
         return httpGet(rpcNodeUrl + "/activeVotingPower").getLong("activeVotingPower");
     }
@@ -490,6 +731,11 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
+/**
+ * getTotalValidatorsCount method.
+ * @return value
+ * @throws IOException exception
+ */
     public int getTotalValidatorsCount() throws IOException {
         return httpGet(rpcNodeUrl + "/totalValidatorsCount").getInt("validatorsCount");
     }
@@ -505,6 +751,11 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
+/**
+ * getStandbyValidatorsCount method.
+ * @return value
+ * @throws IOException exception
+ */
     public int getStandbyValidatorsCount() throws IOException {
         return httpGet(rpcNodeUrl + "/standbyValidatorsCount").getInt("validatorsCount");
     }
@@ -520,6 +771,11 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
+/**
+ * getActiveValidatorsCount method.
+ * @return value
+ * @throws IOException exception
+ */
     public int getActiveValidatorsCount() throws IOException {
         return httpGet(rpcNodeUrl + "/activeValidatorsCount").getInt("validatorsCount");
     }
@@ -535,6 +791,11 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
+/**
+ * getAllValidators method.
+ * @return value
+ * @throws IOException exception
+ */
     public List<Validator> getAllValidators() throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/allValidators");
         JSONArray validators = object.getJSONArray("validators");
@@ -579,6 +840,11 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
+/**
+ * getStandbyValidators method.
+ * @return value
+ * @throws IOException exception
+ */
     public List<Validator> getStandbyValidators() throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/standbyValidators");
         JSONArray validators = object.getJSONArray("validators");
@@ -623,6 +889,11 @@ public class PWRJ {
      * @throws InterruptedException If the request is interrupted.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
+/**
+ * getActiveValidators method.
+ * @return value
+ * @throws IOException exception
+ */
     public List<Validator> getActiveValidators() throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/activeValidators");
         JSONArray validators = object.getJSONArray("validators");
@@ -656,6 +927,12 @@ public class PWRJ {
         return validatorsList;
     }
 
+/**
+ * getDelegatees method.
+ * @param address parameter
+ * @return value
+ * @throws IOException exception
+ */
     public List<Validator> getDelegatees(String address) throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/delegateesOfUser?userAddress=" + address);
         System.out.println(object);
@@ -680,6 +957,12 @@ public class PWRJ {
         return validatorsList;
     }
 
+/**
+ * getValidator method.
+ * @param validatorAddress parameter
+ * @return value
+ * @throws IOException exception
+ */
     public Validator getValidator(String validatorAddress) throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/validator?validatorAddress=" + validatorAddress);
         JSONObject validatorObject = object.getJSONObject("validator");
@@ -696,14 +979,34 @@ public class PWRJ {
         return validator;
     }
 
+/**
+ * getDelegatedPWR method.
+ * @param delegatorAddress parameter
+ * @param validatorAddress parameter
+ * @return value
+ * @throws IOException exception
+ */
     public long getDelegatedPWR(String delegatorAddress, String validatorAddress) throws IOException {
         return httpGet(rpcNodeUrl + "/validator/delegator/delegatedPWROfAddress?userAddress=" + delegatorAddress + "&validatorAddress=" + validatorAddress).getLong("delegatedPWR");
     }
 
+/**
+ * getSharesOfDelegator method.
+ * @param delegatorAddress parameter
+ * @param validatorAddress parameter
+ * @return value
+ * @throws IOException exception
+ */
     public long getSharesOfDelegator(String delegatorAddress, String validatorAddress) throws IOException {
         return httpGet(rpcNodeUrl + "/validator/delegator/sharesOfAddress?userAddress=" + delegatorAddress + "&validatorAddress=" + validatorAddress).getLong("shares");
     }
 
+/**
+ * getShareValue method.
+ * @param validator parameter
+ * @return value
+ * @throws IOException exception
+ */
     public BigDecimal getShareValue(String validator) throws IOException {
         return httpGet(rpcNodeUrl + "/validator/shareValue?validatorAddress=" + validator).getBigDecimal("shareValue");
     }
@@ -720,6 +1023,12 @@ public class PWRJ {
      * @throws IOException If there's an issue with the network or stream handling.
      * @throws RuntimeException If the RPC node returns an unsuccessful status or a non-200 HTTP response.
      */
+/**
+ * getOwnerOfVida method.
+ * @param vidaId parameter
+ * @return value
+ * @throws IOException exception
+ */
     public String getOwnerOfVida(long vidaId) throws IOException {
         JSONObject response = httpGet(rpcNodeUrl + "/ownerOfVidaId?vidaId=" + vidaId);
 
@@ -730,6 +1039,11 @@ public class PWRJ {
         }
     }
 
+/**
+ * getVidaSponsoredAddresses method.
+ * @param vidaId parameter
+ * @return value
+ */
     public List<String> getVidaSponsoredAddresses(long vidaId) {
     
         try {
@@ -748,6 +1062,11 @@ public class PWRJ {
         }
     }
 
+/**
+ * getVidaAllowedSenders method.
+ * @param vidaId parameter
+ * @return value
+ */
     public List<String> getVidaAllowedSenders(long vidaId) {
         try {
             JSONObject object = httpGet(rpcNodeUrl + "/vidaAllowedSenders?vidaId=" + vidaId);
@@ -765,6 +1084,11 @@ public class PWRJ {
         }
     }
 
+/**
+ * isVidaPrivate method.
+ * @param vidaId parameter
+ * @return value
+ */
     public Boolean isVidaPrivate(long vidaId) {
         try {
             JSONObject response = httpGet(rpcNodeUrl + "/isVidaPrivate?vidaId=" + vidaId);
@@ -787,6 +1111,12 @@ public class PWRJ {
      *         corresponding voting power as a Long
      * @throws IOException If an error occurs during the HTTP request or response handling
      */
+/**
+ * getConduitsOfVida method.
+ * @param vidaId parameter
+ * @return value
+ * @throws IOException exception
+ */
     public Map<ByteArrayWrapper /*Conduit address*/, Long/*Voting Power*/> getConduitsOfVida(long vidaId) throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/conduitsOfVida?vidaId=" + vidaId);
 
@@ -808,10 +1138,22 @@ public class PWRJ {
         return conduitsMap;
     }
 
+/**
+ * isOwnerAllowedToTransferPWRFromVida method.
+ * @param vidaId parameter
+ * @return value
+ * @throws IOException exception
+ */
     public boolean isOwnerAllowedToTransferPWRFromVida(long vidaId) throws IOException {
         return httpGet(rpcNodeUrl + "/isOwnerAllowedToTransferPWRFromVida?vidaId=" + vidaId).getBoolean("allowed");
     }
 
+/**
+ * getEarlyWithdrawPenalty method.
+ * @param withdrawTime parameter
+ * @return value
+ * @throws IOException exception
+ */
     public EarlyWithdrawPenaltyResponse getEarlyWithdrawPenalty(long withdrawTime) throws IOException {
         JSONObject response = httpGet(rpcNodeUrl + "/earlyWithdrawPenalty?withdrawTime=" + withdrawTime);
 
@@ -821,6 +1163,11 @@ public class PWRJ {
         return new EarlyWithdrawPenaltyResponse(earlyWithdrawAvailable, penalty);
     }
 
+/**
+ * getAllEarlyWithdrawPenalties method.
+ * @return value
+ * @throws IOException exception
+ */
     public Map<Long, Long> getAllEarlyWithdrawPenalties() throws IOException {
         JSONObject response = httpGet(rpcNodeUrl + "/allEarlyWithdrawPenalties");
 
@@ -836,6 +1183,12 @@ public class PWRJ {
         return penalties;
     }
 
+/**
+ * getWithdrawalOrder method.
+ * @param withdrawalHash parameter
+ * @return value
+ * @throws IOException exception
+ */
     public WithdrawalOrder getWithdrawalOrder(byte[] withdrawalHash) throws IOException {
         JSONObject object = httpGet(rpcNodeUrl + "/withdrawalOrder?withdrawalHash=" + Hex.toHexString(withdrawalHash));
         boolean withdrawalOrderFound = object.getBoolean("withdrawalOrderFound");
@@ -855,6 +1208,13 @@ public class PWRJ {
      * @throws IOException If there's an issue with the network or stream handling
      * @throws Exception If there's an error parsing the response
      */
+/**
+ * getTransactionsByIdentifiers method.
+ * @param blockNumber parameter
+ * @param identifiers parameter
+ * @return value
+ * @throws Exception exception
+ */
     public BiResult<Block, List<FalconTransaction>> getTransactionsByIdentifiers(long blockNumber, List<Integer> identifiers) throws Exception {
         JSONObject body = new JSONObject();
         body.put("blockNumber", blockNumber);
@@ -894,6 +1254,11 @@ public class PWRJ {
      * @throws InterruptedException If the send operation is interrupted.
      * @throws RuntimeException If the server responds with a non-200 HTTP status code.
      */
+/**
+ * broadcastTransaction method.
+ * @param transaction parameter
+ * @return value
+ */
     public Response broadcastTransaction(byte[] transaction) {
         try {
             // Timeout configuration
@@ -938,22 +1303,57 @@ public class PWRJ {
         }
     }
 
+/**
+ * getOrDefault method.
+ * @param jsonObject parameter
+ * @param key parameter
+ * @param defaultValue parameter
+ * @return value
+ */
     public Object getOrDefault(JSONObject jsonObject, String key, Object defaultValue) {
         return jsonObject.has(key) ? jsonObject.get(key) : defaultValue;
     }
 
+/**
+ * subscribeToVidaTransactions method.
+ * @param pwrj parameter
+ * @param vidaId parameter
+ * @param startingBlock parameter
+ * @param pollInterval parameter
+ * @param Function<Long parameter
+ * @param blockSaver parameter
+ * @param handler parameter
+ * @return value
+ * @throws IOException exception
+ */
     public VidaTransactionSubscription subscribeToVidaTransactions(PWRJ pwrj, long vidaId, long startingBlock, long pollInterval, Function<Long, Void> blockSaver, VidaTransactionHandler handler) throws IOException {
         VidaTransactionSubscription i = new VidaTransactionSubscription(pwrj, vidaId, startingBlock, handler, pollInterval, blockSaver);
         i.start();
         return i;
     }
 
+/**
+ * subscribeToVidaTransactions method.
+ * @param pwrj parameter
+ * @param vidaId parameter
+ * @param startingBlock parameter
+ * @param Function<Long parameter
+ * @param blockSaver parameter
+ * @param handler parameter
+ * @return value
+ * @throws IOException exception
+ */
     public VidaTransactionSubscription subscribeToVidaTransactions(PWRJ pwrj, long vidaId, long startingBlock, Function<Long, Void> blockSaver, VidaTransactionHandler handler) throws IOException {
         VidaTransactionSubscription sub = subscribeToVidaTransactions(pwrj, vidaId, startingBlock, 100, blockSaver, handler);
         sub.start();
         return sub;
     }
 
+/**
+ * calculateActiveValidatorsApy method.
+ * @return value
+ * @throws Exception exception
+ */
     public static Map<ByteArrayWrapper /*Validator Address*/, Long /*APY*/> calculateActiveValidatorsApy() throws Exception {
         PWRJ pwrj = new PWRJ("https://pwrrpc.pwrlabs.io");
 
@@ -1023,6 +1423,11 @@ public class PWRJ {
         return validatorSevenDayYield;
     }
 
+/**
+ * main method.
+ * @param args parameter
+ * @throws Exception exception
+ */
     public static void main(String[] args) throws Exception {
         Map<ByteArrayWrapper, Long> apy = calculateActiveValidatorsApy();
 

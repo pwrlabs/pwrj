@@ -17,6 +17,9 @@ import java.util.Map;
 import java.util.Set;
 
 @Getter
+/**
+ * FalconTransaction class.
+ */
 public abstract class FalconTransaction {
     private final String transactionHash;
     private final String sender;
@@ -75,13 +78,29 @@ public abstract class FalconTransaction {
         positionInWrappedTransaction = -1;
     }
 
+/**
+ * getIdentifier method.
+ * @return value
+ */
     public abstract int getIdentifier();
 
+/**
+ * getType method.
+ * @return value
+ */
     public abstract String getType();
 
+/**
+ * getReceiver method.
+ * @return value
+ */
     public abstract String getReceiver();
 
     //This function must be overriden by child classes to add more data to it
+/**
+ * toJson method.
+ * @return value
+ */
     public JSONObject toJson() {
         JSONObject data = new JSONObject();
         data.put("transactionHash", transactionHash);
@@ -95,6 +114,11 @@ public abstract class FalconTransaction {
         return data;
     }
 
+/**
+ * fromJson method.
+ * @param json parameter
+ * @return value
+ */
     public static FalconTransaction fromJson(JSONObject json) {
         String packageName = FalconTransaction.class.getPackage().getName();
         Reflections reflections = new Reflections(packageName);
@@ -122,6 +146,11 @@ public abstract class FalconTransaction {
         throw new IllegalArgumentException("Unknown transaction identifier: " + identifier);
     }
 
+/**
+ * main method.
+ * @param args parameter
+ * @throws Exception exception
+ */
     public static void main(String[] args) throws Exception {
         PWRJ pwrj = new PWRJ("http://localhost:8085");
 
@@ -133,6 +162,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * FalconTransfer class.
+ */
     public static class FalconTransfer extends FalconTransaction {
         public static final int IDENTIFIER = 1006;
 
@@ -153,21 +185,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Falcon Transfer";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return receiver;
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("receiver", receiver);
@@ -177,6 +225,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * SetPublicKey class.
+ */
     public static class SetPublicKey extends FalconTransaction {
         public static final int IDENTIFIER = 1001;
 
@@ -193,21 +244,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Set Public Key";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return "PWR Chain";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("publicKey", publicKey);
@@ -216,6 +283,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * FalconJoinAsValidator class.
+ */
     public static class FalconJoinAsValidator extends FalconTransaction {
         public static final int IDENTIFIER = 1002;
 
@@ -232,21 +302,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Join As Validator";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return "PWR Chain";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("ip", ip);
@@ -255,6 +341,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * FalconChangeIp class.
+ */
     public static class FalconChangeIp extends FalconTransaction {
         public static final int IDENTIFIER = 1004;
 
@@ -271,21 +360,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Change IP";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return "PWR Chain";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("newIp", newIp);
@@ -294,6 +399,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * FalconDelegate class.
+ */
     public static class FalconDelegate extends FalconTransaction {
         public static final int IDENTIFIER = 1003;
 
@@ -313,21 +421,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Delegate";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return validator;
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("validator", validator);
@@ -337,6 +461,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * FalconClaimActiveNodeSpot class.
+ */
     public static class FalconClaimActiveNodeSpot extends FalconTransaction {
         public static final int IDENTIFIER = 1005;
 
@@ -351,22 +478,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return "PWR Chain";
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Claim Active Node Spot";
         }
     }
 
     @Getter
+/**
+ * WithdrawTxn class.
+ */
     public static class WithdrawTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1026;
 
@@ -392,21 +534,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Withdraw";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return validator;
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("validator", validator);
@@ -416,6 +574,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * ClaimVidaId class.
+ */
     public static class ClaimVidaId extends FalconTransaction {
         public static final int IDENTIFIER = 1028;
 
@@ -432,21 +593,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Claim VIDA ID";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return vidaId + "";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("vidaId", vidaId);
@@ -455,6 +632,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * RemoveValidatorTxn class.
+ */
     public static class RemoveValidatorTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1025;
 
@@ -471,21 +651,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Remove Validator";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return "PWR Chain";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("validatorAddress", validatorAddress);
@@ -494,6 +690,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * SetGuardianTxn class.
+ */
     public static class SetGuardianTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1023;
 
@@ -513,21 +712,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Set Guardian";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return "PWR Chain";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("guardianAddress", guardianAddress);
@@ -537,6 +752,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * RemoveGuardianTxn class.
+ */
     public static class RemoveGuardianTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1022;
 
@@ -551,22 +769,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Remove Guardian";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return "PWR Chain";
         }
     }
 
     @Getter
+/**
+ * GuardianApprovalTxn class.
+ */
     public static class GuardianApprovalTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1021;
 
@@ -588,21 +821,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Guardian Approval";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return "PWR Chain";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONArray txnArray = new JSONArray();
             for (String txnHash : transactions) {
@@ -616,6 +865,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * PayableVidaDataTxn class.
+ */
     public static class PayableVidaDataTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1030;
 
@@ -645,21 +897,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Payable VIDA Data";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return vidaId + "";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject dataJson = super.toJson();
             dataJson.put("vidaId", vidaId);
@@ -670,6 +938,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * ConduitApprovalTxn class.
+ */
     public static class ConduitApprovalTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1029;
 
@@ -695,21 +966,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Conduit Approval";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return vidaId + "";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONArray txnArray = new JSONArray();
             for (String txnHash : transactions) {
@@ -724,6 +1011,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * RemoveConduitsTxn class.
+ */
     public static class RemoveConduitsTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1031;
 
@@ -749,21 +1039,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Remove Conduits";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return vidaId + "";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("vidaId", vidaId);
@@ -773,6 +1079,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * MoveStakeTxn class.
+ */
     public static class MoveStakeTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1024;
 
@@ -801,21 +1110,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Move Stake";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return fromValidator;
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("fromValidator", fromValidator);
@@ -826,6 +1151,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * SetConduitModeTxn class.
+ */
     public static class SetConduitModeTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1033;
 
@@ -867,21 +1195,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Set Conduit Mode";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return vidaId + "";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("vidaId", vidaId);
@@ -898,6 +1242,9 @@ public abstract class FalconTransaction {
     // VIDA-related transactions
 
     @Getter
+/**
+ * AddVidaAllowedSendersTxn class.
+ */
     public static class AddVidaAllowedSendersTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1037;
 
@@ -923,21 +1270,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Add VIDA Allowed Senders";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return vidaId + "";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("vidaId", vidaId);
@@ -947,6 +1310,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * AddVidaSponsoredAddressesTxn class.
+ */
     public static class AddVidaSponsoredAddressesTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1036;
 
@@ -972,21 +1338,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Add VIDA Sponsored Addresses";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return vidaId + "";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("vidaId", vidaId);
@@ -996,6 +1378,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * RemoveSponsoredAddressesTxn class.
+ */
     public static class RemoveSponsoredAddressesTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1039;
 
@@ -1021,21 +1406,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Remove Sponsored Addresses";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return vidaId + "";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("vidaId", vidaId);
@@ -1045,6 +1446,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * RemoveVidaAllowedSendersTxn class.
+ */
     public static class RemoveVidaAllowedSendersTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1038;
 
@@ -1070,21 +1474,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Remove VIDA Allowed Senders";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return vidaId + "";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("vidaId", vidaId);
@@ -1094,6 +1514,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * SetVidaPrivateStateTxn class.
+ */
     public static class SetVidaPrivateStateTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1034;
 
@@ -1113,21 +1536,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Set VIDA Private State";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return vidaId + "";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("vidaId", vidaId);
@@ -1137,6 +1576,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * SetVidaToAbsolutePublic class.
+ */
     public static class SetVidaToAbsolutePublic extends FalconTransaction {
         public static final int IDENTIFIER = 1035;
 
@@ -1153,21 +1595,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Set VIDA To Absolute Public";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return vidaId + "";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("vidaId", vidaId);
@@ -1176,6 +1634,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * SetPWRTransferRightsTxn class.
+ */
     public static class SetPWRTransferRightsTxn extends FalconTransfer {
         public static final int IDENTIFIER = 1040;
 
@@ -1195,21 +1656,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Set PWR Transfer Rights";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return vidaId + "";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("vidaId", vidaId);
@@ -1218,6 +1695,9 @@ public abstract class FalconTransaction {
         }
     }
 
+/**
+ * TransferPWRFromVidaTxn class.
+ */
     public static class TransferPWRFromVidaTxn extends FalconTransfer {
         public static final int IDENTIFIER = 1041;
 
@@ -1237,21 +1717,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Transfer PWR From VIDA";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return receiver;
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("vidaId", vidaId);
@@ -1263,6 +1759,9 @@ public abstract class FalconTransaction {
     // Governance Proposal Transactions
 
     @Getter
+/**
+ * ChangeEarlyWithdrawPenaltyProposalTxn class.
+ */
     public static class ChangeEarlyWithdrawPenaltyProposalTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1009;
 
@@ -1288,21 +1787,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Change Early Withdraw Penalty Proposal";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return "PWR Chain";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("title", title);
@@ -1314,6 +1829,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * ChangeFeePerByteProposalTxn class.
+ */
     public static class ChangeFeePerByteProposalTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1010;
 
@@ -1336,21 +1854,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Change Fee Per Byte Proposal";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return "PWR Chain";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("title", title);
@@ -1361,6 +1895,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * ChangeMaxBlockSizeProposalTxn class.
+ */
     public static class ChangeMaxBlockSizeProposalTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1011;
 
@@ -1383,21 +1920,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Change Max Block Size Proposal";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return "PWR Chain";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("title", title);
@@ -1408,6 +1961,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * ChangeMaxTxnSizeProposalTxn class.
+ */
     public static class ChangeMaxTxnSizeProposalTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1012;
 
@@ -1430,21 +1986,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Change Max Transaction Size Proposal";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return "PWR Chain";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("title", title);
@@ -1455,6 +2027,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * ChangeOverallBurnPercentageProposalTxn class.
+ */
     public static class ChangeOverallBurnPercentageProposalTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1013;
 
@@ -1477,21 +2052,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Change Overall Burn Percentage Proposal";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return "PWR Chain";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("title", title);
@@ -1502,6 +2093,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * ChangeRewardPerYearProposalTxn class.
+ */
     public static class ChangeRewardPerYearProposalTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1014;
 
@@ -1524,21 +2118,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Change Reward Per Year Proposal";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return "PWR Chain";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("title", title);
@@ -1549,6 +2159,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * ChangeValidatorCountLimitProposalTxn class.
+ */
     public static class ChangeValidatorCountLimitProposalTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1015;
 
@@ -1571,21 +2184,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Change Validator Count Limit Proposal";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return "PWR Chain";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("title", title);
@@ -1596,6 +2225,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * ChangeValidatorJoiningFeeProposalTxn class.
+ */
     public static class ChangeValidatorJoiningFeeProposalTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1016;
 
@@ -1618,21 +2250,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Change Validator Joining Fee Proposal";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return "PWR Chain";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("title", title);
@@ -1643,6 +2291,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * ChangeVidaIdClaimingFeeProposalTxn class.
+ */
     public static class ChangeVidaIdClaimingFeeProposalTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1017;
 
@@ -1665,21 +2316,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Change VIDA ID Claiming Fee Proposal";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return "PWR Chain";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("title", title);
@@ -1690,6 +2357,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * ChangeVmOwnerTxnFeeShareProposalTxn class.
+ */
     public static class ChangeVmOwnerTxnFeeShareProposalTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1018;
 
@@ -1712,21 +2382,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Change VM Owner Transaction Fee Share Proposal";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return "PWR Chain";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("title", title);
@@ -1737,6 +2423,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * OtherProposalTxn class.
+ */
     public static class OtherProposalTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1019;
 
@@ -1756,21 +2445,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Other Proposal";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return "PWR Chain";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("title", title);
@@ -1780,6 +2485,9 @@ public abstract class FalconTransaction {
     }
 
     @Getter
+/**
+ * VoteOnProposalTxn class.
+ */
     public static class VoteOnProposalTxn extends FalconTransaction {
         public static final int IDENTIFIER = 1020;
 
@@ -1799,21 +2507,37 @@ public abstract class FalconTransaction {
         }
 
         @Override
+/**
+ * getIdentifier method.
+ * @return value
+ */
         public int getIdentifier() {
             return IDENTIFIER;
         }
 
         @Override
+/**
+ * getType method.
+ * @return value
+ */
         public String getType() {
             return "Vote On Proposal";
         }
 
         @Override
+/**
+ * getReceiver method.
+ * @return value
+ */
         public String getReceiver() {
             return "PWR Chain";
         }
 
         @Override
+/**
+ * toJson method.
+ * @return value
+ */
         public JSONObject toJson() {
             JSONObject data = super.toJson();
             data.put("proposalHash", proposalHash);

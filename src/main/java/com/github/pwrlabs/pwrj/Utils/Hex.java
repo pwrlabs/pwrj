@@ -1,7 +1,15 @@
 package com.github.pwrlabs.pwrj.Utils;
 
+/**
+ * Hex class.
+ */
 public class Hex {
 
+/**
+ * decode method.
+ * @param hexString parameter
+ * @return value
+ */
     public static byte[] decode(String hexString) {
         if (hexString == null || hexString.isEmpty()) {
             return new byte[0];
@@ -23,6 +31,11 @@ public class Hex {
         return bytes;
     }
 
+/**
+ * toHexString method.
+ * @param bytes parameter
+ * @return value
+ */
     public static String toHexString(byte[] bytes) {
         if (bytes == null) {
             return null;
