@@ -1333,35 +1333,12 @@ public class PWRJ {
         return jsonObject.has(key) ? jsonObject.get(key) : defaultValue;
     }
 
-/**
- * subscribeToVidaTransactions method.
- * @param pwrj parameter
- * @param vidaId parameter
- * @param startingBlock parameter
- * @param pollInterval parameter
- * @param Function<Long parameter
- * @param blockSaver parameter
- * @param handler parameter
- * @return value
- * @throws IOException exception
- */
     public VidaTransactionSubscription subscribeToVidaTransactions(PWRJ pwrj, long vidaId, long startingBlock, long pollInterval, Function<Long, Void> blockSaver, VidaTransactionHandler handler) throws IOException {
         VidaTransactionSubscription i = new VidaTransactionSubscription(pwrj, vidaId, startingBlock, handler, pollInterval, blockSaver);
         i.start();
         return i;
     }
 
-/**
- * subscribeToVidaTransactions method.
- * @param pwrj parameter
- * @param vidaId parameter
- * @param startingBlock parameter
- * @param Function<Long parameter
- * @param blockSaver parameter
- * @param handler parameter
- * @return value
- * @throws IOException exception
- */
     public VidaTransactionSubscription subscribeToVidaTransactions(PWRJ pwrj, long vidaId, long startingBlock, Function<Long, Void> blockSaver, VidaTransactionHandler handler) throws IOException {
         VidaTransactionSubscription sub = subscribeToVidaTransactions(pwrj, vidaId, startingBlock, 100, blockSaver, handler);
         sub.start();
