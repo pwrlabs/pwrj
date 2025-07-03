@@ -1244,7 +1244,7 @@ public class PWRJ {
         JSONObject body = new JSONObject();
         body.put("blockNumber", blockNumber);
 
-        JSONObject response = httpPost(rpcNodeUrl + "/blockWithTransactions", body);
+        JSONObject response = httpGet(rpcNodeUrl + "/blockWithTransactions?blockNumber=" + blockNumber);
 
         Block block = new Block(response.getJSONObject("block"));
         JSONArray transactionsArray = response.getJSONArray("transactions");
