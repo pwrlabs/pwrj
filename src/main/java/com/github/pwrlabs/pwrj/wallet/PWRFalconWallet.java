@@ -112,6 +112,12 @@ public class PWRFalconWallet {
         //Encrypt seed phrase
         byte[] encryptedSeed = AES256.encrypt(seedPhrase.getBytes(StandardCharsets.UTF_8), password);
 
+        //create all paths if missing
+        File file = new File(filePath);
+        if (!file.getParentFile().exists()) {
+            file.getParentFile().mkdirs();
+        }
+
         Files.write(Paths.get(filePath), encryptedSeed);
     }
 

@@ -880,6 +880,25 @@ public class PWRJ {
         return new BiResult<>(block, transactions);
     }
 
+    public BiResult<Block, List<FalconTransaction>> getBlockAndTransactions(long blockNumber) throws Exception {
+        JSONObject body = new JSONObject();
+        body.put("blockNumber", blockNumber);
+
+        JSONObject response = httpPost(rpcNodeUrl + "/blockWithTransactions", body);
+
+        Block block = new Block(response.getJSONObject("block"));
+        JSONArray transactionsArray = response.getJSONArray("transactions");
+
+        List<FalconTransaction> transactions = new ArrayList<>();
+        for (int i = 0; i < transactionsArray.length(); i++) {
+            JSONObject transactionObject = transactionsArray.getJSONObject(i);
+            FalconTransaction transaction = FalconTransaction.fromJson(transactionObject);
+            transactions.add(transaction);
+        }
+
+        return new BiResult<>(block, transactions);
+    }
+
     /**
      * Broadcasts a transaction to the network via a specified RPC node.
      *
