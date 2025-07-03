@@ -18,11 +18,27 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
+/**
+ * AES256 class.
+ */
 public class AES256 {
     private static final int ITERATION_COUNT = 65536;
     private static final int KEY_LENGTH = 256;
     private static final String SALT = "your-salt-value";
 
+/**
+ * encrypt method.
+ * @param data parameter
+ * @param password parameter
+ * @return value
+ * @throws NoSuchAlgorithmException exception
+ * @throws InvalidKeySpecException exception
+ * @throws NoSuchPaddingException exception
+ * @throws InvalidKeyException exception
+ * @throws InvalidAlgorithmParameterException exception
+ * @throws IllegalBlockSizeException exception
+ * @throws BadPaddingException exception
+ */
     public static byte[] encrypt(byte[] data, String password) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
         SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
         KeySpec keySpec = new PBEKeySpec(password.toCharArray(), "your-salt-value".getBytes(StandardCharsets.UTF_8), 65536, 256);
@@ -38,6 +54,19 @@ public class AES256 {
         return encryptedDataWithIV;
     }
 
+/**
+ * decrypt method.
+ * @param encryptedDataWithIV parameter
+ * @param password parameter
+ * @return value
+ * @throws NoSuchAlgorithmException exception
+ * @throws InvalidKeySpecException exception
+ * @throws NoSuchPaddingException exception
+ * @throws InvalidKeyException exception
+ * @throws InvalidAlgorithmParameterException exception
+ * @throws IllegalBlockSizeException exception
+ * @throws BadPaddingException exception
+ */
     public static byte[] decrypt(byte[] encryptedDataWithIV, String password) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException {
         SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
         KeySpec keySpec = new PBEKeySpec(password.toCharArray(), "your-salt-value".getBytes(StandardCharsets.UTF_8), 65536, 256);
@@ -59,6 +88,10 @@ public class AES256 {
         return iv;
     }
 
+/**
+ * main method.
+ * @param args parameter
+ */
     public static void main(String[] args) {
         BigInteger t = new BigInteger("9872156793");
 

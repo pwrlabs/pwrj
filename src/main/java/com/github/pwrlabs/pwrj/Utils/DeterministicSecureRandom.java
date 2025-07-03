@@ -5,6 +5,9 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
+/**
+ * DeterministicSecureRandom class.
+ */
 public class DeterministicSecureRandom extends SecureRandom {
     private final MessageDigest digest;
     private final byte[] seed;
@@ -16,6 +19,10 @@ public class DeterministicSecureRandom extends SecureRandom {
     }
 
     @Override
+/**
+ * nextBytes method.
+ * @param bytes parameter
+ */
     public void nextBytes(byte[] bytes) {
         int index = 0;
         while (index < bytes.length) {

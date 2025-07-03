@@ -1,5 +1,8 @@
 package com.github.pwrlabs.pwrj.record.response;
 
+/**
+ * Response class.
+ */
 public class Response {
     private final boolean success;
     private final String transactionHash;
@@ -14,6 +17,10 @@ public class Response {
     /**
      * @return true if the operation was successful, false otherwise
      */
+/**
+ * isSuccess method.
+ * @return value
+ */
     public boolean isSuccess() {
         return success;
     }
@@ -21,6 +28,10 @@ public class Response {
     /**
      * @return message returned if the operation was successful
      */
+/**
+ * getTransactionHash method.
+ * @return value
+ */
     public String getTransactionHash() {
         return transactionHash;
     }
@@ -28,10 +39,18 @@ public class Response {
     /**
      * @return error returned if the operation was not successful
      */
+/**
+ * getError method.
+ * @return value
+ */
     public String getError() {
         return error;
     }
 
+/**
+ * toString method.
+ * @return value
+ */
     public String toString() {
         return "Response(success=" + this.isSuccess() + ", transactionHash=" + this.getTransactionHash() + ", error=" + this.getError() + ")";
     }

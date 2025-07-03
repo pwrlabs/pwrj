@@ -21,6 +21,9 @@ import org.bouncycastle.crypto.signers.ECDSASigner;
 import static com.github.pwrlabs.pwrj.protocol.Signature.CURVE;
 import static com.github.pwrlabs.pwrj.protocol.Signature.HALF_CURVE_ORDER;
 
+/**
+ * Signature class.
+ */
 public class Signature {
 
 	public static final X9ECParameters CURVE_PARAMS = CustomNamedCurves.getByName("secp256k1");
@@ -43,6 +46,12 @@ public class Signature {
 //		return output;
 //	}
 
+/**
+ * signMessage method.
+ * @param message parameter
+ * @param privateKey parameter
+ * @return value
+ */
 	public static byte[] signMessage(byte[] message, BigInteger privateKey) {
 		BigInteger publicKey = publicKeyFromPrivate(privateKey);
 		byte[] messageHash = PWRHash.hash256(message);
@@ -78,6 +87,13 @@ public class Signature {
 	}
 
 
+/**
+ * recoverFromSignature method.
+ * @param recId parameter
+ * @param sig parameter
+ * @param message parameter
+ * @return value
+ */
 	public static BigInteger recoverFromSignature(int recId, ECDSASignature sig, byte[] message) {
 		verifyPrecondition(recId >= 0, "recId must be positive");
 		verifyPrecondition(sig.r.signum() >= 0, "r must be positive");
@@ -106,6 +122,12 @@ public class Signature {
 		}
 	}
 
+/**
+ * sign method.
+ * @param privateKey parameter
+ * @param transactionHash parameter
+ * @return value
+ */
 	public static ECDSASignature sign(BigInteger privateKey, byte[] transactionHash) {
 		ECDSASigner signer = new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest()));
 		ECPrivateKeyParameters privKey = new ECPrivateKeyParameters(privateKey, CURVE);
@@ -121,12 +143,22 @@ public class Signature {
 		return CURVE.getCurve().decodePoint(compEnc);
 	}
 
+/**
+ * publicKeyFromPrivate method.
+ * @param privKey parameter
+ * @return value
+ */
 	public static BigInteger publicKeyFromPrivate(BigInteger privKey) {
 		ECPoint point = publicPointFromPrivate(privKey);
 		byte[] encoded = point.getEncoded(false);
 		return new BigInteger(1, Arrays.copyOfRange(encoded, 1, encoded.length));
 	}
 
+/**
+ * publicPointFromPrivate method.
+ * @param privKey parameter
+ * @return value
+ */
 	public static ECPoint publicPointFromPrivate(BigInteger privKey) {
 		if (privKey.bitLength() > CURVE.getN().bitLength()) {
 			privKey = privKey.mod(CURVE.getN());
@@ -135,6 +167,12 @@ public class Signature {
 		return (new FixedPointCombMultiplier()).multiply(CURVE.getG(), privKey);
 	}
 
+/**
+ * toBytesPadded method.
+ * @param value parameter
+ * @param length parameter
+ * @return value
+ */
 	public static byte[] toBytesPadded(BigInteger value, int length) {
 		byte[] result = new byte[length];
 		byte[] bytes = value.toByteArray();
@@ -157,6 +195,11 @@ public class Signature {
 		}
 	}
 
+/**
+ * verifyPrecondition method.
+ * @param assertionResult parameter
+ * @param errorMessage parameter
+ */
 	public static void verifyPrecondition(boolean assertionResult, String errorMessage) {
 		if (!assertionResult) {
 			throw new RuntimeException(errorMessage);
@@ -174,10 +217,18 @@ class ECDSASignature {
 		this.s = s;
 	}
 
+/**
+ * isCanonical method.
+ * @return value
+ */
 	public boolean isCanonical() {
 		return this.s.compareTo(HALF_CURVE_ORDER) <= 0;
 	}
 
+/**
+ * toCanonicalised method.
+ * @return value
+ */
 	public ECDSASignature toCanonicalised() {
 		return !this.isCanonical() ? new ECDSASignature(this.r, CURVE.getN().subtract(this.s)) : this;
 	}

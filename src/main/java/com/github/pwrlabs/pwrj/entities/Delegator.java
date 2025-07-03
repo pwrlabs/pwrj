@@ -7,6 +7,9 @@ import java.math.BigInteger;
 
 @Getter
 @SuperBuilder
+/**
+ * Delegator class.
+ */
 public class Delegator {
     private final String address;
     private final String validatorAddress;
