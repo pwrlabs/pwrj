@@ -56,12 +56,23 @@ public class PWRFalconWallet {
         // Calculate entropy bytes based on word count
         int entropyBytes;
         switch (wordCount) {
-            case 12: entropyBytes = 16; break; // 128 bits
-            case 15: entropyBytes = 20; break; // 160 bits
-            case 18: entropyBytes = 24; break; // 192 bits
-            case 21: entropyBytes = 28; break; // 224 bits
-            case 24: entropyBytes = 32; break; // 256 bits
-            default: throw new IllegalArgumentException("Invalid word count");
+            case 12:
+                entropyBytes = 16;
+                break; // 128 bits
+            case 15:
+                entropyBytes = 20;
+                break; // 160 bits
+            case 18:
+                entropyBytes = 24;
+                break; // 192 bits
+            case 21:
+                entropyBytes = 28;
+                break; // 224 bits
+            case 24:
+                entropyBytes = 32;
+                break; // 256 bits
+            default:
+                throw new IllegalArgumentException("Invalid word count");
         }
 
         // Generate random entropy
@@ -97,7 +108,7 @@ public class PWRFalconWallet {
         this.seedPhrase = seedPhrase;
 
         byte[] seed = MnemonicUtils.generateSeed(seedPhrase, "");
-        if(walletNumber > 0) seed = new BigInteger(1, seed).add(BigInteger.valueOf(walletNumber)).toByteArray();
+        if (walletNumber > 0) seed = new BigInteger(1, seed).add(BigInteger.valueOf(walletNumber)).toByteArray();
         keyPair = Falcon.generateKeyPair512FromSeed(seed);
 
         FalconPublicKeyParameters publicKey = (FalconPublicKeyParameters) keyPair.getPublic();
@@ -111,26 +122,28 @@ public class PWRFalconWallet {
      * @param filePath Path to the file where the wallet will be stored.
      * @throws IOException if there's an error writing to the file.
      */
-/**
- * storeWallet method.
- * @param filePath parameter
- * @param password parameter
- * @throws IOException exception
- * @throws InvalidAlgorithmParameterException exception
- * @throws NoSuchPaddingException exception
- * @throws IllegalBlockSizeException exception
- * @throws NoSuchAlgorithmException exception
- * @throws InvalidKeySpecException exception
- * @throws BadPaddingException exception
- * @throws InvalidKeyException exception
- */
+    /**
+     * storeWallet method.
+     *
+     * @param filePath parameter
+     * @param password parameter
+     * @throws IOException                        exception
+     * @throws InvalidAlgorithmParameterException exception
+     * @throws NoSuchPaddingException             exception
+     * @throws IllegalBlockSizeException          exception
+     * @throws NoSuchAlgorithmException           exception
+     * @throws InvalidKeySpecException            exception
+     * @throws BadPaddingException                exception
+     * @throws InvalidKeyException                exception
+     */
     public void storeWallet(String filePath, String password) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
         //Encrypt seed phrase
         byte[] encryptedSeed = AES256.encrypt(seedPhrase.getBytes(StandardCharsets.UTF_8), password);
 
         //create all paths if missing
         File file = new File(filePath);
-        if (!file.getParentFile().exists()) {
+        File parentFile = file.getParentFile();
+        if (parentFile != null && !parentFile.exists()) {
             file.getParentFile().mkdirs();
         }
 
@@ -145,21 +158,22 @@ public class PWRFalconWallet {
      * @return a new PWRFalcon512Wallet with the loaded key pair.
      * @throws IOException if there's an error reading the file or parsing the keys.
      */
-/**
- * loadWallet method.
- * @param pwrj parameter
- * @param filePath parameter
- * @param password parameter
- * @return value
- * @throws IOException exception
- * @throws InvalidAlgorithmParameterException exception
- * @throws NoSuchPaddingException exception
- * @throws IllegalBlockSizeException exception
- * @throws NoSuchAlgorithmException exception
- * @throws InvalidKeySpecException exception
- * @throws BadPaddingException exception
- * @throws InvalidKeyException exception
- */
+    /**
+     * loadWallet method.
+     *
+     * @param pwrj     parameter
+     * @param filePath parameter
+     * @param password parameter
+     * @return value
+     * @throws IOException                        exception
+     * @throws InvalidAlgorithmParameterException exception
+     * @throws NoSuchPaddingException             exception
+     * @throws IllegalBlockSizeException          exception
+     * @throws NoSuchAlgorithmException           exception
+     * @throws InvalidKeySpecException            exception
+     * @throws BadPaddingException                exception
+     * @throws InvalidKeyException                exception
+     */
     public static PWRFalconWallet loadWallet(PWRJ pwrj, String filePath, String password) throws IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
         File file = new File(filePath);
         if (!file.exists()) {
@@ -173,53 +187,59 @@ public class PWRFalconWallet {
         return new PWRFalconWallet(seedPhrase, pwrj);
     }
 
-/**
- * getAddress method.
- * @return value
- */
+    /**
+     * getAddress method.
+     *
+     * @return value
+     */
     public String getAddress() {
         return "0x" + Hex.toHexString(address);
     }
 
-/**
- * getSeedPhrase method.
- * @return value
- */
+    /**
+     * getSeedPhrase method.
+     *
+     * @return value
+     */
     public String getSeedPhrase() {
         return seedPhrase;
     }
 
-/**
- * getByteaAddress method.
- * @return value
- */
+    /**
+     * getByteaAddress method.
+     *
+     * @return value
+     */
     public byte[] getByteaAddress() {
         return address;
     }
 
-/**
- * getPublicKey method.
- * @return value
- */
+    /**
+     * getPublicKey method.
+     *
+     * @return value
+     */
     public byte[] getPublicKey() {
         FalconPublicKeyParameters publicKey = (FalconPublicKeyParameters) keyPair.getPublic();
         return publicKey.getH();
     }
 
-/**
- * sign method.
- * @param data parameter
- * @return value
- */
+    /**
+     * sign method.
+     *
+     * @param data parameter
+     * @return value
+     */
     public byte[] sign(byte[] data) {
         return Falcon.sign(data, keyPair);
     }
 
-/**
- * getSignedTransaction method.
- * @param transaction parameter
- * @return value
- */
+    /**
+     * getSignedTransaction method.
+     *
+     * @param transaction parameter
+     * @return value
+     */
     public byte[] getSignedTransaction(byte[] transaction) {
         byte[] txnHash = PWRHash.hash256(transaction);
         byte[] signature = sign(txnHash);
@@ -232,15 +252,16 @@ public class PWRFalconWallet {
         return buffer.array();
     }
 
-/**
- * getSignedSetPublicKeyTransaction method.
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * getSignedSetPublicKeyTransaction method.
+     *
+     * @param feePerByte parameter
+     * @return value
+     * @throws IOException exception
+     */
     public byte[] getSignedSetPublicKeyTransaction(Long feePerByte) throws IOException {
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         FalconPublicKeyParameters publicKey = (FalconPublicKeyParameters) keyPair.getPublic();
@@ -248,84 +269,89 @@ public class PWRFalconWallet {
         return getSignedTransaction(transaction);
     }
 
-/**
- * getSignedTransferTransaction method.
- * @param receiver parameter
- * @param amount parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * getSignedTransferTransaction method.
+     *
+     * @param receiver   parameter
+     * @param amount     parameter
+     * @param feePerByte parameter
+     * @return value
+     * @throws IOException exception
+     */
     public byte[] getSignedTransferTransaction(byte[] receiver, long amount, Long feePerByte) throws IOException {
         errorIf(receiver.length != 20, "Receiver address must be 20 bytes long");
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getTransferTransaction(feePerByte, address, receiver, amount, pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
         return getSignedTransaction(transaction);
     }
 
-/**
- * getSignedJoinAsValidatorTransaction method.
- * @param feePerByte parameter
- * @param ip parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * getSignedJoinAsValidatorTransaction method.
+     *
+     * @param feePerByte parameter
+     * @param ip         parameter
+     * @return value
+     * @throws IOException exception
+     */
     public byte[] getSignedJoinAsValidatorTransaction(long feePerByte, String ip) throws IOException {
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getFalconJoinAsValidatorTransaction(feePerByte, address, ip, pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
         return getSignedTransaction(transaction);
     }
 
-/**
- * getSignedDelegateTransaction method.
- * @param validator parameter
- * @param pwrAmount parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * getSignedDelegateTransaction method.
+     *
+     * @param validator  parameter
+     * @param pwrAmount  parameter
+     * @param feePerByte parameter
+     * @return value
+     * @throws IOException exception
+     */
     public byte[] getSignedDelegateTransaction(byte[] validator, long pwrAmount, Long feePerByte) throws IOException {
         errorIf(validator.length != 20, "Validator address must be 20 bytes long");
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getFalconDelegateTransaction(feePerByte, address, validator, pwrAmount, pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
         return getSignedTransaction(transaction);
     }
 
-/**
- * getSignedChangeIpTransaction method.
- * @param newIp parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * getSignedChangeIpTransaction method.
+     *
+     * @param newIp      parameter
+     * @param feePerByte parameter
+     * @return value
+     * @throws IOException exception
+     */
     public byte[] getSignedChangeIpTransaction(String newIp, Long feePerByte) throws IOException {
         errorIf(newIp == null || newIp.isEmpty() || newIp.length() < 7 || newIp.length() > 15, "Invalid IP address");
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getFalconChangeIpTransaction(feePerByte, address, newIp, pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
         return getSignedTransaction(transaction);
     }
 
-/**
- * getSignedClaimActiveNodeSpotTransaction method.
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * getSignedClaimActiveNodeSpotTransaction method.
+     *
+     * @param feePerByte parameter
+     * @return value
+     * @throws IOException exception
+     */
     public byte[] getSignedClaimActiveNodeSpotTransaction(Long feePerByte) throws IOException {
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getFalconClaimActiveNodeSpotTransaction(feePerByte, address, pwrj.getNonceOfAddress(getAddress()), pwrj.getChainId());
@@ -333,110 +359,121 @@ public class PWRFalconWallet {
     }
 
     // Action methods that use the getSigned...Transaction methods
-/**
- * setPublicKey method.
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+
+    /**
+     * setPublicKey method.
+     *
+     * @param feePerByte parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response setPublicKey(Long feePerByte) throws IOException {
         return pwrj.broadcastTransaction(getSignedSetPublicKeyTransaction(feePerByte));
     }
 
-/**
- * transferPWR method.
- * @param receiver parameter
- * @param amount parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * transferPWR method.
+     *
+     * @param receiver   parameter
+     * @param amount     parameter
+     * @param feePerByte parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response transferPWR(byte[] receiver, long amount, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedTransferTransaction(receiver, amount, feePerByte));
     }
 
-/**
- * joinAsValidator method.
- * @param feePerByte parameter
- * @param ip parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * joinAsValidator method.
+     *
+     * @param feePerByte parameter
+     * @param ip         parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response joinAsValidator(long feePerByte, String ip) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedJoinAsValidatorTransaction(feePerByte, ip));
     }
 
-/**
- * delegate method.
- * @param validator parameter
- * @param pwrAmount parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * delegate method.
+     *
+     * @param validator  parameter
+     * @param pwrAmount  parameter
+     * @param feePerByte parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response delegate(byte[] validator, long pwrAmount, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedDelegateTransaction(validator, pwrAmount, feePerByte));
     }
 
-/**
- * changeIp method.
- * @param newIp parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * changeIp method.
+     *
+     * @param newIp      parameter
+     * @param feePerByte parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response changeIp(String newIp, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedChangeIpTransaction(newIp, feePerByte));
     }
 
-/**
- * claimActiveNodeSpot method.
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * claimActiveNodeSpot method.
+     *
+     * @param feePerByte parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response claimActiveNodeSpot(Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedClaimActiveNodeSpotTransaction(feePerByte));
     }
 
-/**
- * makeSurePublicKeyIsSet method.
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * makeSurePublicKeyIsSet method.
+     *
+     * @param feePerByte parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response makeSurePublicKeyIsSet(long feePerByte) throws IOException {
-        if(pwrj.getNonceOfAddress(getAddress()) == 0) {
+        if (pwrj.getNonceOfAddress(getAddress()) == 0) {
             Response r = setPublicKey(feePerByte);
-            if(!r.isSuccess()) {
+            if (!r.isSuccess()) {
                 System.out.println("Failed to set public key");
                 System.out.println(r.getError());
                 return r;
-            }
-            else {
+            } else {
                 long startingTime = System.currentTimeMillis();
                 while (pwrj.getPublicKeyOfAddress(getAddress()) == null) {
-                    if(System.currentTimeMillis() - startingTime > 30000) break;
+                    if (System.currentTimeMillis() - startingTime > 30000) break;
 
-                    try {Thread.sleep(1000);} catch (InterruptedException e) {e.printStackTrace();}
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
 
-                if(pwrj.getPublicKeyOfAddress(getAddress()) == null) {
+                if (pwrj.getPublicKeyOfAddress(getAddress()) == null) {
                     return new Response(false, null, "Failed to set public key");
                 } else {
                     System.out.println("Public key set successfully");
@@ -454,7 +491,7 @@ public class PWRFalconWallet {
         errorIf(description == null || description.isEmpty(), "Description cannot be empty");
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getChangeEarlyWithdrawPenaltyProposalTransaction(
@@ -468,7 +505,7 @@ public class PWRFalconWallet {
                                                       long earlyWithdrawalTime, int withdrawalPenalty,
                                                       Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedChangeEarlyWithdrawPenaltyProposalTransaction(
                 title, description, earlyWithdrawalTime, withdrawalPenalty, feePerByte));
@@ -480,7 +517,7 @@ public class PWRFalconWallet {
         errorIf(description == null || description.isEmpty(), "Description cannot be empty");
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getChangeFeePerByteProposalTransaction(
@@ -493,7 +530,7 @@ public class PWRFalconWallet {
     public Response proposeChangeFeePerByte(String title, String description,
                                             long newFeePerByte, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedChangeFeePerByteProposalTransaction(
                 title, description, newFeePerByte, feePerByte));
@@ -505,7 +542,7 @@ public class PWRFalconWallet {
         errorIf(description == null || description.isEmpty(), "Description cannot be empty");
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getChangeMaxBlockSizeProposalTransaction(
@@ -518,7 +555,7 @@ public class PWRFalconWallet {
     public Response proposeChangeMaxBlockSize(String title, String description,
                                               int maxBlockSize, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedChangeMaxBlockSizeProposalTransaction(
                 title, description, maxBlockSize, feePerByte));
@@ -530,7 +567,7 @@ public class PWRFalconWallet {
         errorIf(description == null || description.isEmpty(), "Description cannot be empty");
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getChangeMaxTxnSizeProposalTransaction(
@@ -543,7 +580,7 @@ public class PWRFalconWallet {
     public Response proposeChangeMaxTxnSize(String title, String description,
                                             int maxTxnSize, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedChangeMaxTxnSizeProposalTransaction(
                 title, description, maxTxnSize, feePerByte));
@@ -556,7 +593,7 @@ public class PWRFalconWallet {
         errorIf(burnPercentage < 0 || burnPercentage > 100, "Burn percentage must be between 0 and 100");
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getChangeOverallBurnPercentageProposalTransaction(
@@ -569,7 +606,7 @@ public class PWRFalconWallet {
     public Response proposeChangeOverallBurnPercentage(String title, String description,
                                                        int burnPercentage, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedChangeOverallBurnPercentageProposalTransaction(
                 title, description, burnPercentage, feePerByte));
@@ -581,7 +618,7 @@ public class PWRFalconWallet {
         errorIf(description == null || description.isEmpty(), "Description cannot be empty");
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getChangeRewardPerYearProposalTransaction(
@@ -594,7 +631,7 @@ public class PWRFalconWallet {
     public Response proposeChangeRewardPerYear(String title, String description,
                                                long rewardPerYear, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedChangeRewardPerYearProposalTransaction(
                 title, description, rewardPerYear, feePerByte));
@@ -607,7 +644,7 @@ public class PWRFalconWallet {
         errorIf(validatorCountLimit <= 0, "Validator count limit must be positive");
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getChangeValidatorCountLimitProposalTransaction(
@@ -620,7 +657,7 @@ public class PWRFalconWallet {
     public Response proposeChangeValidatorCountLimit(String title, String description,
                                                      int validatorCountLimit, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedChangeValidatorCountLimitProposalTransaction(
                 title, description, validatorCountLimit, feePerByte));
@@ -632,7 +669,7 @@ public class PWRFalconWallet {
         errorIf(description == null || description.isEmpty(), "Description cannot be empty");
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getChangeValidatorJoiningFeeProposalTransaction(
@@ -645,7 +682,7 @@ public class PWRFalconWallet {
     public Response proposeChangeValidatorJoiningFee(String title, String description,
                                                      long joiningFee, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedChangeValidatorJoiningFeeProposalTransaction(
                 title, description, joiningFee, feePerByte));
@@ -657,7 +694,7 @@ public class PWRFalconWallet {
         errorIf(description == null || description.isEmpty(), "Description cannot be empty");
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getChangeVidaIdClaimingFeeProposalTransaction(
@@ -670,7 +707,7 @@ public class PWRFalconWallet {
     public Response proposeChangeVidaIdClaimingFee(String title, String description,
                                                    long vidaIdClaimingFee, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedChangeVidaIdClaimingFeeProposalTransaction(
                 title, description, vidaIdClaimingFee, feePerByte));
@@ -683,7 +720,7 @@ public class PWRFalconWallet {
         errorIf(vmOwnerTxnFeeShare < 0 || vmOwnerTxnFeeShare > 10000, "VM owner txn fee share must be between 0 and 10000");
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getChangeVmOwnerTxnFeeShareProposalTransaction(
@@ -696,26 +733,27 @@ public class PWRFalconWallet {
     public Response proposeChangeVmOwnerTxnFeeShare(String title, String description,
                                                     int vmOwnerTxnFeeShare, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedChangeVmOwnerTxnFeeShareProposalTransaction(
                 title, description, vmOwnerTxnFeeShare, feePerByte));
     }
 
-/**
- * getSignedOtherProposalTransaction method.
- * @param title parameter
- * @param description parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * getSignedOtherProposalTransaction method.
+     *
+     * @param title       parameter
+     * @param description parameter
+     * @param feePerByte  parameter
+     * @return value
+     * @throws IOException exception
+     */
     public byte[] getSignedOtherProposalTransaction(String title, String description, Long feePerByte) throws IOException {
         errorIf(title == null || title.isEmpty(), "Title cannot be empty");
         errorIf(description == null || description.isEmpty(), "Description cannot be empty");
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getOtherProposalTransaction(
@@ -725,36 +763,38 @@ public class PWRFalconWallet {
         return getSignedTransaction(transaction);
     }
 
-/**
- * proposeOther method.
- * @param title parameter
- * @param description parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * proposeOther method.
+     *
+     * @param title       parameter
+     * @param description parameter
+     * @param feePerByte  parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response proposeOther(String title, String description, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedOtherProposalTransaction(
                 title, description, feePerByte));
     }
 
-/**
- * getSignedVoteOnProposalTransaction method.
- * @param proposalHash parameter
- * @param vote parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * getSignedVoteOnProposalTransaction method.
+     *
+     * @param proposalHash parameter
+     * @param vote         parameter
+     * @param feePerByte   parameter
+     * @return value
+     * @throws IOException exception
+     */
     public byte[] getSignedVoteOnProposalTransaction(byte[] proposalHash, byte vote, Long feePerByte) throws IOException {
         errorIf(proposalHash == null || proposalHash.length != 32, "Proposal hash must be 32 bytes");
         errorIf(vote != 0 && vote != 1, "Vote must be 0 (against) or 1 (in favor)");
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getVoteOnProposalTransaction(
@@ -764,17 +804,18 @@ public class PWRFalconWallet {
         return getSignedTransaction(transaction);
     }
 
-/**
- * voteOnProposal method.
- * @param proposalHash parameter
- * @param vote parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * voteOnProposal method.
+     *
+     * @param proposalHash parameter
+     * @param vote         parameter
+     * @param feePerByte   parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response voteOnProposal(byte[] proposalHash, byte vote, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedVoteOnProposalTransaction(
                 proposalHash, vote, feePerByte));
@@ -782,18 +823,19 @@ public class PWRFalconWallet {
 
     // Guardian Transactions
 
-/**
- * getSignedGuardianApprovalTransaction method.
- * @param wrappedTxns parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * getSignedGuardianApprovalTransaction method.
+     *
+     * @param wrappedTxns parameter
+     * @param feePerByte  parameter
+     * @return value
+     * @throws IOException exception
+     */
     public byte[] getSignedGuardianApprovalTransaction(List<byte[]> wrappedTxns, Long feePerByte) throws IOException {
         errorIf(wrappedTxns == null || wrappedTxns.isEmpty(), "No transactions provided for guardian approval");
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getGuardianApprovalTransaction(
@@ -803,30 +845,32 @@ public class PWRFalconWallet {
         return getSignedTransaction(transaction);
     }
 
-/**
- * approveAsGuardian method.
- * @param wrappedTxns parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * approveAsGuardian method.
+     *
+     * @param wrappedTxns parameter
+     * @param feePerByte  parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response approveAsGuardian(List<byte[]> wrappedTxns, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedGuardianApprovalTransaction(
                 wrappedTxns, feePerByte));
     }
 
-/**
- * getSignedRemoveGuardianTransaction method.
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * getSignedRemoveGuardianTransaction method.
+     *
+     * @param feePerByte parameter
+     * @return value
+     * @throws IOException exception
+     */
     public byte[] getSignedRemoveGuardianTransaction(Long feePerByte) throws IOException {
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getRemoveGuardianTransaction(
@@ -836,33 +880,35 @@ public class PWRFalconWallet {
         return getSignedTransaction(transaction);
     }
 
-/**
- * removeGuardian method.
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * removeGuardian method.
+     *
+     * @param feePerByte parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response removeGuardian(Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedRemoveGuardianTransaction(feePerByte));
     }
 
-/**
- * getSignedSetGuardianTransaction method.
- * @param expiryDate parameter
- * @param guardianAddress parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * getSignedSetGuardianTransaction method.
+     *
+     * @param expiryDate      parameter
+     * @param guardianAddress parameter
+     * @param feePerByte      parameter
+     * @return value
+     * @throws IOException exception
+     */
     public byte[] getSignedSetGuardianTransaction(long expiryDate, byte[] guardianAddress, Long feePerByte) throws IOException {
         errorIf(guardianAddress == null || guardianAddress.length != 20, "Guardian address must be 20 bytes");
         errorIf(expiryDate <= System.currentTimeMillis(), "Expiry date must be in the future");
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getSetGuardianTransaction(
@@ -872,17 +918,18 @@ public class PWRFalconWallet {
         return getSignedTransaction(transaction);
     }
 
-/**
- * setGuardian method.
- * @param expiryDate parameter
- * @param guardianAddress parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * setGuardian method.
+     *
+     * @param expiryDate      parameter
+     * @param guardianAddress parameter
+     * @param feePerByte      parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response setGuardian(long expiryDate, byte[] guardianAddress, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedSetGuardianTransaction(
                 expiryDate, guardianAddress, feePerByte));
@@ -897,7 +944,7 @@ public class PWRFalconWallet {
         errorIf(toValidator == null || toValidator.length != 20, "To validator address must be 20 bytes");
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getMoveStakeTxnTransaction(
@@ -910,24 +957,25 @@ public class PWRFalconWallet {
     public Response moveStake(BigInteger sharesAmount, byte[] fromValidator,
                               byte[] toValidator, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedMoveStakeTransaction(
                 sharesAmount, fromValidator, toValidator, feePerByte));
     }
 
-/**
- * getSignedRemoveValidatorTransaction method.
- * @param validatorAddress parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * getSignedRemoveValidatorTransaction method.
+     *
+     * @param validatorAddress parameter
+     * @param feePerByte       parameter
+     * @return value
+     * @throws IOException exception
+     */
     public byte[] getSignedRemoveValidatorTransaction(byte[] validatorAddress, Long feePerByte) throws IOException {
         errorIf(validatorAddress == null || validatorAddress.length != 20, "Validator address must be 20 bytes");
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getRemoveValidatorTransaction(
@@ -937,35 +985,37 @@ public class PWRFalconWallet {
         return getSignedTransaction(transaction);
     }
 
-/**
- * removeValidator method.
- * @param validatorAddress parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * removeValidator method.
+     *
+     * @param validatorAddress parameter
+     * @param feePerByte       parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response removeValidator(byte[] validatorAddress, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedRemoveValidatorTransaction(
                 validatorAddress, feePerByte));
     }
 
-/**
- * getSignedWithdrawTransaction method.
- * @param sharesAmount parameter
- * @param validator parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * getSignedWithdrawTransaction method.
+     *
+     * @param sharesAmount parameter
+     * @param validator    parameter
+     * @param feePerByte   parameter
+     * @return value
+     * @throws IOException exception
+     */
     public byte[] getSignedWithdrawTransaction(BigInteger sharesAmount, byte[] validator, Long feePerByte) throws IOException {
         errorIf(sharesAmount == null || sharesAmount.compareTo(BigInteger.ZERO) <= 0, "Shares amount must be positive");
         errorIf(validator == null || validator.length != 20, "Validator address must be 20 bytes");
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getWithdrawTransaction(
@@ -975,17 +1025,18 @@ public class PWRFalconWallet {
         return getSignedTransaction(transaction);
     }
 
-/**
- * withdraw method.
- * @param sharesAmount parameter
- * @param validator parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * withdraw method.
+     *
+     * @param sharesAmount parameter
+     * @param validator    parameter
+     * @param feePerByte   parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response withdraw(BigInteger sharesAmount, byte[] validator, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedWithdrawTransaction(
                 sharesAmount, validator, feePerByte));
@@ -996,12 +1047,12 @@ public class PWRFalconWallet {
     public byte[] getSignedSetConduitModeTransaction(long vidaId, byte mode, int conduitThreshold,
                                                      Set<byte[]> conduits, Map<ByteArrayWrapper, Long> conduitsWithVotingPower, Long feePerByte) throws IOException {
         errorIf(conduitThreshold < 0, "Conduit threshold must be non-negative");
-        if(mode == 1 || mode == 2) { // COUNT_BASED or STAKE_BASED mode
+        if (mode == 1 || mode == 2) { // COUNT_BASED or STAKE_BASED mode
             errorIf((conduits == null || conduits.isEmpty()) && (conduitsWithVotingPower == null || conduitsWithVotingPower.isEmpty()), "Conduit addresses must be provided for this mode");
         }
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getSetConduitModeTransaction(
@@ -1014,7 +1065,7 @@ public class PWRFalconWallet {
     public Response setConduitMode(long vidaId, byte mode, int conduitThreshold,
                                    Set<byte[]> conduits, Map<ByteArrayWrapper, Long> conduitsWithVotingPower, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedSetConduitModeTransaction(
                 vidaId, mode, conduitThreshold, conduits, conduitsWithVotingPower, feePerByte));
@@ -1030,7 +1081,7 @@ public class PWRFalconWallet {
         errorIf(conduits.size() != stakingPowers.size(), "Conduits and staking powers lists must be the same size");
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getSetConduitModeWithVidaBasedTransaction(
@@ -1044,24 +1095,25 @@ public class PWRFalconWallet {
                                                 List<byte[]> conduits, List<Long> stakingPowers,
                                                 Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedSetConduitModeWithVidaBasedTransaction(
                 vidaId, mode, conduitThreshold, conduits, stakingPowers, feePerByte));
     }
 
-/**
- * getSignedClaimVidaIdTransaction method.
- * @param vidaId parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * getSignedClaimVidaIdTransaction method.
+     *
+     * @param vidaId     parameter
+     * @param feePerByte parameter
+     * @return value
+     * @throws IOException exception
+     */
     public byte[] getSignedClaimVidaIdTransaction(long vidaId, Long feePerByte) throws IOException {
         errorIf(vidaId == 0, "VIDA ID cannot be zero");
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getClaimVidaIdTransaction(
@@ -1071,35 +1123,37 @@ public class PWRFalconWallet {
         return getSignedTransaction(transaction);
     }
 
-/**
- * claimVidaId method.
- * @param vidaId parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * claimVidaId method.
+     *
+     * @param vidaId     parameter
+     * @param feePerByte parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response claimVidaId(long vidaId, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedClaimVidaIdTransaction(
                 vidaId, feePerByte));
     }
 
-/**
- * getSignedConduitApprovalTransaction method.
- * @param vidaId parameter
- * @param wrappedTxns parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * getSignedConduitApprovalTransaction method.
+     *
+     * @param vidaId      parameter
+     * @param wrappedTxns parameter
+     * @param feePerByte  parameter
+     * @return value
+     * @throws IOException exception
+     */
     public byte[] getSignedConduitApprovalTransaction(long vidaId, List<byte[]> wrappedTxns, Long feePerByte) throws IOException {
         errorIf(vidaId == 0, "VIDA ID cannot be zero");
         errorIf(wrappedTxns == null || wrappedTxns.isEmpty(), "No transactions provided for conduit approval");
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getConduitApprovalTransaction(
@@ -1109,38 +1163,40 @@ public class PWRFalconWallet {
         return getSignedTransaction(transaction);
     }
 
-/**
- * approveAsConduit method.
- * @param vidaId parameter
- * @param wrappedTxns parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * approveAsConduit method.
+     *
+     * @param vidaId      parameter
+     * @param wrappedTxns parameter
+     * @param feePerByte  parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response approveAsConduit(long vidaId, List<byte[]> wrappedTxns, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedConduitApprovalTransaction(
                 vidaId, wrappedTxns, feePerByte));
     }
 
-/**
- * getSignedPayableVidaDataTransaction method.
- * @param vidaId parameter
- * @param data parameter
- * @param value parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * getSignedPayableVidaDataTransaction method.
+     *
+     * @param vidaId     parameter
+     * @param data       parameter
+     * @param value      parameter
+     * @param feePerByte parameter
+     * @return value
+     * @throws IOException exception
+     */
     public byte[] getSignedPayableVidaDataTransaction(long vidaId, byte[] data, long value, Long feePerByte) throws IOException {
         errorIf(vidaId == 0, "VIDA ID cannot be zero");
         errorIf(data == null || data.length == 0, "Data cannot be empty");
         errorIf(value < 0, "Value cannot be negative");
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getPayableVidaDataTransaction(
@@ -1150,40 +1206,42 @@ public class PWRFalconWallet {
         return getSignedTransaction(transaction);
     }
 
-/**
- * submitPayableVidaData method.
- * @param vidaId parameter
- * @param data parameter
- * @param value parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * submitPayableVidaData method.
+     *
+     * @param vidaId     parameter
+     * @param data       parameter
+     * @param value      parameter
+     * @param feePerByte parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response submitPayableVidaData(long vidaId, byte[] data, long value, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedPayableVidaDataTransaction(
                 vidaId, data, value, feePerByte));
     }
 
-/**
- * getSignedRemoveConduitsTransaction method.
- * @param vidaId parameter
- * @param conduits parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * getSignedRemoveConduitsTransaction method.
+     *
+     * @param vidaId     parameter
+     * @param conduits   parameter
+     * @param feePerByte parameter
+     * @return value
+     * @throws IOException exception
+     */
     public byte[] getSignedRemoveConduitsTransaction(long vidaId, List<byte[]> conduits, Long feePerByte) throws IOException {
         errorIf(vidaId == 0, "VIDA ID cannot be zero");
         errorIf(conduits == null || conduits.isEmpty(), "No conduits provided for removal");
-        for(byte[] conduit : conduits) {
+        for (byte[] conduit : conduits) {
             errorIf(conduit == null || conduit.length != 20, "Conduit address must be 20 bytes");
         }
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getRemoveConduitsTransaction(
@@ -1193,39 +1251,41 @@ public class PWRFalconWallet {
         return getSignedTransaction(transaction);
     }
 
-/**
- * removeConduits method.
- * @param vidaId parameter
- * @param conduits parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * removeConduits method.
+     *
+     * @param vidaId     parameter
+     * @param conduits   parameter
+     * @param feePerByte parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response removeConduits(long vidaId, List<byte[]> conduits, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedRemoveConduitsTransaction(
                 vidaId, conduits, feePerByte));
     }
 
-/**
- * getSignedAddVidaAllowedSendersTransaction method.
- * @param vidaId parameter
- * @param allowedSenders parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * getSignedAddVidaAllowedSendersTransaction method.
+     *
+     * @param vidaId         parameter
+     * @param allowedSenders parameter
+     * @param feePerByte     parameter
+     * @return value
+     * @throws IOException exception
+     */
     public byte[] getSignedAddVidaAllowedSendersTransaction(long vidaId, Set<byte[]> allowedSenders, Long feePerByte) throws IOException {
         errorIf(vidaId == 0, "VIDA ID cannot be zero");
         errorIf(allowedSenders == null || allowedSenders.isEmpty(), "No allowed senders provided");
-        for(byte[] sender : allowedSenders) {
+        for (byte[] sender : allowedSenders) {
             errorIf(sender == null || sender.length != 20, "Sender address must be 20 bytes");
         }
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getAddVidaAllowedSendersTransaction(
@@ -1235,39 +1295,41 @@ public class PWRFalconWallet {
         return getSignedTransaction(transaction);
     }
 
-/**
- * addVidaAllowedSenders method.
- * @param vidaId parameter
- * @param allowedSenders parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * addVidaAllowedSenders method.
+     *
+     * @param vidaId         parameter
+     * @param allowedSenders parameter
+     * @param feePerByte     parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response addVidaAllowedSenders(long vidaId, Set<byte[]> allowedSenders, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedAddVidaAllowedSendersTransaction(
                 vidaId, allowedSenders, feePerByte));
     }
 
-/**
- * getSignedAddVidaSponsoredAddressesTransaction method.
- * @param vidaId parameter
- * @param sponsoredAddresses parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * getSignedAddVidaSponsoredAddressesTransaction method.
+     *
+     * @param vidaId             parameter
+     * @param sponsoredAddresses parameter
+     * @param feePerByte         parameter
+     * @return value
+     * @throws IOException exception
+     */
     public byte[] getSignedAddVidaSponsoredAddressesTransaction(long vidaId, Set<byte[]> sponsoredAddresses, Long feePerByte) throws IOException {
         errorIf(vidaId == 0, "VIDA ID cannot be zero");
         errorIf(sponsoredAddresses == null || sponsoredAddresses.isEmpty(), "No sponsored addresses provided");
-        for(byte[] address : sponsoredAddresses) {
+        for (byte[] address : sponsoredAddresses) {
             errorIf(address == null || address.length != 20, "Sponsored address must be 20 bytes");
         }
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getAddVidaSponsoredAddressesTransaction(
@@ -1277,39 +1339,41 @@ public class PWRFalconWallet {
         return getSignedTransaction(transaction);
     }
 
-/**
- * addVidaSponsoredAddresses method.
- * @param vidaId parameter
- * @param sponsoredAddresses parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * addVidaSponsoredAddresses method.
+     *
+     * @param vidaId             parameter
+     * @param sponsoredAddresses parameter
+     * @param feePerByte         parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response addVidaSponsoredAddresses(long vidaId, Set<byte[]> sponsoredAddresses, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedAddVidaSponsoredAddressesTransaction(
                 vidaId, sponsoredAddresses, feePerByte));
     }
 
-/**
- * getSignedRemoveSponsoredAddressesTransaction method.
- * @param vidaId parameter
- * @param sponsoredAddresses parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * getSignedRemoveSponsoredAddressesTransaction method.
+     *
+     * @param vidaId             parameter
+     * @param sponsoredAddresses parameter
+     * @param feePerByte         parameter
+     * @return value
+     * @throws IOException exception
+     */
     public byte[] getSignedRemoveSponsoredAddressesTransaction(long vidaId, Set<byte[]> sponsoredAddresses, Long feePerByte) throws IOException {
         errorIf(vidaId == 0, "VIDA ID cannot be zero");
         errorIf(sponsoredAddresses == null || sponsoredAddresses.isEmpty(), "No sponsored addresses provided for removal");
-        for(byte[] address : sponsoredAddresses) {
+        for (byte[] address : sponsoredAddresses) {
             errorIf(address == null || address.length != 20, "Sponsored address must be 20 bytes");
         }
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getRemoveSponsoredAddressesTransaction(
@@ -1319,39 +1383,41 @@ public class PWRFalconWallet {
         return getSignedTransaction(transaction);
     }
 
-/**
- * removeVidaSponsoredAddresses method.
- * @param vidaId parameter
- * @param sponsoredAddresses parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * removeVidaSponsoredAddresses method.
+     *
+     * @param vidaId             parameter
+     * @param sponsoredAddresses parameter
+     * @param feePerByte         parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response removeVidaSponsoredAddresses(long vidaId, Set<byte[]> sponsoredAddresses, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedRemoveSponsoredAddressesTransaction(
                 vidaId, sponsoredAddresses, feePerByte));
     }
 
-/**
- * getSignedRemoveVidaAllowedSendersTransaction method.
- * @param vidaId parameter
- * @param allowedSenders parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * getSignedRemoveVidaAllowedSendersTransaction method.
+     *
+     * @param vidaId         parameter
+     * @param allowedSenders parameter
+     * @param feePerByte     parameter
+     * @return value
+     * @throws IOException exception
+     */
     public byte[] getSignedRemoveVidaAllowedSendersTransaction(long vidaId, Set<byte[]> allowedSenders, Long feePerByte) throws IOException {
         errorIf(vidaId == 0, "VIDA ID cannot be zero");
         errorIf(allowedSenders == null || allowedSenders.isEmpty(), "No allowed senders provided for removal");
-        for(byte[] sender : allowedSenders) {
+        for (byte[] sender : allowedSenders) {
             errorIf(sender == null || sender.length != 20, "Sender address must be 20 bytes");
         }
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getRemoveVidaAllowedSendersTransaction(
@@ -1361,35 +1427,37 @@ public class PWRFalconWallet {
         return getSignedTransaction(transaction);
     }
 
-/**
- * removeVidaAllowedSenders method.
- * @param vidaId parameter
- * @param allowedSenders parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * removeVidaAllowedSenders method.
+     *
+     * @param vidaId         parameter
+     * @param allowedSenders parameter
+     * @param feePerByte     parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response removeVidaAllowedSenders(long vidaId, Set<byte[]> allowedSenders, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedRemoveVidaAllowedSendersTransaction(
                 vidaId, allowedSenders, feePerByte));
     }
 
-/**
- * getSignedSetVidaPrivateStateTransaction method.
- * @param vidaId parameter
- * @param privateState parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * getSignedSetVidaPrivateStateTransaction method.
+     *
+     * @param vidaId       parameter
+     * @param privateState parameter
+     * @param feePerByte   parameter
+     * @return value
+     * @throws IOException exception
+     */
     public byte[] getSignedSetVidaPrivateStateTransaction(long vidaId, boolean privateState, Long feePerByte) throws IOException {
         errorIf(vidaId == 0, "VIDA ID cannot be zero");
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getSetVidaPrivateStateTransaction(
@@ -1399,34 +1467,36 @@ public class PWRFalconWallet {
         return getSignedTransaction(transaction);
     }
 
-/**
- * setVidaPrivateState method.
- * @param vidaId parameter
- * @param privateState parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * setVidaPrivateState method.
+     *
+     * @param vidaId       parameter
+     * @param privateState parameter
+     * @param feePerByte   parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response setVidaPrivateState(long vidaId, boolean privateState, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedSetVidaPrivateStateTransaction(
                 vidaId, privateState, feePerByte));
     }
 
-/**
- * getSignedSetVidaToAbsolutePublicTransaction method.
- * @param vidaId parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * getSignedSetVidaToAbsolutePublicTransaction method.
+     *
+     * @param vidaId     parameter
+     * @param feePerByte parameter
+     * @return value
+     * @throws IOException exception
+     */
     public byte[] getSignedSetVidaToAbsolutePublicTransaction(long vidaId, Long feePerByte) throws IOException {
         errorIf(vidaId == 0, "VIDA ID cannot be zero");
 
         long baseFeePerByte = pwrj.getFeePerByte();
-        if(feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
+        if (feePerByte == null || feePerByte == 0) feePerByte = baseFeePerByte;
         errorIf(feePerByte < baseFeePerByte, "Fee per byte must be greater than or equal to " + baseFeePerByte);
 
         byte[] transaction = TransactionBuilder.getSetVidaToAbsolutePublicTransaction(
@@ -1436,29 +1506,31 @@ public class PWRFalconWallet {
         return getSignedTransaction(transaction);
     }
 
-/**
- * setVidaToAbsolutePublic method.
- * @param vidaId parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * setVidaToAbsolutePublic method.
+     *
+     * @param vidaId     parameter
+     * @param feePerByte parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response setVidaToAbsolutePublic(long vidaId, Long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedSetVidaToAbsolutePublicTransaction(
                 vidaId, feePerByte));
     }
 
-/**
- * getSignedSetPWRTransferRightsTransaction method.
- * @param vidaId parameter
- * @param ownerCanTransferPWR parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * getSignedSetPWRTransferRightsTransaction method.
+     *
+     * @param vidaId              parameter
+     * @param ownerCanTransferPWR parameter
+     * @param feePerByte          parameter
+     * @return value
+     * @throws IOException exception
+     */
     public byte[] getSignedSetPWRTransferRightsTransaction(long vidaId, boolean ownerCanTransferPWR, long feePerByte) throws IOException {
         errorIf(vidaId == 0, "VIDA ID cannot be zero");
 
@@ -1468,30 +1540,32 @@ public class PWRFalconWallet {
         return getSignedTransaction(transaction);
     }
 
-/**
- * setPWRTransferRights method.
- * @param vidaId parameter
- * @param ownerCanTransferPWR parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * setPWRTransferRights method.
+     *
+     * @param vidaId              parameter
+     * @param ownerCanTransferPWR parameter
+     * @param feePerByte          parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response setPWRTransferRights(long vidaId, boolean ownerCanTransferPWR, long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedSetPWRTransferRightsTransaction(vidaId, ownerCanTransferPWR, feePerByte));
     }
 
-/**
- * getSignedTransferPWRFromVidaTransaction method.
- * @param vidaId parameter
- * @param receiver parameter
- * @param amount parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * getSignedTransferPWRFromVidaTransaction method.
+     *
+     * @param vidaId     parameter
+     * @param receiver   parameter
+     * @param amount     parameter
+     * @param feePerByte parameter
+     * @return value
+     * @throws IOException exception
+     */
     public byte[] getSignedTransferPWRFromVidaTransaction(long vidaId, byte[] receiver, long amount, long feePerByte) throws IOException {
         errorIf(vidaId == 0, "VIDA ID cannot be zero");
         errorIf(receiver == null || receiver.length != 20, "Receiver address must be 20 bytes");
@@ -1504,27 +1578,29 @@ public class PWRFalconWallet {
         return getSignedTransaction(transaction);
     }
 
-/**
- * transferPWRFromVida method.
- * @param vidaId parameter
- * @param receiver parameter
- * @param amount parameter
- * @param feePerByte parameter
- * @return value
- * @throws IOException exception
- */
+    /**
+     * transferPWRFromVida method.
+     *
+     * @param vidaId     parameter
+     * @param receiver   parameter
+     * @param amount     parameter
+     * @param feePerByte parameter
+     * @return value
+     * @throws IOException exception
+     */
     public Response transferPWRFromVida(long vidaId, byte[] receiver, long amount, long feePerByte) throws IOException {
         Response response = makeSurePublicKeyIsSet(feePerByte);
-        if(response != null && !response.isSuccess()) return response;
+        if (response != null && !response.isSuccess()) return response;
 
         return pwrj.broadcastTransaction(getSignedTransferPWRFromVidaTransaction(vidaId, receiver, amount, feePerByte));
     }
 
-/**
- * main method.
- * @param args parameter
- * @throws Exception exception
- */
+    /**
+     * main method.
+     *
+     * @param args parameter
+     * @throws Exception exception
+     */
     public static void main(String[] args) throws Exception {
         PWRJ pwrj = new PWRJ("https://pwrrpc.pwrlabs.io/");
         PWRFalconWallet wallet = new PWRFalconWallet(12, pwrj);
