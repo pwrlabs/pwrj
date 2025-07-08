@@ -8,6 +8,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.reflections.Reflections;
 
+import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +22,24 @@ import java.util.Set;
  * FalconTransaction class.
  */
 public abstract class FalconTransaction {
+    private static final Map<Integer /*Identifier*/, Class<? extends FalconTransaction> > identifierToClassMap = new HashMap<>();
+    static {
+        String packageName = FalconTransaction.class.getPackage().getName();
+        Reflections reflections = new Reflections(packageName);
+        Set<Class<? extends FalconTransaction>> subclasses = reflections.getSubTypesOf(FalconTransaction.class);
+
+        for (Class<? extends FalconTransaction> subclass : subclasses) {
+            try {
+                FalconTransaction instance = subclass.getDeclaredConstructor().newInstance();
+                int thisInstanceIdentifier = instance.getIdentifier();
+
+                identifierToClassMap.put(thisInstanceIdentifier, subclass);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     private final String transactionHash;
     private final String sender;
     private final int nonce;
@@ -119,31 +138,9 @@ public abstract class FalconTransaction {
  * @param json parameter
  * @return value
  */
-    public static FalconTransaction fromJson(JSONObject json) {
-        String packageName = FalconTransaction.class.getPackage().getName();
-        Reflections reflections = new Reflections(packageName);
-        Set<Class<? extends FalconTransaction>> subclasses = reflections.getSubTypesOf(FalconTransaction.class);
-        //System.out.println("Subclasses: " + subclasses.size());
-        int identifier = json.getInt(BinaryJSONKeyMapper.IDENTIFIER);
-
-        for (Class<? extends FalconTransaction> subclass : subclasses) {
-            try {
-                FalconTransaction instance = subclass.getDeclaredConstructor().newInstance();
-                int thisInstanceIdentifier = instance.getIdentifier();
-                //System.out.println("Identifier: " + thisInstanceIdentifier);
-
-                if(thisInstanceIdentifier == identifier) {
-//                    System.out.println("Found subclass: " + subclass.getName());
-//                    System.out.println("Identifier: " + identifier);
-//                    System.out.println(json);
-                    return subclass.getDeclaredConstructor(JSONObject.class).newInstance(json);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        throw new IllegalArgumentException("Unknown transaction identifier: " + identifier);
+    public static FalconTransaction fromJson(JSONObject json) throws NoSuchMethodException, InvocationTargetException, InstantiationException, IllegalAccessException {
+        Class<? extends FalconTransaction> transactionClass = identifierToClassMap.get(json.getInt(BinaryJSONKeyMapper.IDENTIFIER));
+        return transactionClass.getDeclaredConstructor(JSONObject.class).newInstance(json);
     }
 
 /**
