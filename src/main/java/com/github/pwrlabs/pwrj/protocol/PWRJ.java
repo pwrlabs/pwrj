@@ -1242,11 +1242,8 @@ public class PWRJ {
     }
 
     public BiResult<Block, List<FalconTransaction>> getBlockAndTransactions(long blockNumber) throws Exception {
-        long startTime = System.currentTimeMillis();
         JSONObject response = httpGet(rpcNodeUrl + "/blockWithTransactions?blockNumber=" + blockNumber);
-        System.out.println("Time taken to get block and transactions: " + (System.currentTimeMillis() - startTime) + "ms");
 
-        startTime = System.currentTimeMillis();
         Block block = new Block(response.getJSONObject("block"));
         JSONArray transactionsArray = response.getJSONArray("transactions");
 
@@ -1256,7 +1253,7 @@ public class PWRJ {
             FalconTransaction transaction = FalconTransaction.fromJson(transactionObject);
             transactions.add(transaction);
         }
-        System.out.println("Time taken to parse transactions: " + (System.currentTimeMillis() - startTime) + "ms");
+
         return new BiResult<>(block, transactions);
     }
 
