@@ -14,7 +14,7 @@ import java.util.function.Function;
  * VidaTransactionSubscription class.
  */
 public class VidaTransactionSubscription {
-    private static final Logger logger = LoggerFactory.getLogger(VidaTransactionSubscription.class);
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(VidaTransactionSubscription.class);
 
     private PWRJ pwrj;
     private long vidaId;

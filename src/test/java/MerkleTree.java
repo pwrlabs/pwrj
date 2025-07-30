@@ -6,9 +6,6 @@ import io.pwrlabs.util.encoders.ByteArrayWrapper;
 import io.pwrlabs.util.encoders.Hex;
 import io.pwrlabs.util.files.FileUtils;
 import lombok.Getter;
-import lombok.SneakyThrows;
-import org.json.JSONObject;
-import org.junit.platform.commons.logging.LoggerFactory;
 import org.rocksdb.*;
 
 import java.io.File;
@@ -29,7 +26,7 @@ import static io.pwrlabs.newerror.NewError.errorIf;
 public class MerkleTree {
 
     //region ===================== Statics =====================
-    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(Main.class);
+    private static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(MerkleTree.class);
 
     static {
         RocksDB.loadLibrary();

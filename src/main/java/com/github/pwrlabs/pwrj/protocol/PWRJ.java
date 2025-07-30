@@ -10,7 +10,6 @@ import com.github.pwrlabs.pwrj.entities.WithdrawalOrder;
 import com.github.pwrlabs.pwrj.entities.Validator;
 import io.pwrlabs.util.encoders.BiResult;
 import io.pwrlabs.util.encoders.ByteArrayWrapper;
-import kotlin.Pair;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.http.client.config.RequestConfig;
@@ -23,8 +22,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
-//import java.net.http.HttpClient;
-//import java.net.http.HttpResponse;
 import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
@@ -35,8 +32,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.web3j.crypto.Hash;
 
 import java.util.*;
@@ -46,7 +41,6 @@ import java.util.function.Function;
  * PWRJ class.
  */
 public class PWRJ {
-    private static final Logger logger = LoggerFactory.getLogger(PWRJ.class);
     @Getter @Setter
     private int soTimeout = 20000, connectionTimeout = 20000;
 

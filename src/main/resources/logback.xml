@@ -1,0 +1,19 @@
+<configuration>
+    <!-- Console appender with full colored output based on log level -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %highlight([%thread] %-5level %logger{36} - %msg%n)</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Root logger at DEBUG -->
+    <root level="DEBUG">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <!-- Suppress web3j logs -->
+    <logger name="org.web3j" level="OFF"/>
+    <logger name="spark.route" level="OFF"/>
+    <logger name="org.eclipse" level="OFF"/>
+    <logger name="spark" level="OFF"/>
+</configuration>
