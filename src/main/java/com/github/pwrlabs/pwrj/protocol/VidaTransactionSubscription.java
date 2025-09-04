@@ -27,6 +27,8 @@ public class VidaTransactionSubscription {
     AtomicBoolean wantsToPause = new AtomicBoolean(false), stop = new AtomicBoolean(false);
     AtomicBoolean paused = new AtomicBoolean(false);
 
+    AtomicBoolean running = new AtomicBoolean(false);
+
     public VidaTransactionSubscription(PWRJ pwrj, long vidaId, long startingBlock, VidaTransactionHandler handler, long pollInterval, Function<Long, Void> blockSaver) {
         this.pwrj = pwrj;
         this.vidaId = vidaId;
@@ -37,13 +39,9 @@ public class VidaTransactionSubscription {
 
         //add shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            logger.info("Shutting down VidaTransactionSubscription for VIDA-ID: " + vidaId);
-            pause();
-            logger.info("VidaTransactionSubscription for VIDA-ID: " + vidaId + " has been stopped.");
+            stop.set(true);
         }));
     }
-
-    AtomicBoolean running = new AtomicBoolean(false);
 
 /**
  * start method.
@@ -60,7 +58,7 @@ public class VidaTransactionSubscription {
 
         latestCheckedBlock.set(this.startingBlock - 1);
         Thread thread = new Thread(() -> {
-            while (true && !stop.get()) {
+            while (!stop.get()) {
                 if(wantsToPause.get()) {
                     if(!paused.get()) paused.set(true);
                     continue;
@@ -105,6 +103,7 @@ public class VidaTransactionSubscription {
             running.set(false);
         });
 
+        thread.setDaemon(false);
         thread.setName("IvaTransactionSubscription:IVA-ID-" + vidaId);
         thread.start();
     }
