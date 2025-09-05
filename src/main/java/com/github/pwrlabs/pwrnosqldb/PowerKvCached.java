@@ -1,7 +1,6 @@
 package com.github.pwrlabs.pwrnosqldb;
 
 import io.pwrlabs.util.encoders.ByteArrayWrapper;
-import okhttp3.internal.http2.Settings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,10 +11,10 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class PwrBoSQLDBCached {
-    private static final Logger logger = LoggerFactory.getLogger(PwrBoSQLDBCached.class);
+public class PowerKvCached {
+    private static final Logger logger = LoggerFactory.getLogger(PowerKvCached.class);
 
-    private final PwrNoSQLDB db;
+    private final PowerKv db;
     private final Map<ByteArrayWrapper, byte[]> cache = new ConcurrentHashMap<>();
     public final ThreadPoolExecutor nonDaemonExecutor = new ThreadPoolExecutor(
             1,
@@ -30,8 +29,8 @@ public class PwrBoSQLDBCached {
                 return t;
             }
     );
-    public PwrBoSQLDBCached(String serverUrl, String projectId, String secret) {
-        db = new PwrNoSQLDB(serverUrl, projectId, secret);
+    public PowerKvCached(String projectId, String secret) {
+        db = new PowerKv(projectId, secret);
     }
 
     public void put(byte[] key, byte[] value) {
@@ -174,25 +173,32 @@ public class PwrBoSQLDBCached {
     }
 
     public static void main(String[] args) {
-        String serverUrl = "http://209.38.243.13:8080";
         String projectId = "och9234bvlxwvhhkhbby";
         String projectSecret = "pwr_Hzxc0O3JoWqvIL20Za0rvCSkdRrGgrK4";
 
-        PwrBoSQLDBCached db = new PwrBoSQLDBCached(serverUrl, projectId, projectSecret);
+        PowerKvCached db = new PowerKvCached(projectId, projectSecret);
 
-        byte[] key = "hello4435".getBytes();
-        byte[] data = "world445iiioo".getBytes();
+        for(int t=0; t < 5; ++t) {
+            byte[] key = ("hello4435" + t).getBytes();
+            byte[] data = ("world445iiioo" + t).getBytes();
+
+            long startTime = System.currentTimeMillis();
+            db.put(key, data);
+            long duration = System.currentTimeMillis() - startTime;
+            System.out.println("Put success (took " + duration + " ms)");
+        }
+
+        for (int t=0; t < 5; ++t) {
+            byte[] key = ("hello4435" + t).getBytes();
+            System.out.println("Retrieving value for key '" + new String(key) + "'...");
+            byte[] retrieved = db.getValue(key);
+            System.out.println("Retrieved value: '" + new String(retrieved, java.nio.charset.StandardCharsets.UTF_8) + "'");
+        }
 
         long startTime = System.currentTimeMillis();
-        db.put(key, data);
-        long duration = System.currentTimeMillis() - startTime;
-        System.out.println("Put success (took " + duration + " ms)");
-
-        System.out.println("Retrieving value for key '" + new String(key) + "'...");
-        byte[] retrieved = db.getValue(key);
-        System.out.println("Retrieved value: '" + new String(retrieved) + "'");
         db.shutdown();
+        long duration = System.currentTimeMillis() - startTime;
 
-
+        System.out.println("Shutdown complete (took " + duration + " ms)");
     }
 }

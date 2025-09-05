@@ -9,22 +9,18 @@ import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.net.http.HttpTimeoutException;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 
-public class PwrNoSQLDB {
+public class PowerKv {
     private final HttpClient http = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10)) // connect timeout
             .build();;
-    private final String serverUrl;
+    private final String serverUrl = "https://pwrnosqlvida.pwrlabs.io/";
     private final String projectId;
     private final String secret;
 
-    public PwrNoSQLDB(String serverUrl, String projectId, String secret) {
-        if(serverUrl == null || serverUrl.isEmpty()) {
-            throw new IllegalArgumentException("Server URL cannot be null or empty");
-        }
+    public PowerKv(String projectId, String secret) {
         if(projectId == null || projectId.isEmpty()) {
             throw new IllegalArgumentException("Project ID cannot be null or empty");
         }
@@ -32,7 +28,6 @@ public class PwrNoSQLDB {
             throw new IllegalArgumentException("Secret cannot be null or empty");
         }
 
-        this.serverUrl = serverUrl;
         this.projectId = projectId;
         this.secret = secret;
     }
@@ -207,11 +202,10 @@ public class PwrNoSQLDB {
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        String serverUrl = "http://209.38.243.13:8080";
         String projectId = "och9234bvlxwvhhkhbby";
         String projectSecret = "pwr_Hzxc0O3JoWqvIL20Za0rvCSkdRrGgrK4";
 
-        PwrNoSQLDB db = new PwrNoSQLDB(serverUrl, projectId, projectSecret);
+        PowerKv db = new PowerKv(projectId, projectSecret);
 
         byte[] key = "hello3".getBytes(StandardCharsets.UTF_8);
         byte[] data = "worldiiioo".getBytes(StandardCharsets.UTF_8);
