@@ -1,15 +1,25 @@
 package com.github.pwrlabs.pwrnosqldb;
 
+import com.github.pwrlabs.pwrj.Utils.AES256;
 import com.github.pwrlabs.pwrj.Utils.Hex;
+import com.github.pwrlabs.pwrj.Utils.PWRHash;
 import org.json.JSONObject;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.time.Duration;
 
 public class PowerKv {
@@ -40,7 +50,13 @@ public class PowerKv {
         return projectId;
     }
 
-    public boolean put(byte[] key, byte[] data) throws IOException, RuntimeException, InterruptedException {
+    public boolean put(byte[] key_, byte[] data_) throws IOException, RuntimeException, InterruptedException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
+        byte[] keyHash = PWRHash.hash256(key_);
+        ByteBuffer buf = ByteBuffer.allocate(4 + key_.length + 4 + data_.length);
+        buf.putInt(key_.length).put(key_);
+        buf.putInt(data_.length).put(data_);
+        byte[] encryptedData = AES256.encrypt(buf.array(), secret);
+
         //curl POST serverUrl + "/storeData"
 
         String url = serverUrl + "/storeData";
@@ -48,8 +64,8 @@ public class PowerKv {
         JSONObject payload = new JSONObject()
                 .put("projectId", projectId)
                 .put("secret", secret)
-                .put("key", Hex.toHexString(key))
-                .put("value", Hex.toHexString(data));
+                .put("key", Hex.toHexString(keyHash))
+                .put("value", Hex.toHexString(encryptedData));
 
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create(url))
@@ -72,17 +88,11 @@ public class PowerKv {
         if (code == 200) {
             return true;
         } else {
-            String msg;
-            try {
-                msg = new JSONObject(body).optString("message", "HTTP " + code);
-            } catch (Exception parseErr) {
-                msg = "HTTP " + code + " — " + body;
-            }
-            throw new RuntimeException("storeData failed: " + msg);
+            throw new RuntimeException("storeData failed: " + code + " - " + body);
         }
     }
 
-    public boolean put(Object key, Object value) throws IOException, InterruptedException {
+    public boolean put(Object key, Object value) throws IOException, InterruptedException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
         if(key == null) throw new IllegalArgumentException("Key cannot be null");
         if(value == null) throw new IllegalArgumentException("Data cannot be null");
 
@@ -112,13 +122,14 @@ public class PowerKv {
         return put(keyBytes, dataBytes);
     }
 
-    public byte[] getValue(byte[] key) throws RuntimeException {
-        if (key == null) throw new IllegalArgumentException("Key cannot be null");
+    public byte[] getValue(byte[] key_) throws RuntimeException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
+        if (key_ == null) throw new IllegalArgumentException("Key cannot be null");
+        byte[] keyHash = PWRHash.hash256(key_);
 
         // Build URL: /getValue?projectId=...&key=<hex>
         String url = serverUrl + "/getValue"
                 + "?projectId=" + URLEncoder.encode(projectId, StandardCharsets.UTF_8)
-                + "&key=" + Hex.toHexString(key); // server accepts plain hex (no 0x)
+                + "&key=" + Hex.toHexString(keyHash); // server accepts plain hex (no 0x)
 
         HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create(url))
@@ -146,7 +157,16 @@ public class PowerKv {
                 if (valueHex.startsWith("0x") || valueHex.startsWith("0X")) {
                     valueHex = valueHex.substring(2);
                 }
-                return Hex.decode(valueHex);
+                byte[] encryptedValue = Hex.decode(valueHex);
+                byte[] data = AES256.decrypt(encryptedValue, secret);
+                ByteBuffer buf = ByteBuffer.wrap(data);
+                int keyLen = buf.getInt();
+                byte[] keyInData = new byte[keyLen];
+                buf.get(keyInData);
+                int dataLen = buf.getInt();
+                byte[] actualData = new byte[dataLen];
+                buf.get(actualData);
+                return actualData;
             } catch (Exception parseErr) {
                 throw new RuntimeException("Unexpected response shape from /getValue: " + body, parseErr);
             }
@@ -163,7 +183,7 @@ public class PowerKv {
     }
 
     /** Convenience overload mirroring put(Object, Object). */
-    public byte[] getValue(Object key) {
+    public byte[] getValue(Object key) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
         if (key == null) throw new IllegalArgumentException("Key cannot be null");
         byte[] keyBytes;
         if (key instanceof String) {
@@ -178,36 +198,36 @@ public class PowerKv {
         return getValue(keyBytes);
     }
 
-    public String getStringValue(Object key) {
+    public String getStringValue(Object key) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
         byte[] data = getValue(key);
         return new String(data, StandardCharsets.UTF_8);
     }
 
-    public Integer getIntValue(Object key) {
+    public Integer getIntValue(Object key) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
         byte[] data = getValue(key);
         String str = new String(data, StandardCharsets.UTF_8);
         return Integer.parseInt(str);
     }
 
-    public Long getLongValue(Object key) {
+    public Long getLongValue(Object key) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
         byte[] data = getValue(key);
         String str = new String(data, StandardCharsets.UTF_8);
         return Long.parseLong(str);
     }
 
-    public Double getDoubleValue(Object key) {
+    public Double getDoubleValue(Object key) throws InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
         byte[] data = getValue(key);
         String str = new String(data, StandardCharsets.UTF_8);
         return Double.parseDouble(str);
     }
 
-    public static void main(String[] args) throws IOException, InterruptedException {
-        String projectId = "och9234bvlxwvhhkhbby";
-        String projectSecret = "pwr_Hzxc0O3JoWqvIL20Za0rvCSkdRrGgrK4";
+    public static void main(String[] args) throws IOException, InterruptedException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, NoSuchAlgorithmException, InvalidKeySpecException, BadPaddingException, InvalidKeyException {
+        String projectId = "e3nfv0c47mly8q5u3t12r";
+        String projectSecret = "pwr_mifYjfeIQmWtp5JHQk1Ecw==";
 
         PowerKv db = new PowerKv(projectId, projectSecret);
 
-        byte[] key = "hello3".getBytes(StandardCharsets.UTF_8);
+        byte[] key = "hello4".getBytes(StandardCharsets.UTF_8);
         byte[] data = "worldiiioo".getBytes(StandardCharsets.UTF_8);
 
         long startTime = System.currentTimeMillis();

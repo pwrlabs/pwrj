@@ -4,6 +4,13 @@ import io.pwrlabs.util.encoders.ByteArrayWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,7 +63,12 @@ public class PowerKvCached {
                     }
                     else {
                         logger.warn("Failed to update key on PWR Chain, retrying: " + new String(key));
-                        byte[] _value = db.getValue(key);
+                        byte[] _value = null;
+                        try {
+                            _value = db.getValue(key);
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
                         if (_value != null && Arrays.equals(_value, value))
                             return; // Another thread has already updated the value
                         else {
@@ -173,8 +185,8 @@ public class PowerKvCached {
     }
 
     public static void main(String[] args) {
-        String projectId = "och9234bvlxwvhhkhbby";
-        String projectSecret = "pwr_Hzxc0O3JoWqvIL20Za0rvCSkdRrGgrK4";
+        String projectId = "npu6o3uooiijkmnawvjced";
+        String projectSecret = "pwr_h3MmbZSKSPuf9L523E0Y6g==";
 
         PowerKvCached db = new PowerKvCached(projectId, projectSecret);
 
