@@ -26,7 +26,7 @@ public class PowerKv {
     private final HttpClient http = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(10)) // connect timeout
             .build();;
-    private final String serverUrl = "https://pwrnosqlvida.pwrlabs.io/";
+    private final String serverUrl = "https://powerkvbe.pwrlabs.io";
     private final String projectId;
     private final String secret;
 
