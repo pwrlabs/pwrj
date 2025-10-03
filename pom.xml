@@ -44,7 +44,7 @@
         <dependency>
             <groupId>com.github.pwrlabs</groupId>
             <artifactId>PWR-Labs-Utils</artifactId>
-            <version>1.123.0</version>
+            <version>1.124.0</version>
         </dependency>
 
         <dependency>
